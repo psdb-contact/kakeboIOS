@@ -1,0 +1,46 @@
+[
+  {
+    "categoryName": "食費",
+    "sortOrder": 0
+  },
+  {
+    "categoryName": "日用品",
+    "sortOrder": 1
+  },
+  {
+    "categoryName": "交通費",
+    "sortOrder": 2
+  },
+  {
+    "categoryName": "住居費",
+    "sortOrder": 3
+  },
+  {
+    "categoryName": "光熱費",
+    "sortOrder": 4
+  },
+  {
+    "categoryName": "通信費",
+    "sortOrder": 5
+  },
+  {
+    "categoryName": "娯楽費",
+    "sortOrder": 6
+  },
+  {
+    "categoryName": "医療費",
+    "sortOrder": 7
+  },
+  {
+    "categoryName": "衣服・美容",
+    "sortOrder": 8
+  },
+  {
+    "categoryName": "教育費",
+    "sortOrder": 9
+  },
+  {
+    "categoryName": "その他",
+    "sortOrder": 10
+  }
+]

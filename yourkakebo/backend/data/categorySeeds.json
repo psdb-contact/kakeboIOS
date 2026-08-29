@@ -1,0 +1,90 @@
+[
+  {
+    "categoryName": "食費",
+    "transitionType": "expense",
+    "colorHex": 16753920,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 0
+  },
+  {
+    "categoryName": "日用品",
+    "transitionType": "expense",
+    "colorHex": 6737151,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 1
+  },
+  {
+    "categoryName": "交通費",
+    "transitionType": "expense",
+    "colorHex": 39423,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 2
+  },
+  {
+    "categoryName": "住居費",
+    "transitionType": "expense",
+    "colorHex": 10027263,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 3
+  },
+  {
+    "categoryName": "光熱費",
+    "transitionType": "expense",
+    "colorHex": 16776960,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 4
+  },
+  {
+    "categoryName": "通信費",
+    "transitionType": "expense",
+    "colorHex": 6750207,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 5
+  },
+  {
+    "categoryName": "娯楽費",
+    "transitionType": "expense",
+    "colorHex": 16711935,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 6
+  },
+  {
+    "categoryName": "医療費",
+    "transitionType": "expense",
+    "colorHex": 16711680,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 7
+  },
+  {
+    "categoryName": "衣服・美容",
+    "transitionType": "expense",
+    "colorHex": 13369548,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 8
+  },
+  {
+    "categoryName": "教育費",
+    "transitionType": "expense",
+    "colorHex": 39168,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 9
+  },
+  {
+    "categoryName": "その他",
+    "transitionType": "expense",
+    "colorHex": 8421504,
+    "isSystem": true,
+    "isTemplateUsed": false,
+    "sortOrder": 10
+  }
+]
