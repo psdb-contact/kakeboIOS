@@ -1,7 +1,7 @@
 
 import SwiftUI
 
-struct EditFixedTransitionView: View {
+struct EditFixedTransitionSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var viewModel: EditFixedTransitionViewModel
@@ -33,14 +33,9 @@ struct EditFixedTransitionView: View {
         @Bindable var viewModel = viewModel
         
         VStack(spacing: 0) {
-
+            
             ScrollView {
                 VStack(spacing: 16) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("種類")
-                            .font(.system(size: 15))
-                            .foregroundStyle(.secondary)
-                        
                         Picker(
                             "種類",
                             selection: $viewModel.transitionType
@@ -52,68 +47,90 @@ struct EditFixedTransitionView: View {
                                 .tag(TransitionType.income)
                         }
                         .pickerStyle(.segmented)
+
+                    VStack {
+                        HStack {
+                            Text("固定出費名")
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .frame(width: 108, alignment: .leading)
+                            TextField(
+                                "",
+                                text: $viewModel.fixedTransitionName
+                            )
+                            .padding(.horizontal, 12)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                            .frame(height: 52)
+                        }
+                        .padding(.leading, 12)
+                        Divider().padding(.horizontal, 12)
+                        HStack{
+                            Text("金額")
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .frame(width: 108, alignment: .leading)
+                            TextField(
+                                "",
+                                value: $viewModel.amount,
+                                format: .number
+                            )
+                            .padding(.horizontal, 12)
+                            .multilineTextAlignment(.trailing)
+                            .keyboardType(.numberPad)
+                            .textFieldStyle(.plain)
+                            .frame(height: 52)
+                        }
+                        .padding(.leading, 12)
                     }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("固定出費名")
-                            .font(.system(size: 15))
-                            .foregroundStyle(.secondary)
-                        TextField(
-                            "固定出費名",
-                            text: $viewModel.fixedTransitionName
-                        )
-                        .textFieldStyle(.roundedBorder)
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("金額")
-                            .font(.system(size: 15))
-                            .foregroundStyle(.secondary)
-                        TextField(
-                            "金額",
-                            value: $viewModel.amount,
-                            format: .number
-                        )
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.container)
+                    )
+                    VStack {
                         Button {
                             viewModel.showCategorySheet = true
                         } label: {
                             HStack {
                                 Text("カテゴリ")
+                                    .font(.system(size: 16)).foregroundStyle(.black)
                                     .frame(width: 108, alignment: .leading)
                                 Spacer()
                                 
                                 Text(viewModel.category?.categoryName ?? "未選択")
+                                    .font(.system(size: 16)).foregroundStyle(.black)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
                             }
+                            .padding(.horizontal, 12)
                             .frame(height: 52)
                         }
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
+                        Divider().padding(.horizontal, 12)
+
                         Button {
                             viewModel.editingCycleOptionType = viewModel.cycleOptionType
                             viewModel.showCycleTypeSheet = true
                         } label: {
                             HStack {
                                 Text("繰り返しのルール")
-                                    .frame(width: 108, alignment: .leading)
+                                    .font(.system(size: 16)).foregroundStyle(.black)
+                                    .frame(width: 128, alignment: .leading)
                                 Spacer()
                                 
                                 Text(viewModel.cycleOptionType.displayString)
+                                    .font(.system(size: 16)).foregroundStyle(.black)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
                             }
+                            .padding(.horizontal, 12)
                             .frame(height: 52)
                         }
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
+                        Divider().padding(.horizontal, 12)
+
                         Button {
                             viewModel.showStartDateSheet = true
                         } label: {
                             HStack {
                                 Text("開始日")
+                                    .font(.system(size: 16)).foregroundStyle(.black)
                                     .frame(width: 108, alignment: .leading)
                                 Spacer()
                                 
@@ -126,21 +143,24 @@ struct EditFixedTransitionView: View {
                                                 .month()
                                                 .day()
                                         )
-                                )                            .lineLimit(1)
-                                    .truncationMode(.tail)
+                                )
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                             }
+                            .padding(.horizontal, 12)
                             .frame(height: 52)
                         }
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
+                        Divider().padding(.horizontal, 12)
+
                         Button {
                             viewModel.showEndDateSheet = true
                         } label: {
                             HStack {
                                 Text("終了日")
+                                    .font(.system(size: 16)).foregroundStyle(.black)
                                     .frame(width: 108, alignment: .leading)
                                 Spacer()
-                                
                                 Text(
                                     viewModel.endDate?
                                         .formatted(
@@ -152,40 +172,50 @@ struct EditFixedTransitionView: View {
                                         )
                                     ?? "未選択"
                                 )
+                                .font(.system(size: 16)).foregroundStyle(.black)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                             }
+                            .padding(.horizontal, 12)
                             .frame(height: 52)
                         }
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
+                        Divider().padding(.horizontal, 12)
+
                         Button {
                             viewModel.showHolidayTypeSheet = true
                         } label: {
                             HStack {
                                 Text("土日祝の場合")
+                                    .font(.system(size: 16)).foregroundStyle(.black)
                                     .frame(width: 108, alignment: .leading)
                                 Spacer()
                                 
                                 Text(viewModel.cycleHolidayType.displayString)
+                                    .font(.system(size: 16)).foregroundStyle(.black)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
                             }
+                            .padding(.horizontal, 12)
                             .frame(height: 52)
                         }
                     }
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.container)
+                    )
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 16)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
         }
+        
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
-                    Image(systemName: "chevron.left")
+                    Image(systemName: "xmark")
                         .font(.system(size: 24))
                         .foregroundStyle(
                             Color(
@@ -466,6 +496,7 @@ struct EditFixedTransitionView: View {
                 print("Ctegoryの読み込みに失敗しました: \(error)")
             }
         }
+        
     }
     
     private func save() {
@@ -477,3 +508,55 @@ struct EditFixedTransitionView: View {
         }
     }
 }
+
+import SwiftData
+
+#Preview {
+    PreviewContent()
+}
+
+@MainActor
+private struct PreviewContent: View {
+    
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+    
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
+        
+        let context = container.mainContext
+        
+        PreviewSeeder.seed(
+            context: context
+        )
+        
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+    
+    var body: some View {
+        NavigationStack {
+            EditFixedTransitionSheet(
+                fixedTransition: nil,
+                fixedTransitionService: appContainer.fixedTransitionService,
+                categoryService: appContainer.categoryService
+            )
+            .background(Color.modalSheetBackground)
+        }
+        .modelContainer(container)
+        .environment(appContainer)
+    }
+}
+

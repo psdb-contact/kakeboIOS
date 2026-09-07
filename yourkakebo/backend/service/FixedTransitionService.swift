@@ -29,7 +29,7 @@ final class FixedTransitionService {
         }
     }
 
-    func deleteFixedTransition(_ id: UUID) throws {
-        try fixedTransitionRepository.deleteFixedTransition(id)
+    func deleteFixedTransition(_ fixedTransition: FixedTransitionModel) throws {
+        try fixedTransitionRepository.deleteFixedTransition(fixedTransition)
     }
 }

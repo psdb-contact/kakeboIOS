@@ -54,63 +54,15 @@ private struct FixedTransitionCalendarContentScreen: View {
             from: viewModel.selectedDate
         )
         
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             
             // MARK: - Month Navigation
             
-            HStack {
-                
-                Button {
-                    viewModel.moveMonth(by: -1)
-                } label: {
-                    
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18))
-                        .foregroundStyle(
-                            Color(.darkGray)
-                        )
-                        .frame(
-                            width: 44,
-                            height: 44
-                        )
-                }
-                
-                Spacer()
-                
-                Text("\(year) / \(month)")
-                    .font(
-                        .system(
-                            size: 20,
-                            weight: .semibold
-                        )
-                    )
-                    .foregroundStyle(
-                        Color(
-                            red: 0.133,
-                            green: 0.133,
-                            blue: 0.133
-                        )
-                    )
-                
-                Spacer()
-                
-                Button {
-                    viewModel.moveMonth(by: 1)
-                } label: {
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 18))
-                        .foregroundStyle(
-                            Color(.darkGray)
-                        )
-                        .frame(
-                            width: 44,
-                            height: 44
-                        )
-                }
-            }
-            .padding(.horizontal, 16)
-            
+     
+                MonthNavigationBar(
+                    formattedDate: "\(year) / \(month)", onPrevious:  {viewModel.moveMonth(by: -1)}, onNext: {viewModel.moveMonth(by: 1)}
+                )
+             
             // MARK: - Weekday
             
             HStack(spacing: 0) {
@@ -133,7 +85,6 @@ private struct FixedTransitionCalendarContentScreen: View {
                 }
             }
             .padding(.horizontal, 8)
-            .padding(.bottom, 4)
             
             // MARK: - Calendar
             
@@ -166,12 +117,8 @@ private struct FixedTransitionCalendarContentScreen: View {
                         )
                         
                     } else {
-                        
                         Color.clear
-                            .aspectRatio(
-                                1,
-                                contentMode: .fit
-                            )
+                            .frame(height: 84)
                     }
                 }
             }
@@ -260,13 +207,15 @@ private struct FixedTransitionCalendarDayCell: View {
             
             Text("\(Calendar.current.component(.day, from: date))")
             
-            ForEach(calendarData) { data in
-                Text(
-                    "\(data.fixedTransition.amount)"
-                )
-                .font(
-                    .system(size: 11)
-                )
+
+            ForEach(calendarData.prefix(2)) { data in
+                Text("\(data.fixedTransition.amount)")
+                    .font(.system(size: 11))
+            }
+
+            if calendarData.count > 2 {
+                Text("+\(calendarData.count - 2)")
+                    .font(.system(size: 11))
             }
             
             Spacer(minLength: 0)
@@ -274,9 +223,54 @@ private struct FixedTransitionCalendarDayCell: View {
         .frame(
             maxWidth: .infinity
         )
-        .aspectRatio(
-            1,
-            contentMode: .fit
-        )
+        .frame(height: 84)
     }
 }
+
+
+import SwiftData
+
+#Preview {
+    PreviewContent()
+}
+
+@MainActor
+private struct PreviewContent: View {
+    
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+    
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
+        
+        let context = container.mainContext
+        
+        PreviewSeeder.seed(
+            context: context
+        )
+        
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+    
+    var body: some View {
+        NavigationStack{
+            FixedTransitionCalendarScreen()
+        }
+        .modelContainer(container)
+        .environment(appContainer)
+    }
+}
+

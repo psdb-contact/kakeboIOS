@@ -13,10 +13,13 @@ struct FixedTransitionSettingView: View {
     private var appContainer
     
     var body: some View {
-        FixedTransitionSettingContentView(
-            fixedTransitionService: appContainer.fixedTransitionService,
-            categoryService: appContainer.categoryService
-        )
+        ZStack {
+            Color.secondBackground.ignoresSafeArea()
+            FixedTransitionSettingContentView(
+                fixedTransitionService: appContainer.fixedTransitionService,
+                categoryService: appContainer.categoryService
+            )
+        }
     }
 }
 
@@ -51,54 +54,34 @@ private struct FixedTransitionSettingContentView: View {
                 FixedTransitionCalendarScreen(                )
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 24))
-                        .foregroundStyle(
-                            Color(
-                                red: 0.27,
-                                green: 0.27,
-                                blue: 0.27
-                            )
-                        )
-                }
+        .sheet(isPresented: $viewModel.showingAddFixedTransition) {
+            NavigationStack {
+                EditFixedTransitionSheet(
+                    fixedTransition: nil,
+                    fixedTransitionService: fixedTransitionService,
+                    categoryService: categoryService,
+                )
+                .presentationBackground(Color.modalSheetBackground)
+                .presentationDragIndicator(.hidden)
             }
+        }
+        .toolbar {
             ToolbarItem(placement: .principal) {
-                HStack(spacing: 4) {
-                    toggleButton(
-                        icon: "list.bullet",
-                        value: .list
-                    )
-                    
-                    toggleButton(
-                        icon: "calendar",
-                        value: .calendar
-                    )
-                }
-                .padding(4)
-                .background {
-                    if #available(iOS 26.0, *) {
-                        Capsule()
-                            .glassEffect()
-                    } else {
-                        Capsule()
-                            .fill(.thinMaterial)
+                IconToggle(
+                    items: [
+                        .init(icon: "list.bullet", value: .list),
+                        .init(icon: "calendar", value: .calendar)
+                    ],
+                    selection: viewModel.screenType,
+                    onSelectionChanged: { value in
+                        viewModel.screenType = value;
                     }
-                }
+                )
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink {
-                    EditFixedTransitionView(
-                        fixedTransition: nil,
-                        fixedTransitionService:  fixedTransitionService,
-                        categoryService: categoryService
-                    )
+                Button {
+                    viewModel.showingAddFixedTransition = true
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 24))
@@ -112,6 +95,7 @@ private struct FixedTransitionSettingContentView: View {
                 }
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     private func toggleButton(
@@ -143,5 +127,49 @@ private struct FixedTransitionSettingContentView: View {
                 }
         }
         .buttonStyle(.plain)
+    }
+}
+
+#Preview {
+    PreviewContent()
+}
+
+@MainActor
+private struct PreviewContent: View {
+    
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+    
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
+        
+        let context = container.mainContext
+        
+        PreviewSeeder.seed(
+            context: context
+        )
+        
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+    
+    var body: some View {
+        NavigationStack{
+            FixedTransitionSettingView()
+        }
+        .modelContainer(container)
+        .environment(appContainer)
     }
 }

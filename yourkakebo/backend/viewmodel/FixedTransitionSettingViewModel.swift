@@ -11,7 +11,7 @@ import SwiftUI
 
 @Observable
 final class FixedTransitionSettingViewModel {
-    
     var screenType : FixedTransitionScreenType = .list
     
+    var showingAddFixedTransition = false
 }

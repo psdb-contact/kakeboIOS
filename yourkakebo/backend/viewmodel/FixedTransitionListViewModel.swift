@@ -54,7 +54,7 @@ final class FixedTransitionListViewModel {
             return
         }
         
-        try fixedTransitionService.deleteFixedTransition(fixedTransition.fixedTransitionId)
+        try fixedTransitionService.deleteFixedTransition(fixedTransition)
         
         fixedTransitionToDelete = nil
         

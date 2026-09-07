@@ -27,56 +27,12 @@ struct EditCategorySheet: View {
 
         VStack(spacing: 0) {
 
-
-            HStack {
-                Button("キャンセル") {
-                    dismiss()
-                }
-
-                Spacer()
-
-                Text(
-                    viewModel.category != nil
-                    ? "カテゴリ追加"
-                    : "カテゴリ編集"
-                )
-                .font(.system(size: 18, weight: .semibold))
-
-                Spacer()
-
-                Button("保存") {
-                    save()
-                }
-                .font(.system(size: 16, weight: .semibold))
-            }
-            .padding(.horizontal, 20)
-            .frame(height: 56)
-
-            Divider()
-
             // MARK: - Form
 
             VStack(spacing: 24) {
 
-                // カテゴリ名
+                // 種類
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("カテゴリ名")
-                        .font(.system(size: 15))
-                        .foregroundStyle(.secondary)
-
-                    TextField(
-                        "カテゴリ名",
-                        text: $viewModel.categoryName
-                    )
-                    .textFieldStyle(.roundedBorder)
-                }
-
-                // 収支タイプ
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("種類")
-                        .font(.system(size: 15))
-                        .foregroundStyle(.secondary)
-
                     Picker(
                         "種類",
                         selection: $viewModel.transitionType
@@ -89,6 +45,28 @@ struct EditCategorySheet: View {
                     }
                     .pickerStyle(.segmented)
                 }
+                
+                VStack {
+                    HStack {
+                        Text("カテゴリ")
+                            .font(.system(size: 16)).foregroundStyle(.black)
+                            .frame(width: 108, alignment: .leading)
+                        TextField(
+                            "",
+                            text: $viewModel.categoryName
+                        )
+                        .padding(.horizontal, 12)
+                        .multilineTextAlignment(.trailing)
+                        .textFieldStyle(.plain)
+                        .frame(height: 52)
+                    }
+                    .padding(.leading, 12)
+
+                }
+                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color.container)
+                                )
 
                 // 色
                 /*
@@ -106,8 +84,22 @@ struct EditCategorySheet: View {
                 Spacer()
             }
             .padding(20)
-
         }
+        .toolbar{
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                Text(
+                    "カテゴリ追加"
+                )
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private func save() {
@@ -119,3 +111,54 @@ struct EditCategorySheet: View {
         }
     }
 }
+
+import SwiftData
+
+#Preview {
+    PreviewContent()
+}
+
+@MainActor
+private struct PreviewContent: View {
+    
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+    
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
+        
+        let context = container.mainContext
+        
+        PreviewSeeder.seed(
+            context: context
+        )
+        
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+    
+    var body: some View {
+        NavigationStack {
+            EditCategorySheet(
+                categoryModel: nil,
+                categoryService: appContainer.categoryService,
+            )
+            .background(Color.modalSheetBackground)
+        }
+        .modelContainer(container)
+        .environment(appContainer)
+    }
+}
+

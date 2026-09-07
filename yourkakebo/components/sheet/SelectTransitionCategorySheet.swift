@@ -9,7 +9,7 @@
 import SwiftUI
 import SwiftData
 
-struct SelectCategorySheet: View {
+struct SelectTransitionCategorySheet: View {
     @Environment(AppContainer.self)
     private var appContainer
     private var usedCategories: [CategoryModel]
@@ -22,7 +22,7 @@ struct SelectCategorySheet: View {
     }
     
     var body: some View {
-        SelectCategoryContentSheet(
+        SelectTransitionCategoryContentSheet(
             categoryService: appContainer.categoryService,
             transitionService: appContainer.transitionService,
             usedCategories: self.usedCategories,
@@ -31,7 +31,7 @@ struct SelectCategorySheet: View {
     }
 }
 
-private struct SelectCategoryContentSheet: View {
+private struct SelectTransitionCategoryContentSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     private let categoryService: CategoryService
@@ -40,7 +40,7 @@ private struct SelectCategoryContentSheet: View {
     private let usedCategories: [CategoryModel]
     let selectedDate: Date
     
-    @State private var viewModel: SelectCategoryViewModel
+    @State private var viewModel: SelectTransitionCategoryViewModel
     
     init(categoryService: CategoryService, transitionService: TransitionService, usedCategories: [CategoryModel], selectedDate: Date) {
         self.categoryService = categoryService
@@ -48,36 +48,18 @@ private struct SelectCategoryContentSheet: View {
         self.usedCategories = usedCategories
         self.selectedDate = selectedDate
         
-        _viewModel = State(initialValue: SelectCategoryViewModel(categoryService: categoryService, transitionService: transitionService))
+        _viewModel = State(initialValue: SelectTransitionCategoryViewModel(categoryService: categoryService, transitionService: transitionService))
     }
     
     var body: some View {
         @Bindable var viewModel = viewModel
         
         VStack(spacing: 0) {
-            HStack {
-                Button("キャンセル") {
-                    dismiss()
-                }
-                Spacer()
-                Text(
-                    "カテゴリ追加"
-                )
-                .font(.system(size: 18, weight: .semibold))
-                
-                Spacer()
-
-                .font(.system(size: 16, weight: .semibold))
-            }
-            .padding(.horizontal, 20)
-            .frame(height: 56)
-            
-            Divider()
             ScrollView {
                 LazyVStack(spacing: 0) {
                     ForEach(viewModel.categoriesData) {
                         item in
-                        SelectCategoryForm(
+                        SelectTransitionCategoryForm(
                             category: item.category,
                             isUsed: item.isUsed,
                             onSelect: { save(
@@ -90,6 +72,21 @@ private struct SelectCategoryContentSheet: View {
                 }
             }
         }
+        .toolbar{
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                Text(
+                    "カテゴリ追加"
+                )
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
         .task{
             do {
                 try viewModel.load(usedCategories: self.usedCategories)
@@ -111,7 +108,7 @@ private struct SelectCategoryContentSheet: View {
     }
 }
 
-struct SelectCategoryForm : View {
+struct SelectTransitionCategoryForm : View {
     let category: CategoryModel
     let isUsed: Bool
     let onSelect: () -> Void
@@ -138,20 +135,64 @@ struct SelectCategoryForm : View {
             Button {
                 onSelect()
             } label: {
-                Image(systemName: isUsed ? "checkmark" : "plus")                    .font(.system(size: 16, weight: .medium))
+                Image(systemName: isUsed ? "checkmark" : "plus")
+                    .font(.system(size: 16, weight: .medium))
                     .frame(width: 32, height: 32)
             }
             .buttonStyle(.plain)
             .disabled(isUsed)
         }
-        .padding()
+        .padding(.vertical, 16)
+        .padding(.horizontal, 24)
         .frame(maxWidth: .infinity)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .shadow(
-            color: .black.opacity(0.05),
-            radius: 8,
-            y: 4
-        )
     }
 }
+
+
+#Preview {
+    PreviewContent()
+}
+
+@MainActor
+private struct PreviewContent: View {
+    
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+    
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
+        
+        let context = container.mainContext
+        
+        PreviewSeeder.seed(
+            context: context
+        )
+        
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+    
+    var body: some View {
+        NavigationStack {
+            SelectTransitionCategorySheet(
+                usedCategories: [],
+                selectedDate: Calendar.current.startOfDay(for: Date())
+            )
+        }
+        .modelContainer(container)
+        .environment(appContainer)
+    }
+}
+

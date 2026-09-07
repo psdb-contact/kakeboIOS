@@ -68,23 +68,18 @@ private struct ReportContentView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar{
             ToolbarItem(placement: .principal) {
-                HStack(spacing: 4) {
-                    toggleButton(
-                        icon: "list.bullet",
-                        value: .monthly
-                    )
-                    
-                    toggleButton(
-                        icon: "calendar",
-                        value: .yearly
-                    )
-                }
-                .padding(4)
-                .modifier(GlassEffectModifier())
-
+                IconToggle(
+                    items: [
+                        .init(icon: "list.bullet", value: .monthly),
+                        .init(icon: "calendar", value: .yearly)
+                    ],
+                    selection: viewModel.reportPeriodType,
+                    onSelectionChanged: { value in
+                        viewModel.setReportPeriodType(value: value)
+                    }
+                )
             }
             ToolbarItem(placement: .topBarTrailing) {
-                
                 NavigationLink {
                     SettingView()
                 } label: {
@@ -116,201 +111,171 @@ private struct ReportContentView: View {
         )
     }
     
-    private func toggleButton(
-        icon: String,
-        value: ReportPeriodType
-    ) -> some View {
+    
+    
+    // MARK: - Summary
+    
+    private struct ReportSummaryView: View {
         
-        Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                viewModel.setReportPeriodType(value: value)
-            }
-        } label: {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .medium))
-                .frame(
-                    width: 36,
-                    height: 32
-                )
-                .foregroundStyle(
-                    viewModel.reportPeriodType == value
-                        ? .primary
-                        : .secondary
-                )
-                .background {
-                    if viewModel.reportPeriodType == value {
-                        Capsule()
-                            .fill(.white.opacity(0.8))
+        let data: ReportDataModel
+        
+        var body: some View {
+            ScrollView {
+                VStack(spacing: 16) {
+                    
+                    ReportCard {
+                        
+                        ReportRow(
+                            title: "収入",
+                            amount: data.totalIncome
+                        )
+                        
+                        ReportRow(
+                            title: "支出",
+                            amount: data.totalExpense
+                        )
+                        
+                        Divider()
+                        
+                        ReportRow(
+                            title: "収支",
+                            amount: data.totalBalance
+                        )
                     }
-                }
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-
-// MARK: - Summary
-
-private struct ReportSummaryView: View {
-    
-    let data: ReportDataModel
-    
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                
-                ReportCard {
                     
-                    ReportRow(
-                        title: "収入",
-                        amount: data.totalIncome
-                    )
+                    ReportCard {
+                        
+                        ReportRow(
+                            title: "通常収入",
+                            amount: data.totalDailyIncome
+                        )
+                        
+                        ReportRow(
+                            title: "固定収入",
+                            amount: data.totalFixedIncome
+                        )
+                        
+                        Divider()
+                        
+                        ReportRow(
+                            title: "通常支出",
+                            amount: data.totalDailyExpense
+                        )
+                        
+                        ReportRow(
+                            title: "固定支出",
+                            amount: data.totalFixedExpense
+                        )
+                    }
                     
-                    ReportRow(
+                    ReportCategoryCard(
                         title: "支出",
-                        amount: data.totalExpense
+                        data: data.aggregatedDailyExpenses
                     )
                     
-                    Divider()
-                    
-                    ReportRow(
-                        title: "収支",
-                        amount: data.totalBalance
-                    )
-                }
-                
-                ReportCard {
-                    
-                    ReportRow(
-                        title: "通常収入",
-                        amount: data.totalDailyIncome
-                    )
-                    
-                    ReportRow(
-                        title: "固定収入",
-                        amount: data.totalFixedIncome
-                    )
-                    
-                    Divider()
-                    
-                    ReportRow(
-                        title: "通常支出",
-                        amount: data.totalDailyExpense
-                    )
-                    
-                    ReportRow(
+                    ReportCategoryCard(
                         title: "固定支出",
-                        amount: data.totalFixedExpense
+                        data: data.aggregatedFixedExpenses
+                    )
+                    
+                    ReportCategoryCard(
+                        title: "収入",
+                        data: data.aggregatedDailyIncomes
+                    )
+                    
+                    ReportCategoryCard(
+                        title: "固定収入",
+                        data: data.aggregatedFixedIncomes
                     )
                 }
+                .padding()
+            }
+        }
+    }
+    
+    
+    // MARK: - Row
+    
+    private struct ReportRow: View {
+        
+        let title: String
+        let amount: Int
+        
+        var body: some View {
+            HStack {
+                Text(title)
                 
-                ReportCategoryCard(
-                    title: "支出",
-                    data: data.aggregatedDailyExpenses
-                )
+                Spacer()
                 
-                ReportCategoryCard(
-                    title: "固定支出",
-                    data: data.aggregatedFixedExpenses
-                )
-                
-                ReportCategoryCard(
-                    title: "収入",
-                    data: data.aggregatedDailyIncomes
-                )
-                
-                ReportCategoryCard(
-                    title: "固定収入",
-                    data: data.aggregatedFixedIncomes
-                )
+                Text(amount.formatted(.number))
+            }
+        }
+    }
+    
+    
+    // MARK: - Card
+    
+    private struct ReportCard<Content: View>: View {
+        
+        @ViewBuilder
+        let content: () -> Content
+        
+        var body: some View {
+            VStack(spacing: 12) {
+                content()
             }
             .padding()
+            .frame(
+                maxWidth: .infinity,
+                alignment: .leading
+            )
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.systemBackground))
+            )
         }
     }
-}
-
-
-// MARK: - Row
-
-private struct ReportRow: View {
     
-    let title: String
-    let amount: Int
     
-    var body: some View {
-        HStack {
-            Text(title)
-            
-            Spacer()
-            
-            Text(amount.formatted(.number))
-        }
-    }
-}
-
-
-// MARK: - Card
-
-private struct ReportCard<Content: View>: View {
+    // MARK: - Category
     
-    @ViewBuilder
-    let content: () -> Content
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            content()
-        }
-        .padding()
-        .frame(
-            maxWidth: .infinity,
-            alignment: .leading
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-        )
-    }
-}
-
-
-// MARK: - Category
-
-private struct ReportCategoryCard: View {
-    
-    let title: String
-    let data: [CategoryReportDataModel]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            
-            Text(title)
-                .font(.headline)
-            
-            ForEach(data) { item in
+    private struct ReportCategoryCard: View {
+        
+        let title: String
+        let data: [CategoryReportDataModel]
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: 12) {
                 
-                HStack {
+                Text(title)
+                    .font(.headline)
+                
+                ForEach(data) { item in
                     
-                    Text(
-                        item.category?.categoryName
-                        ?? "未分類"
-                    )
-                    
-                    Spacer()
-                    
-                    Text(
-                        item.amount.formatted(.number)
-                    )
+                    HStack {
+                        
+                        Text(
+                            item.category?.categoryName
+                            ?? "未分類"
+                        )
+                        
+                        Spacer()
+                        
+                        Text(
+                            item.amount.formatted(.number)
+                        )
+                    }
                 }
             }
+            .padding()
+            .frame(
+                maxWidth: .infinity,
+                alignment: .leading
+            )
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.systemBackground))
+            )
         }
-        .padding()
-        .frame(
-            maxWidth: .infinity,
-            alignment: .leading
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-        )
     }
 }

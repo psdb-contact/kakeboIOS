@@ -20,6 +20,8 @@ final class HistoryViewModel {
     var transitionPerDate: [Date:[TransitionModel]] = [:]
     
     var selectedMonth: Date = Date()
+    var showingDetailsSheet = false
+    var showingSelectedDate: Date?
     
     init(transitionService: TransitionService, fixedTransitionService: FixedTransitionService) {
         self.transitionService = transitionService
@@ -70,8 +72,8 @@ final class HistoryViewModel {
             }
             
             let occurrenceDates = item.occurrenceDates(
-                periodStart: searchStart,
-                periodEnd: searchEnd,
+                searchStart: searchStart,
+                searchEnd: searchEnd,
                 calendar: calendar
             )
             
@@ -87,82 +89,78 @@ final class HistoryViewModel {
             let date = calendar.startOfDay(for: item.transitionDate)
             transitionPerDate[date, default: []].append(item)
         }
-            
-            let calcStart = calendar.date(
-                from: calendar.dateComponents(
-                    [.year, .month],
-                    from: selectedMonth
-                )
-            )!
-            
-            let calcEnd = calendar.date(
-                byAdding: .month,
-                value: 1,
-                to: monthStart
-            )!
-            
-            var calcDate = calcStart
-            while calcDate < calcEnd {
-                let fixedTransitions = fixedTransitionPerDate[calcDate] ?? []
-                let transitions = transitionPerDate[calcDate] ?? []
-                
-                var totalIncome = 0
-                var totalExpense = 0
-                
-                for item in fixedTransitions {
-                    switch item.transitionType {
-                    case .income:
-                        totalIncome += item.amount
-                    case .expense:
-                        totalExpense += item.amount
-                    }            }
-                
-                for item in transitions {
-                    switch item.transitionType {
-                    case .income:
-                        totalIncome += item.amount
-                    case .expense:
-                        totalExpense += item.amount
-                    }
-                }
-                
-                data.append(
-                    HistoryCalendarData(
-                        totalIncome: totalIncome,
-                        totalExpense: totalExpense,
-                        date: calcDate
-                    )
-                )
-                
-                guard let nextDate = calendar.date(byAdding: .day, value: 1, to: calcDate) else {
-                    break
-                }
-                
-                calcDate = nextDate
-            
-            let today = calendar.startOfDay(for: Date())
-            
-            transitions = transitionPerDate[today] ?? []
-            fixedTransitions = fixedTransitionPerDate[today] ?? []
-        }
         
-        func moveMonth(by value: Int) {
+        let calcStart = calendar.date(
+            from: calendar.dateComponents(
+                [.year, .month],
+                from: selectedMonth
+            )
+        )!
+        
+        let calcEnd = calendar.date(
+            byAdding: .month,
+            value: 1,
+            to: monthStart
+        )!
+        
+        var calcDate = calcStart
+        while calcDate < calcEnd {
+            let fixedTransitions = fixedTransitionPerDate[calcDate] ?? []
+            let transitions = transitionPerDate[calcDate] ?? []
             
-            let calendar = Calendar.current
+            var totalIncome = 0
+            var totalExpense = 0
             
-            selectedMonth = calendar.date(
-                byAdding: .month,
-                value: value,
-                to: selectedMonth
-            ) ?? selectedMonth
+            for item in fixedTransitions {
+                switch item.transitionType {
+                case .income:
+                    totalIncome += item.amount
+                case .expense:
+                    totalExpense += item.amount
+                }            }
+            
+            for item in transitions {
+                switch item.transitionType {
+                case .income:
+                    totalIncome += item.amount
+                case .expense:
+                    totalExpense += item.amount
+                }
+            }
+            
+            data.append(
+                HistoryCalendarData(
+                    totalIncome: totalIncome,
+                    totalExpense: totalExpense,
+                    date: calcDate
+                )
+            )
+            
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: calcDate) else {
+                break
+            }
+            
+            calcDate = nextDate
         }
     }
     
-    struct HistoryCalendarData: Identifiable {
-        let id = UUID()
+    func moveMonth(by value: Int) {
         
-        let totalIncome: Int
-        let totalExpense: Int
+        let calendar = Calendar.current
         
-        let date: Date
+        selectedMonth = calendar.date(
+            byAdding: .month,
+            value: value,
+            to: selectedMonth
+        ) ?? selectedMonth
     }
+}
+
+struct HistoryCalendarData: Identifiable {
+    let id = UUID()
+    
+    let totalIncome: Int
+    let totalExpense: Int
+    
+    let date: Date
+}

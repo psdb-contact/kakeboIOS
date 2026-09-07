@@ -12,10 +12,13 @@ struct BudgetSettingView: View {
     private var appContainer
     
     var body: some View {
-        BudgetSettingContentView(
-            budgetService:  appContainer.budgetService,
-            categoryService: appContainer.categoryService
-        )
+        ZStack {
+            Color.secondBackground.ignoresSafeArea()
+            BudgetSettingContentView(
+                budgetService:  appContainer.budgetService,
+                categoryService: appContainer.categoryService
+            )
+        }
     }
 }
 
@@ -42,112 +45,112 @@ private struct BudgetSettingContentView: View {
         @Bindable var viewModel = viewModel
         
         VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                
-                Button {
-                    viewModel.moveDate(by: -1)
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 24))
-                        .foregroundStyle(
-                            Color(
-                                red: 0.267,
-                                green: 0.267,
-                                blue: 0.267
-                            )
-                        )
-                        .frame(
-                            width: 44,
-                            height: 44
-                        )
-                }
-                
-                Text(formattedDate)
-                    .font(
-                        .system(
-                            size: 20,
-                            weight: .semibold
-                        )
-                    )
-                    .foregroundStyle(
-                        Color(
-                            red: 0.133,
-                            green: 0.133,
-                            blue: 0.133
-                        )
-                    )
-                    .frame(width: 160)
-                
-                Button {
-                    viewModel.moveDate(by: 1)
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 24))
-                        .foregroundStyle(
-                            Color(
-                                red: 0.267,
-                                green: 0.267,
-                                blue: 0.267
-                            )
-                        )
-                        .frame(
-                            width: 44,
-                            height: 44
-                        )
-                }
-            }
+            MonthNavigationBar(
+                formattedDate: formattedMonth,
+                onPrevious: {viewModel.moveMonth(by: -1)},
+                onNext: { viewModel.moveMonth(by: 1)}
+            )
             List {
-                ForEach(viewModel.budgetData) { budget in
-                    budgetCard(data: budget, onSave: { _ in })
-                        .listRowInsets(
-                            EdgeInsets(
-                                top: 4,
-                                leading: 8,
-                                bottom: 4,
-                                trailing: 8
-                            )
+                ForEach($viewModel.budgetData) { $data in
+                    budgetCard(data: $data,  onFocus: {
+                        viewModel.editingBudgetID = data.id
+                    },
+                               onBlur: {
+                        data.editingAmount = data.amount
+                    },
+                               isSaving: viewModel.isSaving)
+                    .listRowInsets(
+                        EdgeInsets(
+                            top: 4,
+                            leading: 8,
+                            bottom: 4,
+                            trailing: 8
                         )
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
+                    )
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
             }
-            .contentMargins(.horizontal, 0, for: .scrollContent)
-            .contentMargins(.vertical, 8, for: .scrollContent)
+            .listStyle(.plain)
+            .scrollIndicators(.visible)
         }
-        .task(id: viewModel.selectedDate) {
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Button {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
+                } label: {
+                    Image(systemName: "xmark")
+                }
+                
+                Spacer()
+                
+                Button() {
+                    viewModel.isSaving = true
+                    save()
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
+                    DispatchQueue.main.async {
+                        viewModel.isSaving = false
+                    }
+                } label: {
+                    Image(systemName: "checkmark")
+                }
+            }
+        }
+        .task(id: viewModel.selectedMonth) {
             do {
-                try viewModel.load(viewModel.selectedDate)
+                try viewModel.load(viewModel.selectedMonth)
             } catch {
                 print("Budgetの読み込みに失敗しました")
             }
         }
     }
     
-    private var formattedDate: String {
+    private var formattedMonth: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy / M / d"
+        formatter.dateFormat = "yyyy / M"
         
         return formatter.string(
-            from: viewModel.selectedDate
+            from: viewModel.selectedMonth
         )
+    }
+    
+    private func save() {
+        do {
+            try viewModel.save(isPeriod: false)
+        } catch {
+            print("Transition：\(error)")
+        }
     }
 }
 
 struct budgetCard: View {
-    let data: BudgetSettingData
-    let onSave: (Int) -> Void
+    @Binding var data:  BudgetSettingData
     
-    @State private var text: String
+    let onFocus: () -> Void
+    let onBlur: () -> Void
+    let isSaving: Bool
     
-    init(data: BudgetSettingData,
-         onSave: @escaping (Int) -> Void
-) {
-        self.data =  data
-        self.onSave = onSave
-        
-        _text = State(
-            initialValue: String(data.budget?.amount ?? 0 )
-        )
+    @FocusState private var isFocused: Bool
+    
+    init(data: Binding<BudgetSettingData>,
+         onFocus: @escaping () -> Void,
+         onBlur: @escaping () -> Void,
+         isSaving: Bool
+    ) {
+        self._data =  data
+        self.onFocus = onFocus
+        self.onBlur = onBlur
+        self.isSaving = isSaving
     }
     
     var body: some View {
@@ -158,29 +161,34 @@ struct budgetCard: View {
             
             Spacer()
             TextField("",
-                      text: $text
+                      text: Binding(
+                        get: {
+                            data.editingAmount.map(String.init) ?? ""
+                        },
+                        set: { newValue in
+                            data.editingAmount = Int(
+                                newValue
+                                    .filter { $0.isNumber }
+                                    .prefix(6)
+                            )
+                        }
+                      )
             )
             .keyboardType(.numberPad)
             .multilineTextAlignment(.trailing)
-            .font(.system(size: 16))
-            .foregroundStyle(
-                Color(
-                    red: 0.267,
-                    green: 0.267,
-                    blue: 0.267
-                )
-            )
-            .padding(.leading, 4)
+            .font(.system(size: 18))
+            .padding(.horizontal, 12)
             .frame(height: 44)
-            .onChange(of: text) { _, newValue in
-                text = String(
-                    newValue
-                        .filter { $0.isNumber }
-                        .prefix(6)
-                )
-            }
-            .onSubmit {
-                save()
+            .focused($isFocused)
+            .onChange(of: isFocused) { _, focused in
+                if focused {
+                    if data.editingAmount == 0 {
+                        data.editingAmount = nil
+                    }
+                    onFocus()
+                } else if !isSaving {
+                    data.editingAmount = data.amount
+                }
             }
             
         }
@@ -200,10 +208,50 @@ struct budgetCard: View {
             y: 4
         )
     }
+}
+
+import SwiftData
+
+#Preview {
+    PreviewContent()
+}
+
+@MainActor
+private struct PreviewContent: View {
     
-    private func save() {
-        let value = Int(text) ?? 0
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+    
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
         
-        onSave(value)
+        let context = container.mainContext
+        
+        PreviewSeeder.seed(
+            context: context
+        )
+        
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+    
+    var body: some View {
+        NavigationStack{
+            BudgetSettingView()
+        }
+        .modelContainer(container)
+        .environment(appContainer)
     }
 }

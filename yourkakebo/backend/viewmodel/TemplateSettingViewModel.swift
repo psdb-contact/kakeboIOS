@@ -14,9 +14,18 @@ final class TemplateSettingViewModel {
     private let templateService: TemplateService
     
     var templateToDelete: TemplateModel?
-        
+    var showSelectCategory = false
+    
+    var templates:[TemplateModel] = []
+    var usedCategories:[CategoryModel] = []
+    
     init (templateService: TemplateService) {
         self.templateService = templateService
+    }
+    
+    func load() throws {
+        templates = try templateService.getAllTemplates()
+        usedCategories = templates.map(\.category)
     }
     
     func selectDeleteForDeletion(
@@ -25,7 +34,7 @@ final class TemplateSettingViewModel {
         templateToDelete = template
     }
     
-    func moveTemplate(from source: IndexSet, to destination: Int, templates: [TemplateModel]) throws {
+    func moveTemplate(from source: IndexSet, to destination: Int) throws {
         var reordered = templates
         
         reordered.move( fromOffsets: source,
@@ -49,6 +58,6 @@ final class TemplateSettingViewModel {
     }
     
     func cancelDelete() {
-    templateToDelete = nil
+        templateToDelete = nil
     }
 }

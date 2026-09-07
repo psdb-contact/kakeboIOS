@@ -10,10 +10,10 @@ import Observation
 import SwiftUI
 
 @Observable
-final class SelectCategoryViewModel {
+final class SelectTransitionCategoryViewModel {
     private let categoryService: CategoryService
     private let transitionService: TransitionService
-    var categoriesData: [SelectCategoryData] = []
+    var categoriesData: [SelectTransitionCategoryData] = []
     
     init(categoryService: CategoryService, transitionService: TransitionService) {
         self.categoryService = categoryService
@@ -24,7 +24,7 @@ final class SelectCategoryViewModel {
         let categories = try categoryService.getAllCategories()
         
         categoriesData = categories.map { category in
-            SelectCategoryData(
+            SelectTransitionCategoryData(
                 category: category,
                 isUsed: usedCategories.contains {
                     $0.categoryId == category.categoryId
@@ -38,7 +38,7 @@ final class SelectCategoryViewModel {
     }
 }
 
-struct SelectCategoryData: Identifiable {
+struct SelectTransitionCategoryData: Identifiable {
     let id = UUID()
     
     let category: CategoryModel

@@ -40,21 +40,6 @@ final class FixedTransitionRepository {
         try modelContext.save()
     }
 
-    func deleteFixedTransition(_ id: UUID) throws {
-        let descriptor = FetchDescriptor<FixedTransitionModel>(
-            predicate: #Predicate { transition in
-                transition.fixedTransitionId == id
-            }
-        )
-
-        guard let fixedTransition = try modelContext.fetch(descriptor).first else {
-            return
-        }
-
-        modelContext.delete(fixedTransition)
-        try modelContext.save()
-    }
-
     func deleteAllFixedTransitions() throws {
         let fixedTransitions = try modelContext.fetch(
             FetchDescriptor<FixedTransitionModel>()

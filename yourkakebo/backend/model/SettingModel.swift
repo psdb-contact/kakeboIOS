@@ -94,3 +94,27 @@ final class SettingModel {
         }
     }
 }
+
+extension SettingModel {
+
+    static var preview: SettingModel {
+        let defaults = UserDefaults(
+            suiteName: "yourkakebo.preview"
+        )!
+
+        defaults.removePersistentDomain(
+            forName: "yourkakebo.preview"
+        )
+
+        let settings = SettingModel(
+            defaults: defaults
+        )
+
+        settings.isFirstLaunch = false
+        settings.confirmWhenDelete = true
+        settings.appLaunchCount = 10
+        settings.themeType = .system
+
+        return settings
+    }
+}

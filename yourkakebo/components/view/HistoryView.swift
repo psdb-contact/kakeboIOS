@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HistoryView: View {
     @Environment(AppContainer.self)
@@ -110,7 +111,8 @@ private struct HistoryContentView: View {
                                 date: date,
                                 income: data?.totalIncome ?? 0,
                                 expense: data?.totalExpense ?? 0,
-                                onDateSelected: {date in viewModel.setSelectedDate(date: date)
+                                onDateSelected: {date in viewModel.showingSelectedDate = date
+                                    viewModel.showingDetailsSheet = true
                                 }
                             )
                         } else {
@@ -122,17 +124,6 @@ private struct HistoryContentView: View {
                         }
                     }
             }
-            ScrollView{
-                LazyVStack(spacing: 8) {
-                    ForEach(viewModel.transitions) {
-                        item in
-                        HistoryTransitionCard(transition: item)
-                    }
-                    ForEach(viewModel.fixedTransitions) { item in
-                        HistoryFixedTransitionCard(fixedTransition: item)
-                    }
-                }
-            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar{
@@ -142,6 +133,19 @@ private struct HistoryContentView: View {
                 } label: {
                     Image(systemName: "gearshape")
                         .font(.system(size: 22))
+                }
+            }
+        }
+        .sheet(isPresented: $viewModel.showingDetailsSheet) {
+            if(viewModel.showingSelectedDate != nil) {
+                NavigationStack {
+                    HistoryDetailsSheet(
+                        transitionService: transitionService,
+                        fixedTransitionService: fixedTransitionService,
+                        selectedDate: viewModel.showingSelectedDate!
+                    )
+                    .presentationDetents([.fraction(0.8)])
+                    .presentationDragIndicator(.hidden)
                 }
             }
         }
@@ -161,7 +165,7 @@ private struct HistoryContentView: View {
         formatter.dateFormat = "yyyy / M"
         
         return formatter.string(
-            from: viewModel.selectedDate
+            from: viewModel.selectedMonth
         )
     }
     
@@ -284,5 +288,47 @@ private struct HistoryContentView: View {
                 Text("\(fixedTransition.amount)")
             }
         }
+    }
+}
+
+#Preview {
+    PreviewContent()
+}
+
+@MainActor
+private struct PreviewContent: View {
+
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+                TransitionModel.self,
+                BudgetModel.self,
+                TemplateModel.self,
+                FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
+
+        let context = container.mainContext
+
+        PreviewSeeder.seed(
+            context: context
+        )
+
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+
+    var body: some View {
+        HistoryView()
+        .modelContainer(container)
+        .environment(appContainer)
     }
 }

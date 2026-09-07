@@ -34,10 +34,14 @@ final class TransitionService {
     }
 
     func editTransition(
-        _ transition: TransitionModel
+        id: UUID,
+        amount: Int
     ) throws {
         try modelContext.transaction {
-            try transitionRepository.updateTransition(transition)
+            try transitionRepository.updateTransition(
+                id: id,
+                amount: amount
+            )
         }
     }
 

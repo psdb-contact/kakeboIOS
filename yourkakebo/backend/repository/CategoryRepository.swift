@@ -53,21 +53,6 @@ final class CategoryRepository {
         try modelContext.save()
     }
 
-    func deleteCategory(id: String) throws {
-        let descriptor = FetchDescriptor<CategoryModel>(
-            predicate: #Predicate { category in
-                category.categoryId == id
-            }
-        )
-
-        guard let category = try modelContext.fetch(descriptor).first else {
-            return
-        }
-
-        modelContext.delete(category)
-        try modelContext.save()
-    }
-
     func replaceAllCategories(_ categories: [CategoryModel]) throws {
         try deleteAllCategories()
 

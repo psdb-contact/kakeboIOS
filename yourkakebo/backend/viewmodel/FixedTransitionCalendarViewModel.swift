@@ -48,8 +48,8 @@ final class FixedTransitionCalendarViewModel {
                 }
 
                 let occurrenceDates = item.occurrenceDates(
-                    periodStart: monthStart,
-                    periodEnd: monthEnd,
+                    searchStart: monthStart,
+                    searchEnd: monthEnd,
                     calendar: calendar
                 )
 

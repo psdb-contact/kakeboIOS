@@ -11,4 +11,8 @@ extension Color {
     static let accentColor = Color("AccentColor")
     static let appIconColor = Color("AppIcon")
     static let containerColor = Color("Container")
+    static let inputContainerColor = Color("InputContainer")
+    static let secondBackgroundColor = Color("SecondBackgroundColor")
+    static let iconColor = Color("IconColor")
+    static let modalSheetBackgroundColor = Color("ModalSheetBackground")
 }

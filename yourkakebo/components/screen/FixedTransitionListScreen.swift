@@ -37,7 +37,6 @@ struct FixedTransitionListContentScreen: View {
             VStack(spacing: 0) {
                 List {
                     ForEach(viewModel.fixedTransitionData) {item in
-                        
                         fixedTransitionCard(item.fixedTransition)
                             .listRowInsets(
                                 EdgeInsets(
@@ -51,8 +50,8 @@ struct FixedTransitionListContentScreen: View {
                             .listRowBackground(Color.clear)
                     }
                 }
-                .contentMargins(.horizontal, 0, for: .scrollContent)
-                .contentMargins(.vertical, 8, for: .scrollContent)
+                .listStyle(.plain)
+                .scrollIndicators(.visible)
             }
         }
         .task {
@@ -62,14 +61,18 @@ struct FixedTransitionListContentScreen: View {
                 print("Fixed Transitionの読み込みに失敗しました: \(error)")
             }
         }
-        .navigationDestination(
-            item: $viewModel.fixedTransitionToEdit
-        ) { fixedTransition in
-            EditFixedTransitionView(
-                fixedTransition: fixedTransition,
-                fixedTransitionService: fixedTransitionService,
-                categoryService: categoryService
-            )
+        .sheet(item: $viewModel.fixedTransitionToEdit) { fixedTransition in
+            NavigationStack {
+                EditFixedTransitionSheet(
+                    fixedTransition: fixedTransition,
+                    fixedTransitionService:  fixedTransitionService,
+                    categoryService: categoryService,
+                )
+                .presentationBackground(Color.modalSheetBackground)
+                .presentationDragIndicator(.hidden)
+                
+            }
+            
         }
         .alert(
             "固定収支削除",
@@ -113,40 +116,28 @@ struct FixedTransitionListContentScreen: View {
                 .lineLimit(1)
             
             Spacer()
-            HStack(spacing: 16) {
+            HStack(spacing: 0) {
                 Button {
-                    print("Edit")
                     viewModel.fixedTransitionToEdit = fixedTransition
                 } label: {
                     Image(systemName: "pencil")
-                        .font(.system(size: 22))
-                        .foregroundStyle(
-                            Color(
-                                red: 0.27,
-                                green: 0.27,
-                                blue: 0.27
-                            )
-                        )
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.iconColor)
                         .frame(width: 44, height: 44)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
+
                 
                 Button {
-                    print("DELETE")
                     viewModel.selectFixedTransitionForDeletion(fixedTransition)
                 } label: {
                     Image(systemName: "trash")
-                        .font(.system(size: 22))
-                        .foregroundStyle(
-                            Color(
-                                red: 0.27,
-                                green: 0.27,
-                                blue: 0.27
-                            )
-                        )
+                        .foregroundStyle(Color.iconColor)
+                        .font(.system(size: 20))
                         .frame(width: 44, height: 44)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
+
             }
         }
         .padding(.top, 16)
@@ -157,7 +148,7 @@ struct FixedTransitionListContentScreen: View {
         .clipShape(
             RoundedRectangle(cornerRadius: 8)
         )
-        .background(Color.white)
+        .background(RoundedRectangle(cornerRadius: 8).fill(Color.containerColor))
         .shadow(
             color: Color.black.opacity(0.05),
             radius: 10,
@@ -166,3 +157,51 @@ struct FixedTransitionListContentScreen: View {
         )
     }
 }
+
+
+import SwiftData
+
+#Preview {
+    PreviewContent()
+}
+
+@MainActor
+private struct PreviewContent: View {
+    
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+    
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
+        
+        let context = container.mainContext
+        
+        PreviewSeeder.seed(
+            context: context
+        )
+        
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+    
+    var body: some View {
+        NavigationStack{
+            FixedTransitionListScreen()
+        }
+        .modelContainer(container)
+        .environment(appContainer)
+    }
+}
+

@@ -15,3 +15,16 @@ struct GlassEffectModifier: ViewModifier {
         }
     }
 }
+
+struct ToggleGlsssEffectModifier: ViewModifier {
+    let isSelected: Bool
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(
+                isSelected ? .regular : .identity
+            )
+        } else {
+            content
+        }
+    }
+}

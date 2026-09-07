@@ -14,10 +14,11 @@ final class BudgetSettingViewModel {
     private let budgetService: BudgetService
     private let categoryService: CategoryService
     
-    var budgetToEdit: BudgetModel? = nil
-    var selectedDate: Date = Date()
-    var budgetData: Array<BudgetSettingData> = []
-    var showEditBudget = false
+    var selectedMonth: Date = Calendar.current.startOfDay(for: Date())
+    var budgetData: [BudgetSettingData] = []
+    
+    var editingBudgetID: UUID?
+    var isSaving = false
     
     init (budgetService: BudgetService, categoryService: CategoryService) {
         self.budgetService = budgetService
@@ -28,7 +29,7 @@ final class BudgetSettingViewModel {
         
         let categories = try categoryService.getAllCategories()
         let budgets = try budgetService.getAllBudgetsByMonth(selectedMonth)
-        
+                
         budgetData = categories.map { category in
             let budget = resolveBudget(
                 for: category,
@@ -37,22 +38,55 @@ final class BudgetSettingViewModel {
             )
             
             return BudgetSettingData(
+                budget: budget,
                 category: category,
-                budget: budget
+                amount: budget != nil ?  budget!.amount : 0,
+                editingAmount: budget != nil ? budget!.amount : 0
             )
         }
     }
     
-    func moveDate(by value: Int) {
-        selectedDate = Calendar.current.date(
-            byAdding: .day,
+    func moveMonth(by value: Int) {
+        selectedMonth = Calendar.current.date(
+            byAdding: .month,
             value: value,
-            to: selectedDate
-        ) ?? selectedDate
+            to: selectedMonth
+        ) ?? selectedMonth
     }
     
-    func selectBudgetToEdit(_ budget: BudgetModel) {
-        budgetToEdit = budget
+    func save(isPeriod: Bool) throws {
+        guard let editingBudgetID else {
+                 return
+             }
+        
+        guard let index = budgetData.firstIndex(
+            where: {$0.id == editingBudgetID }
+        ) else {
+                return
+        }
+        
+        let data = budgetData[index]
+        
+        let amount = data.editingAmount ?? data.amount
+        
+        if let budget = data.budget {
+            budget.amount = amount
+            budget.endMonth =  isPeriod ? BudgetModel.noExpirationDate : budget.endMonth
+
+            try? budgetService.updateBudget(budget)
+        } else {
+                let newBudget = BudgetModel(
+                    category: data.category,
+                    amount: amount,
+                    startMonth: selectedMonth,
+                    endMonth: isPeriod ? BudgetModel.noExpirationDate : selectedMonth,
+                )
+            
+            try? budgetService.updateBudget(newBudget)
+        }
+        
+        budgetData[index].editingAmount = amount
+        self.editingBudgetID = nil
     }
     
     private func resolveBudget(
@@ -108,6 +142,8 @@ final class BudgetSettingViewModel {
 struct BudgetSettingData: Identifiable {
     let id = UUID()
     
+    var budget: BudgetModel?
     let category: CategoryModel
-    let budget: BudgetModel?
+    let amount: Int
+    var editingAmount: Int?
 }

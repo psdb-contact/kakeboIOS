@@ -10,11 +10,13 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
+        
         VStack {
             
             TabView {
                 NavigationStack {
                     EditTransitionView()
+                        .background(Color.secondBackground)
                 }
                 .tabItem {
                     Label("入力", systemImage: "globe")
