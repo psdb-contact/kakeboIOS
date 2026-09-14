@@ -29,9 +29,15 @@ struct ContentView: View {
                 }
                 
                 NavigationStack {
-                    ReportView()
+                    BalanceReportView()
                 }.tabItem {
-                    Label( "レポート", systemImage: "calendar")
+                    Label( "収支", systemImage: "calendar")
+                }
+                
+                NavigationStack {
+                    BudgetReportView()
+                }.tabItem {
+                    Label( "予算", systemImage: "calendar")
                 }
             }
         }

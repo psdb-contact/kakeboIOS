@@ -45,6 +45,8 @@ final class TemplateSettingViewModel {
         }
         
         try templateService.save()
+        
+        try? load()
     }
     
     func deleteTemplate() throws {
@@ -53,6 +55,8 @@ final class TemplateSettingViewModel {
         }
         
         try templateService.deleteTemplate(template)
+        
+        try? load()
         
         templateToDelete = nil
     }

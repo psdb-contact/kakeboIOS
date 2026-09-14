@@ -23,6 +23,10 @@ final class CategoryService {
     func getAllCategories() throws -> [CategoryModel] {
         return try categoryRepository.getAllCategories()
     }
+    
+    func getAllExpenseCategories() throws -> [CategoryModel] {
+        return try categoryRepository.getAllExpenseCategories()
+    }
 
     func addCategory(_ category: CategoryModel) throws {
         try categoryRepository.addCategory(category)

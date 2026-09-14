@@ -39,7 +39,7 @@ private struct EditTransitionContentView: View {
             // MARK: - Header
             
             ZStack {
-                MonthNavigationBar(
+                PeriodNavigationBar(
                     formattedDate: formattedDate,
                     onPrevious: {
                         viewModel.moveDate(by: -1)
@@ -113,6 +113,7 @@ private struct EditTransitionContentView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
                     SettingView()
+                        .toolbar(.hidden, for: .tabBar)
                 } label: {
                     Image(systemName: "gearshape")
                         .font(.system(size: 22))
@@ -244,12 +245,17 @@ struct TransitionInputForm: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                Text(data.category.categoryName)
-                    .font(.system(size: 18))
-                    .frame(
-                        width: 92,
-                        alignment: .leading
-                    )
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(Color(hex: data.category.colorHex))
+                        .frame(width: 16, height: 16)
+                    Text(data.category.categoryName)
+                        .font(.system(size: 18))
+                        .frame(
+                            width: 92,
+                            alignment: .leading
+                        )
+                }
                 
                 TextField(
                     "",
@@ -326,8 +332,8 @@ struct TransitionInputForm: View {
             }
         }
         
-        .padding(.top, 4)
-        .padding(.bottom, 4)
+        .padding(.top, 2)
+        .padding(.bottom, 2)
         .padding(.leading, 8)
         .padding(.trailing, 0)
         .frame(maxWidth: .infinity)

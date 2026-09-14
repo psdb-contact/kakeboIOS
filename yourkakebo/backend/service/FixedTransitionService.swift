@@ -16,6 +16,10 @@ final class FixedTransitionService {
     func getAllFixedTransitions() throws -> [FixedTransitionModel] {
         try fixedTransitionRepository.getAllFixedTransitions()
     }
+    
+    func getAllFixedExpenses() throws -> [FixedTransitionModel] {
+        try fixedTransitionRepository.getAllFixedExpenses()
+    }
 
     func addFixedTransition(_ fixedTransition: FixedTransitionModel) throws {
         try modelContext.transaction {

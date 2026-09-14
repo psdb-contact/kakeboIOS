@@ -88,7 +88,8 @@ private struct SettingContentView: View {
                         .fill(Color.container)
                 )
             }
-        }.padding(.horizontal, 16)
+        }
+        .padding(.horizontal, 16)
     }
 }
 

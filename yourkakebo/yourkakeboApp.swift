@@ -19,9 +19,9 @@ struct YourKakeboApp: App {
             let container = try ModelContainer(
                 for:
                     CategoryModel.self,
-                TransitionModel.self,
-                BudgetModel.self,
-                TemplateModel.self
+                    TransitionModel.self,
+                    BudgetModel.self,
+                    TemplateModel.self
             )
             
             self.modelContainer = container

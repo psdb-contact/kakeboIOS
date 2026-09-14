@@ -25,6 +25,20 @@ final class FixedTransitionRepository {
 
         return try modelContext.fetch(descriptor)
     }
+    
+    func getAllFixedExpenses() throws -> [FixedTransitionModel] {        
+        let descriptor = FetchDescriptor<FixedTransitionModel>(
+            sortBy: [
+                SortDescriptor(\.startDate)
+            ]
+        )
+
+        let fixedTransitions =  try modelContext.fetch(descriptor)
+        
+        return fixedTransitions.filter {
+            $0.transitionType == .expense
+        }
+    }
 
     func insertFixedTransition(_ fixedTransition: FixedTransitionModel) throws {
         modelContext.insert(fixedTransition)

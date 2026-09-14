@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MonthNavigationBar: View {
+struct PeriodNavigationBar: View {
     let formattedDate: String
     let onPrevious: () -> Void
     let onNext: () -> Void

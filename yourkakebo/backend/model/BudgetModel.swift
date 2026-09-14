@@ -14,11 +14,11 @@ final class BudgetModel {
     var amount: Int
     var startMonth: Date
     var endMonth: Date
-    var category: CategoryModel
+    var category: CategoryModel?
     
     init(
         budgetId: UUID = UUID(),
-        category: CategoryModel,
+        category: CategoryModel?,
         amount: Int,
         startMonth: Date,
         endMonth: Date

@@ -45,7 +45,7 @@ private struct BudgetSettingContentView: View {
         @Bindable var viewModel = viewModel
         
         VStack(spacing: 0) {
-            MonthNavigationBar(
+            PeriodNavigationBar(
                 formattedDate: formattedMonth,
                 onPrevious: {viewModel.moveMonth(by: -1)},
                 onNext: { viewModel.moveMonth(by: 1)}

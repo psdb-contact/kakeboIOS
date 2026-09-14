@@ -24,6 +24,8 @@ struct EditCategorySheet: View {
 
     var body: some View {
         @Bindable var viewModel = viewModel
+        
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 6)
 
         VStack(spacing: 0) {
 
@@ -64,22 +66,34 @@ struct EditCategorySheet: View {
 
                 }
                 .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.container)
-                                )
+                    RoundedRectangle(cornerRadius: 12).fill(Color.container)
+                )
 
-                // 色
-                /*
-                ForEach(categoryColors, id: \.self) { colorHex in
-                    Button {
-                        viewModel.colorHex = colorHex
-                    } label: {
-                        Circle()
-                            .fill(Color(hex: colorHex))
-                            .frame(width: 44, height: 44)
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(CategoryColors.all, id: \.self) { hex in
+                        Button {
+                            viewModel.colorHex = hex
+                        } label: {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(hex: hex))
+                                .aspectRatio(1, contentMode: .fit)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(
+                                            isSelectedColor(hex)  ? Color.containerColor : Color.clear,
+                                            lineWidth: 3
+                                        )
+                                }
+                                .overlay {
+                                    if isSelectedColor(hex) {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.white)
+                                    }
+                                }
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
-                 */
 
                 Spacer()
             }
@@ -98,8 +112,21 @@ struct EditCategorySheet: View {
                     "カテゴリ追加"
                 )
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    try? viewModel.save()
+                    
+                    dismiss()
+                } label: {
+                    Image(systemName: "checkmark")
+                }
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private func isSelectedColor(_ hex: Int) -> Bool {
+        viewModel.colorHex == hex
     }
 
     private func save() {

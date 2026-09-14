@@ -12,67 +12,79 @@ import Foundation
 @MainActor
 final class CategoryRepository {
     private let modelContext: ModelContext
-
+    
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
-
+    
     func getAllCategories() throws -> [CategoryModel] {
         let descriptor = FetchDescriptor<CategoryModel>(
             sortBy: [
                 SortDescriptor(\.sortOrder)
             ]
         )
-
+        
         return try modelContext.fetch(descriptor)
     }
-
+    
+    func getAllExpenseCategories() throws -> [CategoryModel] {
+        let descriptor = FetchDescriptor<CategoryModel>(
+            sortBy: [SortDescriptor(\.sortOrder)],
+        )
+        
+        let categories = try modelContext.fetch(descriptor)
+        
+        return categories.filter {
+            $0.transitionType == .expense
+        }
+    }
+    
     func addCategory(_ category: CategoryModel) throws {
         let minSortOrder = try getMinSortOrder()
-
+        
         category.sortOrder = minSortOrder - 1
-
+        
         modelContext.insert(category)
         try modelContext.save()
     }
-
+    
     func updateCategory(_ category: CategoryModel) throws {
         try modelContext.save()
     }
-
+    
     func reorderCategories(_ categories: [CategoryModel]) throws {
         for (index, category) in categories.enumerated() {
             category.sortOrder = index
         }
-
+        
         try modelContext.save()
     }
-
+    
     func deleteCategory(_ category: CategoryModel) throws {
         modelContext.delete(category)
         try modelContext.save()
     }
-
+    
     func replaceAllCategories(_ categories: [CategoryModel]) throws {
         try deleteAllCategories()
-
+        
         for category in categories {
             modelContext.insert(category)
         }
-
+        
         try modelContext.save()
     }
-
+    
     func deleteAllCategories() throws {
         let categories = try modelContext.fetch(FetchDescriptor<CategoryModel>())
-
+        
         for category in categories {
             modelContext.delete(category)
         }
-
+        
         try modelContext.save()
     }
-
+    
     func getMinSortOrder() throws -> Int {
         let categories = try modelContext.fetch(
             FetchDescriptor<CategoryModel>(
@@ -81,7 +93,7 @@ final class CategoryRepository {
                 ]
             )
         )
-
+        
         return categories.map(\.sortOrder).min() ?? 0
     }
     

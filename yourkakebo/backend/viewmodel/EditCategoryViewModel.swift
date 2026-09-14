@@ -36,6 +36,10 @@ final class EditCategoryViewModel {
     
     func save() throws {
         if let category {
+            category.categoryName = categoryName
+            category.transitionType = transitionType
+            category.colorHex = colorHex
+            
             try categoryService.updateCategory(category)
         } else {
             try categoryService.addCategory(

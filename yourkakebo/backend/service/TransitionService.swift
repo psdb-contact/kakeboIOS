@@ -17,6 +17,10 @@ final class TransitionService {
     func getAllTransitions() throws -> [TransitionModel] {
         try transitionRepository.getAllTransitions()
     }
+    
+    func getAllExpenses() throws -> [TransitionModel] {
+        try transitionRepository.getAllExpenses()
+    }
 
     func getAllTransitionsByDate(
         _ date: Date

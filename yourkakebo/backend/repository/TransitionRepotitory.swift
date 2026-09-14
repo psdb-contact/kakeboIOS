@@ -16,6 +16,18 @@ final class TransitionRepository {
         return try modelContext.fetch(descriptor)
     }
     
+    func getAllExpenses() throws -> [TransitionModel] {
+        let descriptor = FetchDescriptor<TransitionModel>(
+            sortBy: [SortDescriptor(\.transitionDate)],
+        )
+        
+        let transitions = try modelContext.fetch(descriptor)
+        
+        return transitions.filter {
+            $0.transitionType == .expense
+        }
+    }
+    
     func getAllTransitionsByDate(_ date: Date) throws -> [TransitionModel] {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)

@@ -100,13 +100,13 @@ private struct CategorySettingContentView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $viewModel.categoryToEdit) { category in
-        NavigationStack {
-            EditCategorySheet(
-                categoryModel: category,
-                categoryService: categoryService
-            )
-        }
-        .presentationBackground(Color.modalSheetBackground)
+            NavigationStack {
+                EditCategorySheet(
+                    categoryModel: category,
+                    categoryService: categoryService
+                )
+            }
+            .presentationBackground(Color.modalSheetBackground)
             .presentationDragIndicator(.hidden)
         }
         .sheet(isPresented: $viewModel.showingAddCategory) {
@@ -160,9 +160,14 @@ private struct CategorySettingContentView: View {
         _ category: CategoryModel
     ) -> some View {
         HStack {
-            Text(category.categoryName)
-                .font(.system(size: 17))
-                .lineLimit(1)
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(Color(hex: category.colorHex))
+                    .frame(width: 16, height: 16)
+                Text(category.categoryName)
+                    .font(.system(size: 17))
+                    .lineLimit(1)
+            }
             
             Spacer()
             

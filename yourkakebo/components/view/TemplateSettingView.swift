@@ -39,8 +39,8 @@ private struct TemplateSettingContentView: View {
         self.templateService = templateService
         
         _viewModel = State(initialValue: TemplateSettingViewModel(
-                templateService: templateService
-            )
+            templateService: templateService
+        )
         )
     }
     
@@ -86,7 +86,7 @@ private struct TemplateSettingContentView: View {
                 }
             }
         }
-        .sheet(isPresented: $viewModel.showSelectCategory) {
+        .sheet(isPresented: $viewModel.showSelectCategory, onDismiss: {try? viewModel.load()}) {
             NavigationStack {
                 SelectTemplateCategorySheet(usedCategories: viewModel.usedCategories)
                     .presentationBackground(Color.modalSheetBackground)

@@ -5,6 +5,8 @@
 //  Created by hiroki hosokawa on 2026/08/27.
 //
 
+import Foundation
+
 enum ReportPeriodType: String, Codable, CaseIterable {
     case yearly
     case monthly
@@ -17,4 +19,9 @@ enum ReportPeriodType: String, Codable, CaseIterable {
             return "月別"
         }
     }
+}
+
+struct ReportPeriod: Equatable {
+    let type: ReportPeriodType
+    let date: Date
 }

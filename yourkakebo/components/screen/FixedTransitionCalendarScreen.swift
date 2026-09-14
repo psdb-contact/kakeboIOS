@@ -59,7 +59,7 @@ private struct FixedTransitionCalendarContentScreen: View {
             // MARK: - Month Navigation
             
      
-                MonthNavigationBar(
+                PeriodNavigationBar(
                     formattedDate: "\(year) / \(month)", onPrevious:  {viewModel.moveMonth(by: -1)}, onNext: {viewModel.moveMonth(by: 1)}
                 )
              

@@ -49,7 +49,7 @@ private struct HistoryContentView: View {
             
             ZStack {
                 
-                MonthNavigationBar(
+                PeriodNavigationBar(
                     formattedDate: formattedDate,
                     onPrevious: {
                         viewModel.moveMonth(by: -1)
@@ -130,6 +130,7 @@ private struct HistoryContentView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
                     SettingView()
+                        .toolbar(.hidden, for: .tabBar)
                 } label: {
                     Image(systemName: "gearshape")
                         .font(.system(size: 22))

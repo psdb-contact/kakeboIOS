@@ -9,7 +9,7 @@ import SwiftData
 import Foundation
 
 @Model
-final class CategoryModel {
+final class CategoryModel: Hashable  {
     @Attribute(.unique) var categoryId: String
     var categoryName: String
     var transitionType: TransitionType

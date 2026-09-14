@@ -27,7 +27,10 @@ final class BudgetSettingViewModel {
     
     func load(_ selectedMonth: Date) throws {
         
-        let categories = try categoryService.getAllCategories()
+        print("③ descriptor 作成完了")
+
+        
+        let categories = try categoryService.getAllExpenseCategories()
         let budgets = try budgetService.getAllBudgetsByMonth(selectedMonth)
                 
         budgetData = categories.map { category in
@@ -96,7 +99,7 @@ final class BudgetSettingViewModel {
     ) -> BudgetModel? {
         
         let list = budgets.filter {
-            $0.category.categoryId == category.categoryId
+            $0.category?.categoryId == category.categoryId
         }
         
         var selected: BudgetModel?
