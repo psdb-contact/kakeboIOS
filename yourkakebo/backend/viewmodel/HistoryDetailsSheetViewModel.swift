@@ -15,6 +15,9 @@ final class HistoryDetailsSheetViewModel {
         
     var selectedDate: Date = Date()
     
+    var totalIncome: Int = 0
+    var totalExpense: Int = 0
+    
     var incomes: [TransitionModel] = []
     var expenses: [TransitionModel] = []
     
@@ -76,6 +79,9 @@ final class HistoryDetailsSheetViewModel {
                 }
              }
         }
+        
+        totalIncome = incomes.map(\.amount).reduce(0, +) + fixedIncomes.map(\.amount).reduce(0, +)
+        totalExpense = expenses.map(\.amount).reduce(0, +) + fixedExpenses.map(\.amount).reduce(0, +)
     }
     
     func moveDate(by value: Int) {

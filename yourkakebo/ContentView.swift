@@ -19,7 +19,7 @@ struct ContentView: View {
                         .background(Color.secondBackground)
                 }
                 .tabItem {
-                    Label("入力", systemImage: "globe")
+                    Label("入力", systemImage: "pencil")
                 }
                 NavigationStack {
                     HistoryView()
@@ -31,13 +31,13 @@ struct ContentView: View {
                 NavigationStack {
                     BalanceReportView()
                 }.tabItem {
-                    Label( "収支", systemImage: "calendar")
+                    Label( "レポート", systemImage: "chart.pie")
                 }
                 
                 NavigationStack {
                     BudgetReportView()
                 }.tabItem {
-                    Label( "予算", systemImage: "calendar")
+                    Label( "予算", systemImage: "wallet.bifold")
                 }
             }
         }

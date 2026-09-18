@@ -44,13 +44,10 @@ private struct HistoryContentView: View {
         
         let calendar = Calendar.current
         
-        VStack(spacing: 8) {
-            
-            
+        VStack(spacing: 0) {
             ZStack {
-                
                 PeriodNavigationBar(
-                    formattedDate: formattedDate,
+                    formattedDate: formattedMonth,
                     onPrevious: {
                         viewModel.moveMonth(by: -1)
                     },
@@ -58,17 +55,13 @@ private struct HistoryContentView: View {
                         viewModel.moveMonth(by: 1)
                     }
                 )
-                
+                .frame(height: 44)
             }
-            
-            
             HStack(spacing: 0) {
-                
                 ForEach(
                     ["日", "月", "火", "水", "木", "金", "土"],
                     id: \.self
                 ) { weekday in
-                    
                     Text(weekday)
                         .font(
                             .system(
@@ -81,17 +74,20 @@ private struct HistoryContentView: View {
                         )
                 }
             }
-            .padding(.bottom, 4)
+            .padding(.top, 16)
+            
+            Divider()
+            .padding(.top, 4)
             
             LazyVGrid(
                 columns: Array(
                     repeating: GridItem(
                         .flexible(),
-                        spacing: 1
+                        spacing: 0
                     ),
                     count: 7
                 ),
-                spacing: 1
+                spacing: 0
             ) {
                 ForEach(
                     Array(
@@ -116,11 +112,10 @@ private struct HistoryContentView: View {
                                 }
                             )
                         } else {
-                            Color.clear
-                                .aspectRatio(
-                                    1,
-                                    contentMode: .fit
-                                )
+                            VStack{
+                                Spacer()
+                                Divider()
+                            }
                         }
                     }
             }
@@ -133,8 +128,9 @@ private struct HistoryContentView: View {
                         .toolbar(.hidden, for: .tabBar)
                 } label: {
                     Image(systemName: "gearshape")
-                        .font(.system(size: 22))
+                        .font(.system(size: 19))
                 }
+                .buttonStyle(.plain)
             }
         }
         .sheet(isPresented: $viewModel.showingDetailsSheet) {
@@ -145,7 +141,6 @@ private struct HistoryContentView: View {
                         fixedTransitionService: fixedTransitionService,
                         selectedDate: viewModel.showingSelectedDate!
                     )
-                    .presentationDetents([.fraction(0.8)])
                     .presentationDragIndicator(.hidden)
                 }
             }
@@ -161,7 +156,7 @@ private struct HistoryContentView: View {
     }
     
     
-    private var formattedDate: String {
+    private var formattedMonth: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy / M"
         
@@ -234,9 +229,9 @@ private struct HistoryContentView: View {
             Button {
                 onDateSelected(date)
             } label: {
-                VStack(spacing: 6) {
+                VStack(spacing: 8) {
                     Text("\(Calendar.current.component(.day, from: date))")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.black)
                     
                     if(income > 0) {
@@ -249,7 +244,10 @@ private struct HistoryContentView: View {
                             .font(.system(size: 11))
                             .foregroundStyle(.red)
                     }
+                    Spacer()
+                    Divider()
                 }
+                .padding(.top, 6)
                 .frame(
                     maxWidth: .infinity, minHeight: 80, alignment: .top
                 )

@@ -111,13 +111,22 @@ private struct CategorySettingContentView: View {
         }
         .sheet(isPresented: $viewModel.showingAddCategory) {
             NavigationStack {
-            EditCategorySheet(
-                categoryModel: nil,
-                categoryService: categoryService
-            )
+                EditCategorySheet(
+                    categoryModel: nil,
+                    categoryService: categoryService
+                )
             }
             .presentationBackground(Color.modalSheetBackground)
             .presentationDragIndicator(.hidden)
+        }
+        .sheet(item: $viewModel.currentCategory) { category in
+            NavigationStack {
+                SelectNextCategorySheet(
+                    current: category,
+                    categories: categories,
+                    onSelect: deleteCategoryAndSetOther
+                )
+            }
         }
         .alert(
             "カテゴリ削除",
@@ -132,16 +141,22 @@ private struct CategorySettingContentView: View {
                 }
             )
         ) {
+            Button("別のカテゴリに移動する") {
+                viewModel.currentCategory = viewModel.categoryToDelete
+            }
+            Button("カテゴリを未選択にする") {
+                deleteCategoryAndSetNil()
+            }
+            Button("収支も削除する", role: .destructive) {
+                deleteCategoryAndTransition()
+            }
             Button("キャンセル", role: .cancel) {
                 viewModel.cancelDelete()
             }
             
-            Button("削除", role: .destructive) {
-                deleteCategory()
-            }
         } message: {
             Text(
-                "このカテゴリを使用している遊戯履歴のカテゴリが「その他」になります。"
+                "このカテゴリに紐づく収支をどうしますか？"
             )
         }
     }
@@ -159,13 +174,13 @@ private struct CategorySettingContentView: View {
     private func categoryCard(
         _ category: CategoryModel
     ) -> some View {
-        HStack {
-            HStack(spacing: 8) {
+        HStack(spacing: 0) {
+            HStack(spacing: 12) {
                 Circle()
                     .fill(Color(hex: category.colorHex))
-                    .frame(width: 16, height: 16)
+                    .frame(width: 12, height: 12)
                 Text(category.categoryName)
-                    .font(.system(size: 17))
+                    .font(.system(size: 18, weight: .regular))
                     .lineLimit(1)
             }
             
@@ -177,7 +192,7 @@ private struct CategorySettingContentView: View {
                 } label: {
                     Image(systemName: "pencil")
                         .font(.system(size: 20))
-                                                .foregroundStyle(Color.iconColor)
+                        .foregroundStyle(Color.iconColor)
                         .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.borderless)
@@ -187,14 +202,14 @@ private struct CategorySettingContentView: View {
                 } label: {
                     Image(systemName: "trash")
                         .font(.system(size: 20))
-                                                .foregroundStyle(Color.iconColor)
+                        .foregroundStyle(Color.iconColor)
                         .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.borderless)
             }
         }
-        .padding(.top, 16)
-        .padding(.bottom, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 12)
         .padding(.leading, 16)
         .padding(.trailing, 4)
         .frame(maxWidth: .infinity)
@@ -228,13 +243,30 @@ private struct CategorySettingContentView: View {
         }
     }
     
-    private func deleteCategory() {
+    private func deleteCategoryAndTransition() {
         do {
-            try viewModel.deleteCategory()
+            try viewModel.deleteCategoryAndTransition()
         } catch {
             print("カテゴリの削除に失敗: \(error)")
         }
     }
+    
+    private func deleteCategoryAndSetOther(_ next: CategoryModel) {
+        do {
+            try viewModel.deleteCategoryAndSetOther(next)
+        } catch {
+            print("カテゴリの削除に失敗: \(error)")
+        }
+    }
+    
+    private func deleteCategoryAndSetNil() {
+        do {
+            try viewModel.deleteCategoryAndSetNil()
+        } catch {
+            print("カテゴリの削除に失敗: \(error)")
+        }
+    }
+    
 }
 
 import SwiftData

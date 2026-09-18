@@ -9,6 +9,8 @@ final class BalanceReportViewModel {
     private let fixedTransitionService:FixedTransitionService
     
     var data: BalanceReportDataModel?
+    var trantitionType: TransitionType = .expense
+    
     var period: ReportPeriod
     
     init(transitionService:  TransitionService, fixedTransitionService: FixedTransitionService) {
@@ -202,9 +204,12 @@ final class BalanceReportViewModel {
             
             CategoryBalanceReportDataModel(
                 category: category,
-                amount: amount
+                amount: amount,
+                isFixedTransition: false
             )
         }
+        .sorted { $0.amount > $1.amount }
+
         
         var dailyIncomeAmounts: [CategoryModel?: Int] = [:]
         
@@ -224,9 +229,12 @@ final class BalanceReportViewModel {
             
             CategoryBalanceReportDataModel(
                 category: category,
-                amount: amount
+                amount: amount,
+                isFixedTransition: false
             )
         }
+        .sorted { $0.amount > $1.amount }
+
         
         var fixedExpenseAmounts: [CategoryModel?: Int] = [:]
         
@@ -253,9 +261,12 @@ final class BalanceReportViewModel {
             
             CategoryBalanceReportDataModel(
                 category: category,
-                amount: amount
+                amount: amount,
+                isFixedTransition: true
             )
         }
+        .sorted { $0.amount > $1.amount }
+
         
         var fixedIncomeAmounts: [CategoryModel?: Int] = [:]
         
@@ -282,9 +293,11 @@ final class BalanceReportViewModel {
             
             CategoryBalanceReportDataModel(
                 category: category,
-                amount: amount
+                amount: amount,
+                isFixedTransition: true
             )
         }
+        .sorted { $0.amount > $1.amount }
         
         // MARK: - Report Data
         
@@ -338,9 +351,12 @@ final class BalanceReportViewModel {
 
 struct CategoryBalanceReportDataModel: Identifiable {
     
-    let id = UUID()
+    let id = UUID() 
     let category: CategoryModel?
     let amount: Int
+    
+    let isFixedTransition: Bool
+    var isGap: Bool = false
 }
 
 // MARK: - Report

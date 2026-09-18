@@ -5,9 +5,9 @@
 //  Created by hiroki hosokawa on 2026/08/13.
 //
 
-enum TransitionType:  String, Codable {
-    case income
+enum TransitionType:  String, Codable, CaseIterable {
     case expense
+    case income
     
     var displayString: String {
           switch self {

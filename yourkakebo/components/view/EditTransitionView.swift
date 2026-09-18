@@ -54,7 +54,7 @@ private struct EditTransitionContentView: View {
                         viewModel.setShowSelectedCategory()
                     } label: {
                         Image(systemName: "plus")
-                            .font(.system(size: 24))
+                            .font(.system(size: 26))
                             .foregroundStyle(
                                 Color(
                                     red: 0.267,
@@ -69,6 +69,7 @@ private struct EditTransitionContentView: View {
                     }
                     .modifier(GlassEffectModifier())
                 }
+                .safeAreaPadding(.horizontal)
             }
             
             // MARK: - Transition List
@@ -96,7 +97,7 @@ private struct EditTransitionContentView: View {
                         }
                     }
                 }
-                .padding(.top, 8)
+                .padding(.top, 16)
                 .padding(.bottom, 8)
                 .padding(.horizontal, 12)
             }
@@ -108,6 +109,7 @@ private struct EditTransitionContentView: View {
             .padding(.horizontal, 12)
             .scrollIndicators(.visible)
         }
+        .padding(.bottom, 8)
         .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -116,8 +118,9 @@ private struct EditTransitionContentView: View {
                         .toolbar(.hidden, for: .tabBar)
                 } label: {
                     Image(systemName: "gearshape")
-                        .font(.system(size: 22))
+                        .font(.system(size: 19))
                 }
+                .buttonStyle(.plain)
             }
             ToolbarItemGroup(placement: .keyboard) {
                 Button {
@@ -245,12 +248,12 @@ struct TransitionInputForm: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                HStack(spacing: 8) {
+                HStack(spacing: 12) {
                     Circle()
                         .fill(Color(hex: data.category.colorHex))
-                        .frame(width: 16, height: 16)
+                        .frame(width: 12, height: 12)
                     Text(data.category.categoryName)
-                        .font(.system(size: 18))
+                        .font(.system(size: 18, weight: .bold))
                         .frame(
                             width: 92,
                             alignment: .leading
@@ -274,7 +277,7 @@ struct TransitionInputForm: View {
                 )
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.trailing)
-                .font(.system(size: 20))
+                .font(.system(size: 19))
                 .padding(.leading, 4)
                 .frame(height: 44)
                 .focused($isFocused)
@@ -302,7 +305,7 @@ struct TransitionInputForm: View {
                     
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 22))
+                        .font(.system(size: 20))
                         .foregroundStyle(Color.iconColor)
                         .frame(width: 44, height: 44)
                 }

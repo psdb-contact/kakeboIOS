@@ -48,12 +48,22 @@ final class TransitionRepository {
         return try modelContext.fetch(descriptor)
     }
     
+    func getAllTransitionsByCategoryId(_ categoryId: String) throws -> [TransitionModel] {
+        let descriptor = FetchDescriptor<TransitionModel> (
+            predicate: #Predicate {
+                $0.category?.categoryId == categoryId
+            }
+        )
+        
+        return try modelContext.fetch(descriptor)
+    }
+    
     func addTransition(_ transition: TransitionModel) throws {
         modelContext.insert(transition)
         try modelContext.save()
     }
     
-    func updateTransition(id: UUID, amount: Int) throws {
+    func updateAmount(id: UUID, amount: Int) throws {
         let descriptor = FetchDescriptor<TransitionModel>(
             predicate: #Predicate {
                 $0.transitionId == id
@@ -68,6 +78,14 @@ final class TransitionRepository {
         try modelContext.save()
     }
     
+    func setCategoryForTransitions(prev: CategoryModel, next: CategoryModel?) throws {
+        let transitions = try getAllTransitionsByCategoryId(prev.categoryId)
+        
+        for transition in transitions {
+            transition.category = next
+        }
+    }
+ 
     func deleteTransition(_ id: UUID) throws {
         let descriptor = FetchDescriptor<TransitionModel>(
             predicate: #Predicate {
@@ -78,6 +96,14 @@ final class TransitionRepository {
         if let transition = try modelContext.fetch(descriptor).first {
             modelContext.delete(transition)
             try modelContext.save()
+        }
+    }
+    
+    func deleteTransitionByCategory(_ category: CategoryModel) throws {
+        let transitions = try getAllTransitionsByCategoryId(category.categoryId)
+
+        for transition in transitions {
+            modelContext.delete(transition)
         }
     }
     
@@ -94,4 +120,4 @@ final class TransitionRepository {
         
         try modelContext.save()
     }
-}
+    }

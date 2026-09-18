@@ -42,7 +42,7 @@ final class TransitionService {
         amount: Int
     ) throws {
         try modelContext.transaction {
-            try transitionRepository.updateTransition(
+            try transitionRepository.updateAmount(
                 id: id,
                 amount: amount
             )

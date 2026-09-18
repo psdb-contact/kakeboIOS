@@ -56,11 +56,11 @@ struct IconToggle<Item: Hashable>: View {
 }
 
 struct TextToggle<Item: Hashable>: View {
-
+    
     struct ToggleItem {
         let title: String
         let value: Item
-
+        
         init(
             title: String,
             value: Item
@@ -69,16 +69,16 @@ struct TextToggle<Item: Hashable>: View {
             self.value = value
         }
     }
-
+    
     let items: [ToggleItem]
     let selection: Item
     let onSelectionChanged: (Item) -> Void
-
+    
     var body: some View {
         HStack(spacing: 4) {
             ForEach(items, id: \.value) { item in
                 let isSelected = selection == item.value
-
+                
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         onSelectionChanged(item.value)
@@ -88,11 +88,11 @@ struct TextToggle<Item: Hashable>: View {
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(
                             isSelected
-                                ? .primary
-                                : .secondary
+                            ? .primary
+                            : .secondary
                         )
                         .frame(
-                            minWidth: 44,
+                            minWidth: 56,
                         )
                         .frame(height: 36)
                         .modifier(

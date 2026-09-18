@@ -11,12 +11,12 @@ struct PeriodNavigationBar: View {
                     onPrevious()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 24))
+                        .font(.system(size: 22))
                         .frame(width: 44, height: 44)
                 }
 
                 Text(formattedDate)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.system(size: 19, weight: .semibold))
                     .foregroundStyle(
                         Color(
                             red: 0.133,
@@ -24,13 +24,13 @@ struct PeriodNavigationBar: View {
                             blue: 0.133
                         )
                     )
-                    .frame(width: 160)
+                    .frame(width: 130)
 
                 Button {
                     onNext()
                 } label: {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 24))
+                        .font(.system(size: 22))
                         .frame(width: 44, height: 44)
                 }
             }

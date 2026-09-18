@@ -39,6 +39,16 @@ final class FixedTransitionRepository {
             $0.transitionType == .expense
         }
     }
+    
+    func getAllFixedTransitionsByCategoryId(_ categoryId: String) throws -> [FixedTransitionModel] {
+        let descriptor = FetchDescriptor<FixedTransitionModel> (
+            predicate: #Predicate {
+                $0.category?.categoryId == categoryId
+            }
+        )
+        
+        return try modelContext.fetch(descriptor)
+    }
 
     func insertFixedTransition(_ fixedTransition: FixedTransitionModel) throws {
         modelContext.insert(fixedTransition)
@@ -48,10 +58,26 @@ final class FixedTransitionRepository {
     func updateFixedTransition(_ fixedTransition: FixedTransitionModel) throws {
         try modelContext.save()
     }
+    
+    func setCategoryForFixedTransitions(prev: CategoryModel, next: CategoryModel?) throws {
+        let fixedTransitions = try getAllFixedTransitionsByCategoryId(prev.categoryId)
+        
+        for fixedTransition in fixedTransitions {
+            fixedTransition.category = next
+        }
+    }
 
     func deleteFixedTransition(_ fixedTransition: FixedTransitionModel) throws {
         modelContext.delete(fixedTransition)
         try modelContext.save()
+    }
+    
+    func deleteFixedTransitionByCategory(_ category: CategoryModel) throws {
+        let fixedTransitions = try getAllFixedTransitionsByCategoryId(category.categoryId)
+        
+        for fixedTransition in fixedTransitions {
+            modelContext.delete(fixedTransition)
+        }
     }
 
     func deleteAllFixedTransitions() throws {

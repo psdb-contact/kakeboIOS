@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 struct BalanceReportView: View {
     @Environment(AppContainer.self)
@@ -42,88 +43,123 @@ private struct BalanceReportContentView: View {
                     viewModel.period.type == .yearly ? viewModel.moveYear(by: 1) : viewModel.moveMonth(by: 1)
                 }
             )
-            
-            ScrollView {
-                VStack(spacing: 16) {
+            if let data = viewModel.data {
+                
+                let transitionList = viewModel.trantitionType == .expense ? data.aggregatedDailyExpenses : data.aggregatedDailyIncomes
+                let fixedTransitionList = viewModel.trantitionType == .expense ? data.aggregatedFixedExpenses : data.aggregatedFixedIncomes
+                
+                /*
+                 let total = transitionList.reduce(0) { $0 + $1.amount } + fixedTransitionList.reduce(0) { $0 + $1.amount }
+                 let gapAngle: Double = 4
+                 let gapAmount = Int(Double(total) * gapAngle / (360 - gapAngle))
+                 
+                 let gap = CategoryBalanceReportDataModel(category: nil, amount: gapAmount, isFixedTransition: false, isGap: true)
+                 */
+                
+                let chartList = transitionList +  fixedTransitionList
+                
+                let domain = chartList.map {
+                    $0.category?.categoryName ?? "未選択"
+                }
+                
+                let range = chartList.map {
+                    Color(hex: $0.category?.colorHex ?? 0xFFBBBBBB)
+                }
+                
+                
+                VStack(spacing: 8) {
+                    BalanceReportRow(
+                        title: "収支",
+                        amount: data.totalBalance
+                    )
+                    Divider()
+                    HStack(spacing: 32) {
+                        HStack {
+                            Text("支出")
+                            Spacer()
+                            Text("\(data.totalExpense)")
+                        }
+                        HStack {
+                            Text("収入")
+                            Spacer()
+                            Text("\(data.totalIncome)")
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+                
+                transitionTypeSegmentedButton(selection: $viewModel.trantitionType)
+                    .padding(.top, 16)
+                
+                ScrollView {
                     VStack(spacing: 16) {
                         
-                        if let data = viewModel.data {
-                            BalanceReportCard {
-                                BalanceReportRow(
-                                    title: "収入",
-                                    amount: data.totalIncome
-                                )
+                        Chart(chartList) { item in
+                            SectorMark(
+                                angle: .value("金額", item.amount),
+                            )
+                            .foregroundStyle(
                                 
-                                BalanceReportRow(
-                                    title: "支出",
-                                    amount: data.totalExpense
-                                )
-                                
-                                Divider()
-                                
-                                BalanceReportRow(
-                                    title: "収支",
-                                    amount: data.totalBalance
-                                )
-                            }
-                            
-                            BalanceReportCard {
-                                
-                                BalanceReportRow(
-                                    title: "通常収入",
-                                    amount: data.totalDailyIncome
-                                )
-                                
-                                BalanceReportRow(
-                                    title: "固定収入",
-                                    amount: data.totalFixedIncome
-                                )
-                                
-                                Divider()
-                                
-                                BalanceReportRow(
-                                    title: "通常支出",
-                                    amount: data.totalDailyExpense
-                                )
-                                
-                                BalanceReportRow(
-                                    title: "固定支出",
-                                    amount: data.totalFixedExpense
-                                )
-                            }
-                            
-                            BalanceReportCategoryCard(
-                                title: "支出",
-                                data: data.aggregatedDailyExpenses
+                                Color(hex: item.category?.colorHex ?? 0xFFBBBBBB)
+                            )
+                        }
+                        .chartLegend(.hidden)
+                        .chartForegroundStyleScale(
+                            domain: domain,
+                            range: range
+                        )
+                        .frame(height: 200)
+                        
+                        /*
+                         BalanceReportRow(
+                         title: "通常収入",
+                         amount: data.totalDailyIncome
+                         )
+                         
+                         BalanceReportRow(
+                         title: "固定収入",
+                         amount: data.totalFixedIncome
+                         )
+                         
+                         Divider()
+                         
+                         BalanceReportRow(
+                         title: "通常支出",
+                         amount: data.totalDailyExpense
+                         )
+                         
+                         BalanceReportRow(
+                         title: "固定支出",
+                         amount: data.totalFixedExpense
+                         )
+                         */
+                        
+                        
+                        VStack(spacing: 32) {
+                            BalanceReportCategoryList(
+                                title: "日次",
+                                data: transitionList
                             )
                             
-                            BalanceReportCategoryCard(
-                                title: "固定支出",
-                                data: data.aggregatedFixedExpenses
-                            )
-                            
-                            BalanceReportCategoryCard(
-                                title: "収入",
-                                data: data.aggregatedDailyIncomes
-                            )
-                            
-                            BalanceReportCategoryCard(
-                                title: "固定収入",
-                                data: data.aggregatedFixedIncomes
+                            BalanceReportCategoryList(
+                                title: "固定",
+                                data: fixedTransitionList
                             )
                         }
                     }
-                    .padding()
+                    .padding(.horizontal, 24)
                 }
+                .padding(.top, 16)
             }
         }
         .task(id: viewModel.period) {
-                    do {
-                        try viewModel.load(period: viewModel.period)
-                    } catch {
-                        print("データの読み込みに失敗しました: \(error)")
-                    }
-                }
+            do {
+                try viewModel.load(period: viewModel.period)
+            } catch {
+                print("データの読み込みに失敗しました: \(error)")
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar{
             ToolbarItem(placement: .principal) {
@@ -141,8 +177,54 @@ private struct BalanceReportContentView: View {
                         .toolbar(.hidden, for: .tabBar)
                 } label: {
                     Image(systemName: "gearshape")
-                        .font(.system(size: 22))
+                        .font(.system(size: 19))
                 }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+    
+    private struct transitionTypeSegmentedButton: View {
+        @Binding var selection: TransitionType
+        
+        var body: some View {
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    ForEach(TransitionType.allCases, id: \.self) { type in
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                selection = type
+                            }
+                        } label: {
+                            Text(type.displayString)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .foregroundStyle(
+                                    selection == type
+                                    ? .primary
+                                    : .secondary
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                
+                GeometryReader { geometry in
+                    Rectangle()
+                        .fill(.primary)
+                        .frame(
+                            width: geometry.size.width / CGFloat(TransitionType.allCases.count),
+                            height: 2
+                        )
+                        .offset(
+                            x: geometry.size.width
+                            / CGFloat(TransitionType.allCases.count)
+                            * CGFloat(
+                                TransitionType.allCases.firstIndex(of: selection) ?? 0
+                            )
+                        )
+                }
+                .frame(height: 2)
             }
         }
     }
@@ -163,56 +245,35 @@ private struct BalanceReportContentView: View {
         }
     }
     
-    private struct BalanceReportCard<Content: View>: View {
-        
-        @ViewBuilder
-        let content: () -> Content
-        
-        var body: some View {
-            VStack(spacing: 12) {
-                content()
-            }
-            .padding()
-            .frame(
-                maxWidth: .infinity,
-                alignment: .leading
-            )
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
-            )
-        }
-    }
-    
-    private struct BalanceReportCategoryCard: View {
+    private struct BalanceReportCategoryList: View {
         
         let title: String
         let data: [CategoryBalanceReportDataModel]
         
         var body: some View {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 0) {
                 
                 Text(title)
                     .font(.headline)
-                
-                ForEach(data) { item in
-                    
-                    HStack {
-                        
-                        Text(
-                            item.category?.categoryName
-                            ?? "未分類"
-                        )
-                        
-                        Spacer()
-                        
-                        Text(
-                            item.amount.formatted(.number)
-                        )
+                    .padding(.bottom, 8)
+                Divider()
+                VStack(spacing: 16) {
+                    ForEach(data) { item in
+                        HStack {
+                            Circle()
+                                .fill(Color(hex: item.category != nil ? item.category!.colorHex : 0xFFBBBBBB))
+                                .frame(width: 12, height: 12)
+                            Text(
+                                item.category?.categoryName
+                                ?? "未分類"
+                            )
+                            Spacer()
+                            Text(item.amount.formatted(.number))
+                        }
                     }
                 }
+                .padding(.top, 12)
             }
-            .padding()
             .frame(
                 maxWidth: .infinity,
                 alignment: .leading

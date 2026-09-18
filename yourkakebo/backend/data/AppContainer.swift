@@ -39,7 +39,9 @@ final class AppContainer {
         
         self.categoryService = CategoryService(
             modelContext: modelContext,
-            categoryRepository: categoryRepository
+            categoryRepository: categoryRepository,
+            transitionRepository: transitionRepository,
+            fixedTransitionRepository: fixedTransitionRepository
         )
         
         self.transitionService = TransitionService(
