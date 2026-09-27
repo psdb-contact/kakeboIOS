@@ -25,6 +25,20 @@ final class TemplateRepository {
 
         return try modelContext.fetch(descriptor)
     }
+    
+    func getAllTemplatesByTransitionType(_ transitionType: TransitionType) throws -> [TemplateModel] {
+        let descriptor = FetchDescriptor<TemplateModel> (
+            sortBy: [
+                SortDescriptor(\.sortOrder)
+            ]
+        )
+        
+        let templates = try modelContext.fetch(descriptor)
+        
+        return templates.filter{
+            $0.category.transitionType == transitionType
+        }
+    }
 
     func addTemplate(_ template: TemplateModel) throws {
         modelContext.insert(template)

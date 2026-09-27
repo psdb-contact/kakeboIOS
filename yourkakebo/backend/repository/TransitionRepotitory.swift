@@ -16,7 +16,7 @@ final class TransitionRepository {
         return try modelContext.fetch(descriptor)
     }
     
-    func getAllExpenses() throws -> [TransitionModel] {
+    func getAllTransitionsByTransitionType(_ transitionType: TransitionType) throws -> [TransitionModel] {
         let descriptor = FetchDescriptor<TransitionModel>(
             sortBy: [SortDescriptor(\.transitionDate)],
         )
@@ -24,7 +24,38 @@ final class TransitionRepository {
         let transitions = try modelContext.fetch(descriptor)
         
         return transitions.filter {
-            $0.transitionType == .expense
+            $0.transitionType == transitionType
+        }
+    }
+    
+    func getTransitionsByDateAndTransitionType(
+        date: Date,
+        transitionType: TransitionType,
+    ) throws -> [TransitionModel] {
+
+        let calendar = Calendar.current
+
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(
+            byAdding: .day,
+            value: 1,
+            to: startOfDay
+        )!
+
+        let descriptor = FetchDescriptor<TransitionModel>(
+            predicate: #Predicate {
+                $0.transitionDate >= startOfDay &&
+                $0.transitionDate < endOfDay
+            },
+            sortBy: [
+                SortDescriptor(\.transitionDate)
+            ]
+        )
+
+        let transitions = try modelContext.fetch(descriptor)
+
+        return transitions.filter {
+            $0.transitionType == transitionType
         }
     }
     

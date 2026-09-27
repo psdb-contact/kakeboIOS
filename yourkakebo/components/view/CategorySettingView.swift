@@ -103,7 +103,8 @@ private struct CategorySettingContentView: View {
             NavigationStack {
                 EditCategorySheet(
                     categoryModel: category,
-                    categoryService: categoryService
+                    categoryService: categoryService,
+                    transitionType: viewModel.transitionType
                 )
             }
             .presentationBackground(Color.modalSheetBackground)
@@ -113,7 +114,8 @@ private struct CategorySettingContentView: View {
             NavigationStack {
                 EditCategorySheet(
                     categoryModel: nil,
-                    categoryService: categoryService
+                    categoryService: categoryService,
+                    transitionType: viewModel.transitionType
                 )
             }
             .presentationBackground(Color.modalSheetBackground)

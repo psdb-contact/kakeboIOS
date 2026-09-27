@@ -13,15 +13,22 @@ import SwiftUI
 final class SelectTemplateCategoryViewModel {
     private let categoryService: CategoryService
     private let templateService: TemplateService
+    
+    let usedCategories: [CategoryModel]
     var categoriesData: [SelectTemplateCategoryData] = []
     
-    init(categoryService: CategoryService, templateService: TemplateService) {
+    let transitionType: TransitionType
+    
+    init(categoryService: CategoryService, templateService: TemplateService, usedCategories: [CategoryModel], transitionType: TransitionType) {
         self.categoryService = categoryService
         self.templateService = templateService
+        
+        self.usedCategories = usedCategories
+        self.transitionType = transitionType
     }
     
-    func load(usedCategories: [CategoryModel]) throws {
-        let categories = try categoryService.getAllCategories()
+    func load() throws {
+        let categories = try categoryService.getAllCategoriesByTransitionType(transitionType)
         
         categoriesData = categories.map { category in
             SelectTemplateCategoryData(

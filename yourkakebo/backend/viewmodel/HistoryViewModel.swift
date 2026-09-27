@@ -19,7 +19,7 @@ final class HistoryViewModel {
     var fixedTransitionPerDate: [Date: [FixedTransitionModel]] = [:]
     var transitionPerDate: [Date:[TransitionModel]] = [:]
     
-    var selectedMonth: Date = Date()
+    var selectedMonth: Date = Calendar.current.startOfDay(for: Date())
     var showingDetailsSheet = false
     var showingSelectedDate: Date?
     

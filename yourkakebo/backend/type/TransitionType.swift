@@ -5,6 +5,8 @@
 //  Created by hiroki hosokawa on 2026/08/13.
 //
 
+import Foundation
+
 enum TransitionType:  String, Codable, CaseIterable {
     case expense
     case income
@@ -17,4 +19,9 @@ enum TransitionType:  String, Codable, CaseIterable {
               return "支出"
           }
       }
+}
+
+struct TransitionPeriod: Equatable {
+    let type: TransitionType
+    let date: Date
 }

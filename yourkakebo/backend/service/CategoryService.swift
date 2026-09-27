@@ -30,8 +30,8 @@ final class CategoryService {
         return try categoryRepository.getAllCategories()
     }
     
-    func getAllExpenseCategories() throws -> [CategoryModel] {
-        return try categoryRepository.getAllExpenseCategories()
+    func getAllCategoriesByTransitionType(_ transitionType: TransitionType) throws -> [CategoryModel] {
+        return try categoryRepository.getAllCategoriesByTransitionType(transitionType)
     }
 
     func addCategory(_ category: CategoryModel) throws {

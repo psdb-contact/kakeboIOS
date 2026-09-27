@@ -158,6 +158,7 @@ private struct PreviewContent: View {
     var body: some View {
         NavigationStack {
             SelectTemplateCategorySheet(
+                transitionType: .expense,
                 usedCategories: []
             )
         }

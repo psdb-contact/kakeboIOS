@@ -14,10 +14,12 @@ struct SelectTransitionCategorySheet: View {
     private var appContainer
     private var usedCategories: [CategoryModel]
     
-    let selectedDate: Date
+    private let transitionType: TransitionType
+    private let selectedDate: Date
     
-    init(usedCategories: [CategoryModel], selectedDate: Date ) {
+    init(usedCategories: [CategoryModel], transitionType: TransitionType, selectedDate: Date ) {
         self.usedCategories = usedCategories
+        self.transitionType = transitionType
         self.selectedDate = selectedDate
     }
     
@@ -26,6 +28,7 @@ struct SelectTransitionCategorySheet: View {
             categoryService: appContainer.categoryService,
             transitionService: appContainer.transitionService,
             usedCategories: self.usedCategories,
+            transitionType: self.transitionType,
             selectedDate: self.selectedDate
         )
     }
@@ -37,18 +40,16 @@ private struct SelectTransitionCategoryContentSheet: View {
     private let categoryService: CategoryService
     private let transitionService: TransitionService
     
-    private let usedCategories: [CategoryModel]
     let selectedDate: Date
     
     @State private var viewModel: SelectTransitionCategoryViewModel
     
-    init(categoryService: CategoryService, transitionService: TransitionService, usedCategories: [CategoryModel], selectedDate: Date) {
+    init(categoryService: CategoryService, transitionService: TransitionService, usedCategories: [CategoryModel], transitionType: TransitionType, selectedDate: Date) {
         self.categoryService = categoryService
         self.transitionService = transitionService
-        self.usedCategories = usedCategories
         self.selectedDate = selectedDate
         
-        _viewModel = State(initialValue: SelectTransitionCategoryViewModel(categoryService: categoryService, transitionService: transitionService))
+        _viewModel = State(initialValue: SelectTransitionCategoryViewModel(categoryService: categoryService, transitionService: transitionService, usedCategories: usedCategories, transitionType: transitionType ))
     }
     
     var body: some View {
@@ -89,7 +90,7 @@ private struct SelectTransitionCategoryContentSheet: View {
         .navigationBarTitleDisplayMode(.inline)
         .task{
             do {
-                try viewModel.load(usedCategories: self.usedCategories)
+                try viewModel.load()
             } catch {
                 print("Ctegoryの読み込みに失敗しました: \(error)")
             }
@@ -188,6 +189,7 @@ private struct PreviewContent: View {
         NavigationStack {
             SelectTransitionCategorySheet(
                 usedCategories: [],
+                transitionType: .expense,
                 selectedDate: Calendar.current.startOfDay(for: Date())
             )
         }

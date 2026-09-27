@@ -40,6 +40,28 @@ struct HistoryDetailsSheet: View {
                         viewModel.moveDate(by: 1)
                     }
                 )
+                HStack {
+                   Spacer()
+                   NavigationLink {
+                       
+                   } label: {
+                       Image(systemName: "plus")
+                           .font(.system(size: 26))
+                           .foregroundStyle(
+                               Color(
+                                   red: 0.267,
+                                   green: 0.267,
+                                   blue: 0.267
+                               )
+                           )
+                           .frame(
+                               width: 44,
+                               height: 44
+                           )
+                   }
+                   .modifier(GlassEffectModifier())
+               }
+               .safeAreaPadding(.horizontal)
             }
             ScrollView {
                 VStack(spacing: 32) {
@@ -220,7 +242,7 @@ private struct PreviewContent: View {
                 transitionService: appContainer.transitionService,
                 fixedTransitionService: appContainer.fixedTransitionService,
                 selectedDate: Calendar.current.startOfDay(
-                    for: Date()
+                    for: Calendar.current.startOfDay(for: Date())
                 )
             )
         }

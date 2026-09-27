@@ -299,4 +299,59 @@ final class FixedTransitionModel {
             return result
         }
     }
+    
+    var cycleDisplayString: String {
+        let calendar = Calendar.current
+
+        switch cycleType {
+        case .daily:
+            if let cycleInterval, cycleInterval > 1 {
+                return "\(cycleInterval)日ごと"
+            }
+            return "毎日"
+
+        case .weekday:
+            return "平日"
+
+        case .weekly:
+            guard let cycleValue else {
+                return cycleInterval == 1 ? "毎週" : "\(cycleInterval ?? 1)週間毎"
+            }
+
+            let weekdayNames = [
+                1: "月曜",
+                2: "火曜",
+                3: "水曜",
+                4: "木曜",
+                5: "金曜",
+                6: "土曜",
+                7: "日曜"
+            ]
+
+            let weekday = weekdayNames[cycleValue] ?? ""
+
+            if cycleInterval == 1 {
+                return "毎週 \(weekday)"
+            } else {
+                return "\(cycleInterval ?? 1)週間毎 \(weekday)"
+            }
+
+        case .monthly:
+            guard let cycleValue else {
+                return cycleInterval == 1 ? "毎月" : "\(cycleInterval ?? 1)ヶ月ごと"
+            }
+
+            if cycleInterval == 1 {
+                return "毎月 \(cycleValue)日"
+            } else {
+                return "\(cycleInterval ?? 1)ヶ月毎 \(cycleValue)日"
+            }
+
+        case .yearly:
+            let month = calendar.component(.month, from: startDate)
+            let day = calendar.component(.day, from: startDate)
+
+            return "毎年 \(month)月\(day)日"
+        }
+    }
 }

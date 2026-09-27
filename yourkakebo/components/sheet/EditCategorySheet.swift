@@ -7,32 +7,34 @@ import SwiftUI
 
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
-
+    
     @State private var viewModel: EditCategoryViewModel
-
+    
     init(
         categoryModel: CategoryModel?,
-        categoryService: CategoryService
+        categoryService: CategoryService,
+        transitionType: TransitionType
     ) {
         _viewModel = State(
             initialValue: EditCategoryViewModel(
                 category: categoryModel,
-                categoryService: categoryService
+                categoryService: categoryService,
+                transitionType: transitionType
             )
         )
     }
-
+    
     var body: some View {
         @Bindable var viewModel = viewModel
         
         let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 6)
-
+        
         VStack(spacing: 0) {
-
+            
             // MARK: - Form
-
+            
             VStack(spacing: 24) {
-
+                
                 // 種類
                 VStack(alignment: .leading, spacing: 8) {
                     Picker(
@@ -41,7 +43,7 @@ struct EditCategorySheet: View {
                     ) {
                         Text("支出")
                             .tag(TransitionType.expense)
-
+                        
                         Text("収入")
                             .tag(TransitionType.income)
                     }
@@ -50,11 +52,11 @@ struct EditCategorySheet: View {
                 
                 VStack {
                     HStack {
-                        Text("カテゴリ")
+                        Text("カテゴリ名")
                             .font(.system(size: 16)).foregroundStyle(.black)
                             .frame(width: 108, alignment: .leading)
                         TextField(
-                            "",
+                            "未入力",
                             text: $viewModel.categoryName
                         )
                         .padding(.horizontal, 12)
@@ -63,12 +65,12 @@ struct EditCategorySheet: View {
                         .frame(height: 52)
                     }
                     .padding(.leading, 12)
-
+                    
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 12).fill(Color.container)
                 )
-
+                
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(CategoryColors.all, id: \.self) { hex in
                         Button {
@@ -94,7 +96,7 @@ struct EditCategorySheet: View {
                         .buttonStyle(.plain)
                     }
                 }
-
+                
                 Spacer()
             }
             .padding(20)
@@ -108,32 +110,51 @@ struct EditCategorySheet: View {
                 }
             }
             ToolbarItem(placement: .principal) {
-                Text(
-                    "カテゴリ追加"
-                )
+                let title =  viewModel.category != nil ? "カテゴリ編集" : "新規カテゴリ"
+                Text(title)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    try? viewModel.save()
-                    
-                    dismiss()
+                    save()
+                } label: {
+                    Image(systemName: "checkmark")
+                }
+            }
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button() {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
                 } label: {
                     Image(systemName: "checkmark")
                 }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toast(toast: $viewModel.toast)
+        .task {
+            do {
+                try viewModel.load()
+            } catch {
+                print("カテゴリの読み込みに失敗しました: \(error)")
+            }
+        }
     }
     
     private func isSelectedColor(_ hex: Int) -> Bool {
         viewModel.colorHex == hex
     }
-
+    
     private func save() {
         do {
             try viewModel.save()
             dismiss()
         } catch {
+            viewModel.toast = .error(error.localizedDescription)
             print("カテゴリ保存に失敗しました: \(error)")
         }
     }
@@ -181,6 +202,7 @@ private struct PreviewContent: View {
             EditCategorySheet(
                 categoryModel: nil,
                 categoryService: appContainer.categoryService,
+                transitionType: .expense
             )
             .background(Color.modalSheetBackground)
         }

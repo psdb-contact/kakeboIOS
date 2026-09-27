@@ -14,7 +14,7 @@ final class FixedTransitionCalendarViewModel {
     
     var data: [FixedTransitionCalendarData] = []
     
-    var selectedDate: Date = Date()
+    var selectedDate: Date = Calendar.current.startOfDay(for: Date())
     
     init (fixedTransitionService: FixedTransitionService) {
         self.fixedTransitionService = fixedTransitionService
@@ -40,42 +40,35 @@ final class FixedTransitionCalendarViewModel {
         
         let fixedTransitions = try fixedTransitionService.getAllFixedTransitions()
         
-        var date = monthStart
-        while date < monthEnd {
-            for item in fixedTransitions {
-                guard item.isActive else {
-                    continue
-                }
-
-                let occurrenceDates = item.occurrenceDates(
-                    searchStart: monthStart,
-                    searchEnd: monthEnd,
-                    calendar: calendar
-                )
-
-                for date in occurrenceDates {
-                    result.append(
-                        FixedTransitionCalendarData(
-                            fixedTransition: item,
-                            date: date
-                        )
+        for item in fixedTransitions {
+            guard item.isActive else {
+                continue
+            }
+            
+            let occurrenceDates = item.occurrenceDates(
+                searchStart: monthStart,
+                searchEnd: monthEnd,
+                calendar: calendar
+            )
+            
+            for date in occurrenceDates {
+                result.append(
+                    FixedTransitionCalendarData(
+                        fixedTransition: item,
+                        date: date
                     )
-                }
+                )
             }
-            guard let nextDate = calendar.date(byAdding: .day, value:1, to: date) else {
-                break
+            
+            data = result.sorted {
+                $0.date < $1.date
             }
-            date = nextDate
-        }
-        data = result.sorted {
-            $0.date < $1.date
         }
     }
     
     func moveMonth(by value: Int) {
-
         let calendar = Calendar.current
-
+        
         selectedDate = calendar.date(
             byAdding: .month,
             value: value,

@@ -12,10 +12,12 @@ import SwiftData
 struct SelectTemplateCategorySheet: View {
     @Environment(AppContainer.self)
     private var appContainer
-    private var usedCategories: [CategoryModel]
+    private let transitionType: TransitionType
+    private let usedCategories: [CategoryModel]
     
     
-    init(usedCategories: [CategoryModel] ) {
+    init(transitionType: TransitionType, usedCategories: [CategoryModel] ) {
+        self.transitionType = transitionType
         self.usedCategories = usedCategories
     }
     
@@ -24,6 +26,7 @@ struct SelectTemplateCategorySheet: View {
             categoryService: appContainer.categoryService,
             templateService: appContainer.templateService,
             usedCategories: self.usedCategories,
+            transitionType: self.transitionType
         )
     }
 }
@@ -34,16 +37,14 @@ private struct SelectTemplateCategoryContentSheet: View {
     private let categoryService: CategoryService
     private let templateService: TemplateService
     
-    private let usedCategories: [CategoryModel]
     
     @State private var viewModel: SelectTemplateCategoryViewModel
     
-    init(categoryService: CategoryService, templateService: TemplateService, usedCategories: [CategoryModel]) {
+    init(categoryService: CategoryService, templateService: TemplateService, usedCategories: [CategoryModel], transitionType: TransitionType) {
         self.categoryService = categoryService
         self.templateService = templateService
-        self.usedCategories = usedCategories
         
-        _viewModel = State(initialValue: SelectTemplateCategoryViewModel(categoryService: categoryService, templateService: templateService))
+        _viewModel = State(initialValue: SelectTemplateCategoryViewModel(categoryService: categoryService, templateService: templateService, usedCategories: usedCategories, transitionType: transitionType))
     }
     
     var body: some View {
@@ -63,6 +64,10 @@ private struct SelectTemplateCategoryContentSheet: View {
                                 dismiss()
                             }
                         )
+                        
+                        if item.id != viewModel.categoriesData.last?.id {
+                            Divider().padding(.horizontal, 16)
+                        }
                     }
                 }
             }
@@ -85,7 +90,7 @@ private struct SelectTemplateCategoryContentSheet: View {
         .navigationBarTitleDisplayMode(.inline)
         .task{
             do {
-                try viewModel.load(usedCategories: self.usedCategories)
+                try viewModel.load()
             } catch {
                 print("Ctegoryの読み込みに失敗しました: \(error)")
             }
@@ -179,6 +184,7 @@ private struct PreviewContent: View {
     var body: some View {
         NavigationStack {
             SelectTemplateCategorySheet(
+                transitionType: .expense,
                 usedCategories: []
             )
         }

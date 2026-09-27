@@ -110,34 +110,52 @@ struct FixedTransitionListContentScreen: View {
     }
     
     private func fixedTransitionCard (_ fixedTransition: FixedTransitionModel) -> some View{
-        HStack {
-            Text(fixedTransition.fixedTransitionName)
-                .font(.system(size: 17))
-                .lineLimit(1)
-            
-            Spacer()
-            HStack(spacing: 0) {
-                Button {
-                    viewModel.fixedTransitionToEdit = fixedTransition
-                } label: {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color.iconColor)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.borderless)
-
+        
+        VStack {
+            HStack {
+                Text(fixedTransition.fixedTransitionName)
+                    .font(.system(size: 17))
+                    .lineLimit(1)
                 
-                Button {
-                    viewModel.selectFixedTransitionForDeletion(fixedTransition)
-                } label: {
-                    Image(systemName: "trash")
-                        .foregroundStyle(Color.iconColor)
-                        .font(.system(size: 20))
-                        .frame(width: 44, height: 44)
+                Spacer()
+                Text("\(fixedTransition.amount)")
+                HStack(spacing: 0) {
+                    Button {
+                        viewModel.fixedTransitionToEdit = fixedTransition
+                    } label: {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 20))
+                            .foregroundStyle(Color.iconColor)
+                            .frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.borderless)
+                    
+                    
+                    Button {
+                        viewModel.selectFixedTransitionForDeletion(fixedTransition)
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(Color.iconColor)
+                            .font(.system(size: 20))
+                            .frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.borderless)
+                    
                 }
-                .buttonStyle(.borderless)
-
+            }
+            HStack {
+                Text("\(fixedTransition.category?.categoryName ?? "未選択")")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Color(hex: fixedTransition.category?.colorHex ?? 0xFF888888), in: Capsule())
+                Text("\(fixedTransition.cycleDisplayString)")
+                    .font(.system(size: 14))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(.secondary.opacity(0.1), in: Capsule())
+                Spacer()
             }
         }
         .padding(.top, 16)

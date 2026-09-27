@@ -52,23 +52,51 @@ private struct BudgetSettingContentView: View {
             )
             List {
                 ForEach($viewModel.budgetData) { $data in
-                    budgetCard(data: $data,  onFocus: {
-                        viewModel.editingBudgetID = data.id
-                    },
-                               onBlur: {
-                        data.editingAmount = data.amount
-                    },
-                               isSaving: viewModel.isSaving)
-                    .listRowInsets(
-                        EdgeInsets(
-                            top: 4,
-                            leading: 8,
-                            bottom: 4,
-                            trailing: 8
+                    if(data.category == nil) {
+                        allBudgetCard(
+                            data: $data,
+                            onFocus: {
+                                viewModel.focusedDataId = data.id
+                            },
+                            onUnfocus: {
+                                viewModel.focusedDataId = nil
+                            },
+                            onSetTotal: {
+                                viewModel.editingDataId = data.id
+                                try? viewModel.setTotal()
+                            },
+                            isSaving: viewModel.isSaving)
+                        .listRowInsets(
+                            EdgeInsets(
+                                top: 4,
+                                leading: 8,
+                                bottom: 4,
+                                trailing: 8
+                            )
                         )
-                    )
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    } else {
+                        budgetCard(
+                            data: $data,
+                            onFocus: {
+                                viewModel.focusedDataId = data.id
+                            },
+                            onUnfocus: {
+                                viewModel.focusedDataId = nil
+                            },
+                            isSaving: viewModel.isSaving)
+                        .listRowInsets(
+                            EdgeInsets(
+                                top: 4,
+                                leading: 8,
+                                bottom: 4,
+                                trailing: 8
+                            )
+                        )
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    }
                 }
             }
             .listStyle(.plain)
@@ -86,12 +114,10 @@ private struct BudgetSettingContentView: View {
                 } label: {
                     Image(systemName: "xmark")
                 }
-                
                 Spacer()
-                
                 Button() {
                     viewModel.isSaving = true
-                    save()
+                    viewModel.editingDataId = viewModel.focusedDataId
                     UIApplication.shared.sendAction(
                         #selector(UIResponder.resignFirstResponder),
                         to: nil,
@@ -104,6 +130,30 @@ private struct BudgetSettingContentView: View {
                 } label: {
                     Image(systemName: "checkmark")
                 }
+            }
+        }
+        .alert(
+            "予算設定",
+            isPresented: Binding(
+                get: {
+                    viewModel.editingDataId != nil
+                },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.editingDataId = nil
+                    }
+                }
+            )
+        ){
+            Button("この月の予算のみ変更") {
+                save(false)
+            }
+            Button("この月以降の予算も変更") {
+                save(true)
+            }
+            Button("キャンセル", role: .cancel) {
+                viewModel.focusedDataId = nil
+                viewModel.editingDataId = nil
             }
         }
         .task(id: viewModel.selectedMonth) {
@@ -124,11 +174,97 @@ private struct BudgetSettingContentView: View {
         )
     }
     
-    private func save() {
+    private func save(_ isPeriod: Bool) {
         do {
-            try viewModel.save(isPeriod: false)
+            try viewModel.save(isPeriod: isPeriod)
         } catch {
             print("Transition：\(error)")
+        }
+    }
+}
+
+struct allBudgetCard: View {
+    @Binding var data: BudgetSettingData
+    
+    let onFocus: () -> Void
+    let onUnfocus: () -> Void
+    let onSetTotal: () -> Void
+    let isSaving: Bool
+    
+    @FocusState private var isFocused: Bool
+    
+    init(data: Binding<BudgetSettingData>,
+         onFocus: @escaping () -> Void,
+         onUnfocus: @escaping () -> Void,
+         onSetTotal: @escaping () -> Void,
+         isSaving: Bool
+    ) {
+        self._data =  data
+        self.onFocus = onFocus
+        self.onUnfocus = onUnfocus
+        self.onSetTotal = onSetTotal
+        self.isSaving = isSaving
+    }
+    
+    var body: some View {
+        VStack {
+            HStack{
+                Text("全て")
+                    .font(.system(size: 17))
+                    .lineLimit(1)
+                Spacer()
+                TextField("未設定",
+                          text: Binding(
+                            get: {
+                                data.amountInput ?? ""
+                            },
+                            set: { newValue in
+                                let value = String(
+                                    newValue
+                                        .filter { $0.isNumber }
+                                        .prefix(6)
+                                )
+                                data.amountInput = value.isEmpty ? nil : value
+                            }
+                          )
+                )
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.trailing)
+                .font(.system(size: 18))
+                .padding(.horizontal, 12)
+                .frame(height: 44)
+                .focused($isFocused)
+                .onChange(of: isFocused) { _, focused in
+                    if focused {
+                        onFocus()
+                    } else if !isSaving {
+                        data.amountInput = data.budget != nil ? String(data.budget!.amount) : nil
+                        onUnfocus()
+                    }
+                }
+                
+            }
+            .padding(.top, 16)
+            .padding(.bottom, 16)
+            .padding(.leading, 16)
+            .padding(.trailing, 4)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .clipShape(
+                RoundedRectangle(cornerRadius: 8)
+            )
+            .shadow(
+                color: Color.black.opacity(0.05),
+                radius: 10,
+                x: 0,
+                y: 4
+            )
+        }
+        HStack {
+            Spacer()
+            Button("全カテゴリの合計額を設定") {
+                onSetTotal()
+            }
         }
     }
 }
@@ -137,40 +273,47 @@ struct budgetCard: View {
     @Binding var data:  BudgetSettingData
     
     let onFocus: () -> Void
-    let onBlur: () -> Void
+    let onUnfocus: () -> Void
     let isSaving: Bool
+    
     
     @FocusState private var isFocused: Bool
     
     init(data: Binding<BudgetSettingData>,
          onFocus: @escaping () -> Void,
-         onBlur: @escaping () -> Void,
+         onUnfocus: @escaping () -> Void,
          isSaving: Bool
     ) {
         self._data =  data
         self.onFocus = onFocus
-        self.onBlur = onBlur
+        self.onUnfocus = onUnfocus
         self.isSaving = isSaving
     }
     
     var body: some View {
         HStack{
-            Text(data.category.categoryName)
-                .font(.system(size: 17))
-                .lineLimit(1)
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(Color(hex: data.category!.colorHex))
+                    .frame(width: 12, height: 12)
+                Text(data.category!.categoryName)
+                    .font(.system(size: 17))
+                    .lineLimit(1)
+            }
             
             Spacer()
-            TextField("",
+            TextField("未設定",
                       text: Binding(
                         get: {
-                            data.editingAmount.map(String.init) ?? ""
+                            data.amountInput ?? ""
                         },
                         set: { newValue in
-                            data.editingAmount = Int(
+                            let value = String(
                                 newValue
                                     .filter { $0.isNumber }
                                     .prefix(6)
                             )
+                            data.amountInput = value.isEmpty ? nil : value
                         }
                       )
             )
@@ -182,12 +325,10 @@ struct budgetCard: View {
             .focused($isFocused)
             .onChange(of: isFocused) { _, focused in
                 if focused {
-                    if data.editingAmount == 0 {
-                        data.editingAmount = nil
-                    }
                     onFocus()
                 } else if !isSaving {
-                    data.editingAmount = data.amount
+                    data.amountInput = data.budget != nil ? String(data.budget!.amount) : nil
+                    onUnfocus()
                 }
             }
             

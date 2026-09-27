@@ -13,7 +13,8 @@ final class HistoryDetailsSheetViewModel {
     private let transitionService: TransitionService
     private let fixedTransitionService: FixedTransitionService
         
-    var selectedDate: Date = Date()
+    var selectedDate: Date = Calendar.current.startOfDay(for: Date())
+    var editingDate: Date? 
     
     var totalIncome: Int = 0
     var totalExpense: Int = 0

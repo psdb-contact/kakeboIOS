@@ -74,40 +74,42 @@ private struct EditTransitionContentView: View {
             
             // MARK: - Transition List
             
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach($viewModel.transitions) { $item in
-                        TransitionInputForm(
-                            data: $item,
-                            onFocus: {
-                                viewModel.setEditingTransitionId(id:item.id)
-                            },
-                            onBlur: {
-                                item.editingAmount = item.amount
-                            },
-                            onAddAmount: {
-                                viewModel.setAddingAmount(for: item.id)
-                            },
-                            isSaving: viewModel.isSaving,
-                        )
-                        
-                        if item.id != viewModel.transitions.last?.id {
-                            Divider()
-                                .padding(.horizontal, 8)
+            if(!$viewModel.transitions.isEmpty) {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach($viewModel.transitions) { $item in
+                            TransitionInputForm(
+                                data: $item,
+                                onFocus: {
+                                    viewModel.setEditingTransitionId(id:item.id)
+                                },
+                                onBlur: {
+                                    item.editingAmount = item.amount
+                                },
+                                onAddAmount: {
+                                    viewModel.setAddingAmount(for: item.id)
+                                },
+                                isSaving: viewModel.isSaving,
+                            )
+                            
+                            if item.id != viewModel.transitions.last?.id {
+                                Divider()
+                                    .padding(.horizontal, 8)
+                            }
                         }
                     }
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
+                    .padding(.horizontal, 12)
                 }
-                .padding(.top, 16)
-                .padding(.bottom, 8)
+                .clipped()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.container)
+                )
                 .padding(.horizontal, 12)
+                .scrollIndicators(.visible)
             }
-            .clipped()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.container)
-            )
-            .padding(.horizontal, 12)
-            .scrollIndicators(.visible)
         }
         .padding(.bottom, 8)
         .frame(maxHeight: .infinity, alignment: .top)
@@ -121,6 +123,18 @@ private struct EditTransitionContentView: View {
                         .font(.system(size: 19))
                 }
                 .buttonStyle(.plain)
+            }
+            ToolbarItem(placement: .principal) {
+                TextToggle(
+                    items: [
+                        .init(title: "支出", value: .expense),
+                        .init(title: "収入", value: .income)
+                    ],
+                    selection: viewModel.transitionPeriod.type,
+                    onSelectionChanged: { value in
+                        viewModel.setTransitionPeriodType(value)
+                    }
+                )
             }
             ToolbarItemGroup(placement: .keyboard) {
                 Button {
@@ -169,18 +183,19 @@ private struct EditTransitionContentView: View {
                 }
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $viewModel.showSelectCategory) {
             let usedCategories: [CategoryModel] = viewModel.transitions.map {
                 $0.category
             }
             NavigationStack {
-                SelectTransitionCategorySheet(usedCategories: usedCategories, selectedDate: viewModel.selectedDate)
+                SelectTransitionCategorySheet(usedCategories: usedCategories, transitionType: viewModel.transitionPeriod.type, selectedDate: viewModel.transitionPeriod.date)
                     .presentationDragIndicator(.hidden)
             }
         }
-        .task(id: viewModel.selectedDate) {
+        .task(id: viewModel.transitionPeriod) {
             do {
-                try viewModel.loadTransitions()
+                try viewModel.load(transitionPeriod: viewModel.transitionPeriod)
             } catch {
                 print("Transitionの読み込みに失敗しました: \(error)")
             }
@@ -194,7 +209,7 @@ private struct EditTransitionContentView: View {
         formatter.dateFormat = "yyyy / M / d"
         
         return formatter.string(
-            from: viewModel.selectedDate
+            from: viewModel.transitionPeriod.date
         )
     }
     
@@ -334,7 +349,6 @@ struct TransitionInputForm: View {
                 .font(.system(size: 20))
             }
         }
-        
         .padding(.top, 2)
         .padding(.bottom, 2)
         .padding(.leading, 8)

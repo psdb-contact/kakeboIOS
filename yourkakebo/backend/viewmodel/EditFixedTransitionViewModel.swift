@@ -13,7 +13,10 @@ import SwiftUI
 final class EditFixedTransitionViewModel {
     private let fixedTransitionService: FixedTransitionService
     private let categoryService: CategoryService
-
+    
+    let fixedTransition: FixedTransitionModel?
+    
+    var toast: ToastData?
     var showCategorySheet = false
     var showCycleTypeSheet = false
     var showHolidayTypeSheet = false
@@ -27,19 +30,15 @@ final class EditFixedTransitionViewModel {
     var editingEndDate: Date? = nil
     
     var categories: [CategoryModel] = []
-
+    
     var fixedTransitionName: String = ""
+    var amountInput: String  = "0"
     var category: CategoryModel? = nil
     var transitionType: TransitionType = .expense
-    var amount: Int = 0
-    var startDate: Date =  Date()
+    var startDate: Date =  Calendar.current.startOfDay(for: Date())
     var endDate: Date? = nil
-    var cycleType: CycleType = .monthly
-    var cycleInterval: Int? = nil
-    var cycleValue: Int? = nil
+    var cycleOptionType: CycleOptionType = .monthly(1)
     var cycleHolidayType: CycleHolidayType = .doNothing
-    
-    let fixedTransition: FixedTransitionModel?
     
     init(fixedTransition: FixedTransitionModel? , fixedTransitionService: FixedTransitionService, categoryService : CategoryService) {
         self.fixedTransition = fixedTransition
@@ -50,12 +49,10 @@ final class EditFixedTransitionViewModel {
             fixedTransitionName = fixedTransition.fixedTransitionName
             category = fixedTransition.category
             transitionType = fixedTransition.transitionType
-            amount = fixedTransition.amount
+            amountInput = String(fixedTransition.amount)
             startDate = fixedTransition.startDate
             endDate = fixedTransition.endDate
-            cycleType = fixedTransition.cycleType
-            cycleInterval = fixedTransition.cycleInterval
-            cycleValue = fixedTransition.cycleValue
+            cycleOptionType = Self.makeCycleOptionType(from: fixedTransition)
             cycleHolidayType = fixedTransition.cycleHolidayType
         }
     }
@@ -64,81 +61,92 @@ final class EditFixedTransitionViewModel {
         categories = try categoryService.getAllCategories()
     }
     
-    var cycleOptionType: CycleOptionType {
-        get {
-            switch cycleType {
+    private static func makeCycleOptionType(
+        from fixedTransition: FixedTransitionModel
+    ) -> CycleOptionType {
+        switch fixedTransition.cycleType {
             case .daily:
                 return .daily
-
+                
             case .weekday:
                 return .weekday
-
+                
             case .weekly:
-                return .weekly(cycleInterval ?? 1)
-
+                return .weekly(fixedTransition.cycleInterval ?? 1)
+                
             case .monthly:
-                return .monthly(cycleInterval ?? 1)
-
+                return .monthly(fixedTransition.cycleInterval ?? 1)
+                
             case .yearly:
                 return .yearly
-            }
-        }
-
-        set {
-            switch newValue {
-
-            case .daily:
-                cycleType = .daily
-                cycleInterval = nil
-                cycleValue = nil
-
-            case .weekday:
-                cycleType = .weekday
-                cycleInterval = nil
-                cycleValue = nil
-
-            case .weekly(let interval):
-                cycleType = .weekly
-                cycleInterval = interval
-
-                let swiftWeekday = Calendar.current.component(
-                    .weekday,
-                    from: startDate
-                )
-
-                cycleValue = swiftWeekday == 1
-                    ? 7
-                    : swiftWeekday - 1
-
-            case .monthly(let interval):
-                cycleType = .monthly
-                cycleInterval = interval
-
-                cycleValue = Calendar.current.component(
-                    .day,
-                    from: startDate
-                )
-
-            case .yearly:
-                cycleType = .yearly
-                cycleInterval = nil
-                cycleValue = nil
-            }
         }
     }
     
+    private func makeCycleData() -> (
+        type: CycleType,
+        interval: Int?,
+        value: Int?
+    ) {
+        switch cycleOptionType {
+            case .daily:
+                return (.daily, nil, nil)
+                
+            case .weekday:
+                return (.weekday, nil, nil)
+                
+            case .weekly(let interval):
+                let weekday = Calendar.current.component(
+                    .weekday,
+                    from: startDate
+                )
+                
+                let cycleValue = weekday == 1
+                ? 7
+                : weekday - 1
+                
+                return (.weekly, interval, cycleValue)
+                
+            case .monthly(let interval):
+                let cycleValue = Calendar.current.component(
+                    .day,
+                    from: startDate
+                )
+                
+                return (.monthly, interval, cycleValue)
+                
+            case .yearly:
+                return (.yearly, nil, nil)
+            }
+    }
+    
     func save() throws {
+        let name = fixedTransitionName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else {
+            throw EditFixedTransitionError.emptyName
+        }
+        
+        guard let amountValue = Int(amountInput),
+              amountValue > 0 else {
+            throw EditFixedTransitionError.invalidAmount
+        }
+        
+        if let endDate, endDate < startDate {
+            throw EditFixedTransitionError.invalidDateRange
+        }
+        
+        let cycleData = makeCycleData()
+        
         if let fixedTransition {
-            fixedTransitionName = fixedTransitionName
-            category = category
-            transitionType = transitionType
-            amount = amount
-            startDate = startDate
-            endDate = endDate
-            cycleType = cycleType
-            cycleInterval = cycleInterval
-            cycleValue = cycleValue
-            cycleHolidayType = cycleHolidayType
+            fixedTransition.fixedTransitionName = fixedTransitionName
+            fixedTransition.category = category
+            fixedTransition.transitionType = transitionType
+            fixedTransition.amount = amountValue
+            fixedTransition.startDate = startDate
+            fixedTransition.endDate = endDate
+            fixedTransition.cycleType = cycleData.type
+            fixedTransition.cycleInterval = cycleData.interval
+            fixedTransition.cycleValue = cycleData.value
+            fixedTransition.cycleHolidayType = cycleHolidayType
             
             try fixedTransitionService.updateFixedTransition(fixedTransition)
         } else {
@@ -147,12 +155,12 @@ final class EditFixedTransitionViewModel {
                     fixedTransitionName: fixedTransitionName,
                     category: category,
                     transitionType: transitionType,
-                    amount: amount,
+                    amount: amountValue,
                     startDate: startDate,
                     endDate: endDate,
-                    cycleType: cycleType,
-                    cycleInterval: cycleInterval,
-                    cycleValue: cycleValue,
+                    cycleType: cycleData.type,
+                    cycleInterval: cycleData.interval,
+                    cycleValue: cycleData.value,
                     cycleHolidayType: cycleHolidayType,
                     isActive: true
                     

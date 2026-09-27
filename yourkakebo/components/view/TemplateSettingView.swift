@@ -38,10 +38,7 @@ private struct TemplateSettingContentView: View {
     init(templateService: TemplateService) {
         self.templateService = templateService
         
-        _viewModel = State(initialValue: TemplateSettingViewModel(
-            templateService: templateService
-        )
-        )
+        _viewModel = State(initialValue: TemplateSettingViewModel(templateService: templateService))
     }
     
     var body: some View {
@@ -70,6 +67,18 @@ private struct TemplateSettingContentView: View {
             .scrollIndicators(.visible)
         }
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                TextToggle(
+                    items: [
+                        .init(title: "支出", value: .expense),
+                        .init(title: "収入", value: .income)
+                    ],
+                    selection: viewModel.transitionType,
+                    onSelectionChanged: { value in
+                        viewModel.transitionType = value;
+                    }
+                )
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     viewModel.showSelectCategory = true
@@ -86,9 +95,14 @@ private struct TemplateSettingContentView: View {
                 }
             }
         }
-        .sheet(isPresented: $viewModel.showSelectCategory, onDismiss: {try? viewModel.load()}) {
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $viewModel.showSelectCategory,
+               onDismiss: {
+            try? viewModel.load()
+        }
+        ) {
             NavigationStack {
-                SelectTemplateCategorySheet(usedCategories: viewModel.usedCategories)
+                SelectTemplateCategorySheet(transitionType: viewModel.transitionType, usedCategories: viewModel.usedCategories)
                     .presentationBackground(Color.modalSheetBackground)
                     .presentationDragIndicator(.hidden)
             }
@@ -114,11 +128,9 @@ private struct TemplateSettingContentView: View {
                 deleteTemplate()
             }
         } message: {
-            Text(
-                "TODO"
-            )
+                Text("※すでに記録されているこのカテゴリの収支は削除されません。")
         }
-        .task {
+        .task(id: viewModel.transitionType) {
             try? viewModel.load()
         }
     }

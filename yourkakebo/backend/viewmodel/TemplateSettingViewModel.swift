@@ -15,6 +15,7 @@ final class TemplateSettingViewModel {
     
     var templateToDelete: TemplateModel?
     var showSelectCategory = false
+    var transitionType: TransitionType = .expense
     
     var templates:[TemplateModel] = []
     var usedCategories:[CategoryModel] = []
@@ -24,7 +25,7 @@ final class TemplateSettingViewModel {
     }
     
     func load() throws {
-        templates = try templateService.getAllTemplates()
+        templates = try templateService.getAllTemplatesByTransitionType(transitionType)
         usedCategories = templates.map(\.category)
     }
     
@@ -37,8 +38,7 @@ final class TemplateSettingViewModel {
     func moveTemplate(from source: IndexSet, to destination: Int) throws {
         var reordered = templates
         
-        reordered.move( fromOffsets: source,
-                        toOffset: destination)
+        reordered.move(fromOffsets: source, toOffset: destination)
         
         for(index, template) in reordered.enumerated() {
             template.sortOrder = index

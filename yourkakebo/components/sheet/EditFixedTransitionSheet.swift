@@ -6,6 +6,8 @@ struct EditFixedTransitionSheet: View {
     
     @State private var viewModel: EditFixedTransitionViewModel
     
+    @FocusState private var isAmountFocused: Bool
+    
     private let cycleOptions: [CycleOptionType] = [
         .daily,
         .weekday,
@@ -36,18 +38,18 @@ struct EditFixedTransitionSheet: View {
             
             ScrollView {
                 VStack(spacing: 16) {
-                        Picker(
-                            "種類",
-                            selection: $viewModel.transitionType
-                        ) {
-                            Text("支出")
-                                .tag(TransitionType.expense)
-                            
-                            Text("収入")
-                                .tag(TransitionType.income)
-                        }
-                        .pickerStyle(.segmented)
-
+                    Picker(
+                        "種類",
+                        selection: $viewModel.transitionType
+                    ) {
+                        Text("支出")
+                            .tag(TransitionType.expense)
+                        
+                        Text("収入")
+                            .tag(TransitionType.income)
+                    }
+                    .pickerStyle(.segmented)
+                    
                     VStack {
                         HStack {
                             Text("固定出費名")
@@ -70,9 +72,18 @@ struct EditFixedTransitionSheet: View {
                                 .frame(width: 108, alignment: .leading)
                             TextField(
                                 "",
-                                value: $viewModel.amount,
-                                format: .number
+                                text: $viewModel.amountInput
                             )
+                            .focused($isAmountFocused)
+                            .onChange(of: isAmountFocused) { _, isFocused in
+                                if isFocused && viewModel.amountInput == "0" {
+                                    viewModel.amountInput = ""
+                                } else {
+                                    if viewModel.amountInput.isEmpty {
+                                        viewModel.amountInput = "0"
+                                    }
+                                }
+                            }
                             .padding(.horizontal, 12)
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.numberPad)
@@ -104,7 +115,7 @@ struct EditFixedTransitionSheet: View {
                             .frame(height: 52)
                         }
                         Divider().padding(.horizontal, 12)
-
+                        
                         Button {
                             viewModel.editingCycleOptionType = viewModel.cycleOptionType
                             viewModel.showCycleTypeSheet = true
@@ -124,7 +135,7 @@ struct EditFixedTransitionSheet: View {
                             .frame(height: 52)
                         }
                         Divider().padding(.horizontal, 12)
-
+                        
                         Button {
                             viewModel.showStartDateSheet = true
                         } label: {
@@ -152,7 +163,7 @@ struct EditFixedTransitionSheet: View {
                             .frame(height: 52)
                         }
                         Divider().padding(.horizontal, 12)
-
+                        
                         Button {
                             viewModel.showEndDateSheet = true
                         } label: {
@@ -180,7 +191,7 @@ struct EditFixedTransitionSheet: View {
                             .frame(height: 52)
                         }
                         Divider().padding(.horizontal, 12)
-
+                        
                         Button {
                             viewModel.showHolidayTypeSheet = true
                         } label: {
@@ -229,7 +240,6 @@ struct EditFixedTransitionSheet: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     save()
-                    dismiss()
                 } label: {
                     Image(systemName: "checkmark")
                         .font(.system(size: 24))
@@ -408,12 +418,14 @@ struct EditFixedTransitionSheet: View {
                         "終了日",
                         selection: Binding(
                             get: {
-                                viewModel.editingEndDate ??  viewModel.endDate ?? Date()
+                                viewModel.editingEndDate ??  viewModel.endDate ?? Calendar.current.startOfDay(for: Date())
                             },
                             set: {
                                 viewModel.editingEndDate = $0
                             }
-                        ),                        displayedComponents: [.date]
+                        ),
+                        in: PartialRangeFrom(viewModel.startDate),
+                        displayedComponents: [.date],
                     )
                     .datePickerStyle(.wheel)
                     .labelsHidden()
@@ -448,14 +460,16 @@ struct EditFixedTransitionSheet: View {
         }
         .sheet(isPresented: $viewModel.showHolidayTypeSheet) {
             NavigationStack {
-                Picker("休日の扱い", selection:  Binding(
-                    get: {
-                        viewModel.editingCycleHoliday ?? viewModel.cycleHolidayType
-                    },
-                    set: {
-                        viewModel.editingCycleHoliday = $0
-                    }
-                ) ){
+                Picker("休日の扱い",
+                       selection:  Binding(
+                            get: {
+                                viewModel.editingCycleHoliday ?? viewModel.cycleHolidayType
+                            },
+                            set: {
+                                viewModel.editingCycleHoliday = $0
+                            }
+                       )
+                ){
                     ForEach(CycleHolidayType.allCases, id: \.self) { option in
                         Text(option.displayString)
                             .tag(option)
@@ -488,6 +502,7 @@ struct EditFixedTransitionSheet: View {
             }
             .presentationDetents([.medium])
         }
+        .toast(toast: $viewModel.toast)
         .task{
             do {
                 try viewModel.load()
@@ -504,6 +519,7 @@ struct EditFixedTransitionSheet: View {
             try viewModel.save()
             dismiss()
         } catch {
+            viewModel.toast = .error(error.localizedDescription)
             print("固定出費の保存に失敗しました: \(error)")
         }
     }

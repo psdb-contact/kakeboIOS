@@ -15,13 +15,18 @@ final class SelectTransitionCategoryViewModel {
     private let transitionService: TransitionService
     var categoriesData: [SelectTransitionCategoryData] = []
     
-    init(categoryService: CategoryService, transitionService: TransitionService) {
+    let usedCategories: [CategoryModel]
+    let transitionType: TransitionType
+    
+    init(categoryService: CategoryService, transitionService: TransitionService, usedCategories: [CategoryModel], transitionType: TransitionType) {
         self.categoryService = categoryService
         self.transitionService = transitionService
+        self.usedCategories = usedCategories
+        self.transitionType = transitionType
     }
     
-    func load(usedCategories: [CategoryModel]) throws {
-        let categories = try categoryService.getAllCategories()
+    func load() throws {
+        let categories = try categoryService.getAllCategoriesByTransitionType(transitionType)
         
         categoriesData = categories.map { category in
             SelectTransitionCategoryData(

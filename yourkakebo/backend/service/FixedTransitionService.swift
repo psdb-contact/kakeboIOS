@@ -17,8 +17,8 @@ final class FixedTransitionService {
         try fixedTransitionRepository.getAllFixedTransitions()
     }
     
-    func getAllFixedExpenses() throws -> [FixedTransitionModel] {
-        try fixedTransitionRepository.getAllFixedExpenses()
+    func getAllFixedTransitionsByTransitionType(_ transitionType: TransitionType) throws -> [FixedTransitionModel] {
+        try fixedTransitionRepository.getAllFixedTransitionsByTransitionType(transitionType)
     }
 
     func addFixedTransition(_ fixedTransition: FixedTransitionModel) throws {

@@ -76,7 +76,7 @@ final class BudgetReportViewModel {
             to: periodEnd
         )!
         
-        let transitions = try transitionService.getAllExpenses()
+        let transitions = try transitionService.getAllTransitionsByTransitionType(.expense)
         let periodTransitions = transitions.filter {
             let date = calendar.startOfDay(
                 for: $0.transitionDate
@@ -94,7 +94,7 @@ final class BudgetReportViewModel {
             }
         }
         
-        let fixedTransitions = try fixedTransitionService.getAllFixedExpenses()
+        let fixedTransitions = try fixedTransitionService.getAllFixedTransitionsByTransitionType(.expense)
         
         let activeFixedTransitions = fixedTransitions.filter {
             $0.isActive

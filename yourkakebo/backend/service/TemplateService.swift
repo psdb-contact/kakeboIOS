@@ -16,6 +16,10 @@ final class TemplateService {
     func getAllTemplates() throws -> [TemplateModel] {
         try templateRepository.getAllTemplates()
     }
+    
+    func getAllTemplatesByTransitionType(_ transitionType: TransitionType) throws -> [TemplateModel] {
+        try templateRepository.getAllTemplatesByTransitionType(transitionType)
+    }
 
     func addTemplate(_ template: TemplateModel) throws {
         try modelContext.transaction {

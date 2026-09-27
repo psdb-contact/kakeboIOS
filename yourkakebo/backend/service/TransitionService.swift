@@ -18,14 +18,18 @@ final class TransitionService {
         try transitionRepository.getAllTransitions()
     }
     
-    func getAllExpenses() throws -> [TransitionModel] {
-        try transitionRepository.getAllExpenses()
+    func getAllTransitionsByTransitionType(_ transitionType: TransitionType) throws -> [TransitionModel] {
+        try transitionRepository.getAllTransitionsByTransitionType(transitionType)
     }
 
     func getAllTransitionsByDate(
         _ date: Date
     ) throws -> [TransitionModel] {
         try transitionRepository.getAllTransitionsByDate(date)
+    }
+    
+    func getTransitionsByDateAndTransitionType(date: Date, transitionType: TransitionType) throws -> [TransitionModel] {
+        try transitionRepository.getTransitionsByDateAndTransitionType(date: date, transitionType: transitionType)
     }
 
     func addTransition(

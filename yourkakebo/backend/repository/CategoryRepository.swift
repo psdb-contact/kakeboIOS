@@ -27,7 +27,7 @@ final class CategoryRepository {
         return try modelContext.fetch(descriptor)
     }
     
-    func getAllExpenseCategories() throws -> [CategoryModel] {
+    func getAllCategoriesByTransitionType(_ transitionType: TransitionType) throws -> [CategoryModel] {
         let descriptor = FetchDescriptor<CategoryModel>(
             sortBy: [SortDescriptor(\.sortOrder)],
         )
@@ -35,7 +35,7 @@ final class CategoryRepository {
         let categories = try modelContext.fetch(descriptor)
         
         return categories.filter {
-            $0.transitionType == .expense
+            $0.transitionType == transitionType
         }
     }
     

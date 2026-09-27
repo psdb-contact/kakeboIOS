@@ -14,13 +14,13 @@ final class EditTransitionViewModel {
     
 
     // MARK: - State
-
-    var selectedDate: Date = Calendar.current.startOfDay(for: Date())
     var transitions: [TransitionInputData] = []
     var showSelectCategory = false
     var addingTransition: TransitionInputData?
     var editingTransitionID: UUID?
     var isSaving = false
+    
+    var transitionPeriod: TransitionPeriod
 
     // MARK: - Init
 
@@ -30,19 +30,23 @@ final class EditTransitionViewModel {
     ) {
         self.transitionService = transitionService
         self.templateService = templateService
+        
+        let calendar = Calendar.current
+        self.transitionPeriod = TransitionPeriod(type: .expense, date: calendar.startOfDay(for: Date()))
     }
 
     // MARK: - Action
 
     func moveDate(by value: Int) {
-        
         resetAddingAmount()
         
-        selectedDate = Calendar.current.date(
+        let date = Calendar.current.date(
             byAdding: .day,
             value: value,
-            to: selectedDate
-        ) ?? selectedDate
+            to: transitionPeriod.date
+        ) ?? transitionPeriod.date
+        
+        transitionPeriod = TransitionPeriod(type: transitionPeriod.type, date: date)
     }
     
     func setEditingTransitionId(id: UUID) {
@@ -50,10 +54,11 @@ final class EditTransitionViewModel {
 
         editingTransitionID = id
     }
+    
 
-    func loadTransitions() throws {
-        let templates = try templateService.getAllTemplates()
-        let dateTransitions = try transitionService.getAllTransitionsByDate(selectedDate)
+    func load(transitionPeriod: TransitionPeriod) throws {
+        let templates = try templateService.getAllTemplatesByTransitionType(transitionPeriod.type)
+        let dateTransitions = try transitionService.getTransitionsByDateAndTransitionType(date: transitionPeriod.date, transitionType: transitionPeriod.type)
 
         
         // MARK: Transition Map
@@ -165,7 +170,7 @@ final class EditTransitionViewModel {
             let newTransition = TransitionModel(
                 amount: newAmount,
                 transitionType: data.category.transitionType,
-                transitionDate: selectedDate,
+                transitionDate: transitionPeriod.date,
                 createdAt: Date(),
                 category: data.category
             )
@@ -206,7 +211,7 @@ final class EditTransitionViewModel {
             let newTransition = TransitionModel(
                 amount: amount,
                 transitionType: data.category.transitionType,
-                transitionDate: selectedDate,
+                transitionDate: transitionPeriod.date,
                 createdAt: Date(),
                 category: data.category
             )
@@ -232,6 +237,10 @@ final class EditTransitionViewModel {
                 transitions[index].addingAmount = nil
             }
         }
+    }
+    
+    func setTransitionPeriodType(_ transitionType: TransitionType) {
+        transitionPeriod = TransitionPeriod(type: transitionType, date: transitionPeriod.date)
     }
     
     func setShowSelectedCategory() {
