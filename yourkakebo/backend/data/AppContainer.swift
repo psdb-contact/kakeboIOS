@@ -10,6 +10,8 @@ import Observation
 
 @Observable
 final class AppContainer {
+    let appSettings: AppSettings
+    
     let categoryService: CategoryService
     let transitionService: TransitionService
     let budgetService: BudgetService
@@ -17,6 +19,8 @@ final class AppContainer {
     let fixedTransitionService: FixedTransitionService
     
     init(modelContext: ModelContext) {
+        self.appSettings = AppSettings()
+        
         let categoryRepository = CategoryRepository(
             modelContext: modelContext
         )

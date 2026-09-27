@@ -15,19 +15,22 @@ struct SettingView: View {
     var body: some View {
         ZStack {
             Color.secondBackground.ignoresSafeArea()
-            SettingContentView()
+            SettingContentView(appSettings: appContainer.appSettings)
         }
     }
 }
 
 private struct SettingContentView: View {
+    let appSettings: AppSettings
     
-    init(
+    init(appSettings: AppSettings
     ) {
-        
+        self.appSettings = appSettings
     }
     
     var body: some View {
+        @Bindable var appSettings = appSettings
+
         ScrollView {
             VStack(spacing: 16) {
                 VStack {
@@ -57,7 +60,7 @@ private struct SettingContentView: View {
                         .padding(.horizontal, 16)
                     }
                     Divider().padding(.horizontal, 12)
-
+                    
                     NavigationLink {
                         FixedTransitionSettingView()
                     } label: {
@@ -70,7 +73,7 @@ private struct SettingContentView: View {
                         .padding(.horizontal, 16)
                     }
                     Divider().padding(.horizontal, 12)
-
+                    
                     NavigationLink {
                         BudgetSettingView()
                     } label: {
@@ -87,6 +90,34 @@ private struct SettingContentView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.container)
                 )
+                VStack {
+                    NavigationLink {
+                        SelectionView(
+                            title: "ダークモード",
+                            selection: $appSettings.themeType,
+                            displayName: \.displayName
+                        )
+                    } label: {
+                        HStack {
+                            Text("ダークモード")
+
+                            Spacer()
+
+                            Text(appSettings.themeType.displayName).foregroundStyle(.secondary)
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                    }
+                    .tint(.primary)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.container)
+                )
             }
         }
         .padding(.horizontal, 16)
@@ -99,35 +130,35 @@ private struct SettingContentView: View {
 
 @MainActor
 private struct PreviewContent: View {
-
+    
     private let container: ModelContainer
     private let appContainer: AppContainer
-
+    
     init() {
         let container = try! ModelContainer(
             for:
                 CategoryModel.self,
-                TransitionModel.self,
-                BudgetModel.self,
-                TemplateModel.self,
-                FixedTransitionModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true
             )
         )
-
+        
         let context = container.mainContext
-
+        
         PreviewSeeder.seed(
             context: context
         )
-
+        
         self.container = container
         self.appContainer = AppContainer(
             modelContext: context
         )
     }
-
+    
     var body: some View {
         NavigationStack{
             SettingView()

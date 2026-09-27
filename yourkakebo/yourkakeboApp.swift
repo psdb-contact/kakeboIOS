@@ -12,8 +12,7 @@ import SwiftData
 struct YourKakeboApp: App {
     let modelContainer: ModelContainer
     let appContainer: AppContainer
-    private let settings = SettingModel()
-    
+        
     init() {
         do {
             let container = try ModelContainer(
@@ -29,7 +28,6 @@ struct YourKakeboApp: App {
             self.appContainer = AppContainer(
                 modelContext: container.mainContext
             )
-            
         } catch {
             fatalError(
                 "ModelContainerの作成に失敗しました: \(error)"
@@ -44,15 +42,16 @@ struct YourKakeboApp: App {
                     let context = ModelContext(modelContainer)
                     
                     InitialCategorySeeder.seedIfNeeded(
-                        settings: settings,
+                        appSettings: appContainer.appSettings,
                         context: context
                     )
                     InitialTemplateSeeder.seedIfNeeded(
-                        settings:settings,
+                        appSettings: appContainer.appSettings,
                         context: context
                     )
-                    settings.isFirstLaunch = false
+                    appContainer.appSettings.isFirstLaunch = false
                 }
+                .preferredColorScheme(appContainer.appSettings.themeType.swiftUIThemeMode)
                 .environment(\.locale, Locale(identifier: "ja_JP"))
         }
         .modelContainer(modelContainer)

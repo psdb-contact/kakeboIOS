@@ -4,10 +4,10 @@ import SwiftData
 enum InitialCategorySeeder {
 
     static func seedIfNeeded(
-        settings: SettingModel,
+        appSettings: AppSettings,
         context: ModelContext
     ) {
-        guard settings.isFirstLaunch else {
+        guard appSettings.isFirstLaunch else {
             return
         }
          

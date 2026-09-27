@@ -11,10 +11,10 @@ import SwiftData
 enum InitialTemplateSeeder {
 
     static func seedIfNeeded(
-        settings: SettingModel,
+        appSettings: AppSettings,
         context: ModelContext
     ) {
-        guard settings.isFirstLaunch else {
+        guard appSettings.isFirstLaunch else {
             return
         }
 
