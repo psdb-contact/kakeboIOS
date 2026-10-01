@@ -40,7 +40,7 @@ final class FixedTransitionRepository {
         }
     }
     
-    func getAllFixedTransitionsByCategoryId(_ categoryId: String) throws -> [FixedTransitionModel] {
+    func getAllFixedTransitionsByCategoryId(_ categoryId: UUID) throws -> [FixedTransitionModel] {
         let descriptor = FetchDescriptor<FixedTransitionModel> (
             predicate: #Predicate {
                 $0.category?.categoryId == categoryId
@@ -88,7 +88,5 @@ final class FixedTransitionRepository {
         for fixedTransition in fixedTransitions {
             modelContext.delete(fixedTransition)
         }
-
-        try modelContext.save()
     }
 }

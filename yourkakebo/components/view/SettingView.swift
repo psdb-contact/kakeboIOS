@@ -118,6 +118,52 @@ private struct SettingContentView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.container)
                 )
+                VStack {
+                    NavigationLink {
+                        BackupView()
+                    } label: {
+                        HStack {
+                            Text("バックアップ")
+
+                            Spacer()
+
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                    }
+                    .tint(.primary)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.container)
+                )
+                VStack {
+                    NavigationLink {
+                        NotificationView()
+                    } label: {
+                        HStack {
+                            Text("入れ忘れ通知")
+
+                            Spacer()
+
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                    }
+                    .tint(.primary)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.container)
+                )
             }
         }
         .padding(.horizontal, 16)

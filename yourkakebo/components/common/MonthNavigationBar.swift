@@ -17,13 +17,7 @@ struct PeriodNavigationBar: View {
 
                 Text(formattedDate)
                     .font(.system(size: 19, weight: .semibold))
-                    .foregroundStyle(
-                        Color(
-                            red: 0.133,
-                            green: 0.133,
-                            blue: 0.133
-                        )
-                    )
+                    .foregroundStyle(.primary)
                     .frame(width: 130)
 
                 Button {

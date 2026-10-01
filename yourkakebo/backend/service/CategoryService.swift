@@ -35,7 +35,7 @@ final class CategoryService {
     }
 
     func addCategory(_ category: CategoryModel) throws {
-        try categoryRepository.addCategory(category)
+        try categoryRepository.insertCategory(category)
     }
 
     func updateCategory(_ category: CategoryModel) throws {

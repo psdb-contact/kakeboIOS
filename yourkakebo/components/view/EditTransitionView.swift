@@ -55,18 +55,13 @@ private struct EditTransitionContentView: View {
                     } label: {
                         Image(systemName: "plus")
                             .font(.system(size: 26))
-                            .foregroundStyle(
-                                Color(
-                                    red: 0.267,
-                                    green: 0.267,
-                                    blue: 0.267
-                                )
-                            )
+                            .foregroundStyle(.primary)
                             .frame(
                                 width: 44,
                                 height: 44
                             )
                     }
+                    .buttonStyle(.plain)
                     .modifier(GlassEffectModifier())
                 }
                 .safeAreaPadding(.horizontal)
@@ -105,7 +100,7 @@ private struct EditTransitionContentView: View {
                 .clipped()
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.container)
+                        .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 )
                 .padding(.horizontal, 12)
                 .scrollIndicators(.visible)
@@ -354,10 +349,6 @@ struct TransitionInputForm: View {
         .padding(.leading, 8)
         .padding(.trailing, 0)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.containerColor)
-        )
         .clipShape(
             RoundedRectangle(cornerRadius: 8)
         )
@@ -381,13 +372,13 @@ private struct PreviewContent: View {
         let container = try! ModelContainer(
             for:
                 CategoryModel.self,
-            TransitionModel.self,
-            BudgetModel.self,
-            TemplateModel.self,
-            FixedTransitionModel.self,
-            configurations: ModelConfiguration(
-                isStoredInMemoryOnly: true
-            )
+                TransitionModel.self,
+                BudgetModel.self,
+                TemplateModel.self,
+                FixedTransitionModel.self,
+                configurations: ModelConfiguration(
+                    isStoredInMemoryOnly: true
+                )
         )
         
         let context = container.mainContext
@@ -407,6 +398,7 @@ private struct PreviewContent: View {
             EditTransitionView()
                 .background(Color.secondBackground)
         }
+        .preferredColorScheme(.dark)
         .modelContainer(container)
         .environment(appContainer)
     }

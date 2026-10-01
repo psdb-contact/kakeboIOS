@@ -95,7 +95,7 @@ final class BudgetService {
                 endMonth: budget.startMonth
             )
             
-            try budgetRepository.addBudget(newBudget)
+            try budgetRepository.insertBudget(newBudget)
         }
     }
     
@@ -126,7 +126,7 @@ final class BudgetService {
                 endMonth: BudgetModel.noExpirationDate
             )
             
-            try budgetRepository.addBudget(newBudget)
+            try budgetRepository.insertBudget(newBudget)
         }
     }
     
@@ -160,7 +160,7 @@ final class BudgetService {
                     endMonth: month
                 )
                 
-                try budgetRepository.addBudget(newBudget)
+                try budgetRepository.insertBudget(newBudget)
             }
             
             return

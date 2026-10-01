@@ -63,9 +63,9 @@ final class EditTransitionViewModel {
         
         // MARK: Transition Map
 
-        let transitionMap: [String: TransitionModel] = Dictionary(
+        let transitionMap: [UUID: TransitionModel] = Dictionary(
             uniqueKeysWithValues: dateTransitions.compactMap {
-                transition -> (String, TransitionModel)? in
+                transition -> (UUID, TransitionModel)? in
 
                 guard let category = transition.category else {
                     return nil
@@ -80,7 +80,7 @@ final class EditTransitionViewModel {
 
         // MARK: Template Map
 
-        let templateMap: [String: TemplateModel] = Dictionary(
+        let templateMap: [UUID: TemplateModel] = Dictionary(
             uniqueKeysWithValues: templates.map {
                 (
                     $0.category.categoryId,
@@ -168,11 +168,11 @@ final class EditTransitionViewModel {
             transitions[index].transition?.amount = newAmount
         } else {
             let newTransition = TransitionModel(
+                category: data.category,
                 amount: newAmount,
                 transitionType: data.category.transitionType,
                 transitionDate: transitionPeriod.date,
                 createdAt: Date(),
-                category: data.category
             )
 
             try transitionService.addTransition(newTransition)
@@ -209,11 +209,11 @@ final class EditTransitionViewModel {
             transitions[index].transition?.amount = amount
         } else {
             let newTransition = TransitionModel(
+                category: data.category,
                 amount: amount,
                 transitionType: data.category.transitionType,
                 transitionDate: transitionPeriod.date,
                 createdAt: Date(),
-                category: data.category
             )
 
             try transitionService.addTransition(

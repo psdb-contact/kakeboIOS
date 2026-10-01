@@ -10,8 +10,8 @@ import Foundation
 final class FixedTransitionModel {
     
     @Attribute(.unique) var fixedTransitionId: UUID
-    var fixedTransitionName: String
     var category: CategoryModel?
+    var fixedTransitionName: String
     var transitionType: TransitionType
     var amount: Int
     var startDate: Date
@@ -302,22 +302,22 @@ final class FixedTransitionModel {
     
     var cycleDisplayString: String {
         let calendar = Calendar.current
-
+        
         switch cycleType {
         case .daily:
             if let cycleInterval, cycleInterval > 1 {
                 return "\(cycleInterval)日ごと"
             }
             return "毎日"
-
+            
         case .weekday:
             return "平日"
-
+            
         case .weekly:
             guard let cycleValue else {
                 return cycleInterval == 1 ? "毎週" : "\(cycleInterval ?? 1)週間毎"
             }
-
+            
             let weekdayNames = [
                 1: "月曜",
                 2: "火曜",
@@ -327,31 +327,101 @@ final class FixedTransitionModel {
                 6: "土曜",
                 7: "日曜"
             ]
-
+            
             let weekday = weekdayNames[cycleValue] ?? ""
-
+            
             if cycleInterval == 1 {
                 return "毎週 \(weekday)"
             } else {
                 return "\(cycleInterval ?? 1)週間毎 \(weekday)"
             }
-
+            
         case .monthly:
             guard let cycleValue else {
                 return cycleInterval == 1 ? "毎月" : "\(cycleInterval ?? 1)ヶ月ごと"
             }
-
+            
             if cycleInterval == 1 {
                 return "毎月 \(cycleValue)日"
             } else {
                 return "\(cycleInterval ?? 1)ヶ月毎 \(cycleValue)日"
             }
-
+            
         case .yearly:
             let month = calendar.component(.month, from: startDate)
             let day = calendar.component(.day, from: startDate)
-
+            
             return "毎年 \(month)月\(day)日"
         }
+    }
+}
+
+struct FixedTransitionBackup: Encodable, Decodable {
+    let fixedTransitionId: UUID
+    let categoryId: UUID?
+    let fixedTransitionName: String
+    let transitionType: TransitionType
+    let amount: Int
+    let startDate: Date
+    let endDate: Date?
+    let cycleType: CycleType
+    let cycleInterval: Int?
+    let cycleValue: Int?
+    let cycleHolidayType: CycleHolidayType
+    let isActive: Bool
+}
+
+extension FixedTransitionBackup {
+    init(model: FixedTransitionModel) {
+        self.init(
+            fixedTransitionId: model.fixedTransitionId,
+            categoryId: model.category?.categoryId,
+            fixedTransitionName: model.fixedTransitionName,
+            transitionType: model.transitionType,
+            amount: model.amount,
+            startDate: model.startDate,
+            endDate: model.endDate,
+            cycleType: model.cycleType,
+            cycleInterval: model.cycleInterval,
+            cycleValue: model.cycleValue,
+            cycleHolidayType: model.cycleHolidayType,
+            isActive: model.isActive
+        )
+    }
+}
+
+func parseFixedTransitions(_ section: CSVSection) throws -> [FixedTransitionBackup] {
+    let index = try makeHeaderIndex(
+        section.header,
+        expected: [
+            "fixedTransitionId",
+            "categoryId",
+            "fixedTransitionName",
+            "transitionType",
+            "amount",
+            "startDate",
+            "endDate",
+            "cycleType",
+            "cycleInterval",
+            "cycleValue",
+            "cycleHolidayType",
+            "isActive"
+        ]
+    )
+    
+    return try section.rows.map { row in
+        FixedTransitionBackup(
+            fixedTransitionId: try parseUUID(row[index["fixedTransitionId"]!]),
+            categoryId: try parseOptionalUUID(row[index["categoryId"]!]),
+            fixedTransitionName: row[index["fixedTransitionName"]!],
+            transitionType: try parseEnum(row[index["transitionType"]!], as: TransitionType.self),
+            amount: try parseInt(row[index["amount"]!]),
+            startDate: try parseDate(row[index["startDate"]!]),
+            endDate: try parseOptionalDate(row[index["endDate"]!]),
+            cycleType: try parseEnum(row[index["cycleType"]!], as: CycleType.self),
+            cycleInterval: try parseOptionalInt(row[index["cycleInterval"]!]),
+            cycleValue: try parseOptionalInt(row[index["cycleValue"]!]),
+            cycleHolidayType: try parseEnum(row[index["cycleHolidayType"]!], as: CycleHolidayType.self),
+            isActive: try parseBool(row[index["isActive"]!]))
     }
 }

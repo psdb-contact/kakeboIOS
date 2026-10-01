@@ -101,7 +101,7 @@ private struct SelectTransitionCategoryContentSheet: View {
         do {
             try viewModel.save(
                 transition:
-                    TransitionModel(amount: 0, transitionType: category.transitionType, transitionDate: selectedDate, createdAt: Date.now, category: category)
+                    TransitionModel(category: category, amount: 0, transitionType: category.transitionType, transitionDate: selectedDate, createdAt: Date.now)
             )
         } catch {
             

@@ -46,7 +46,7 @@ final class BudgetRepository {
         return try modelContext.fetch(descriptor)
     }
     
-    func addBudget(_ budget: BudgetModel) throws {
+    func insertBudget(_ budget: BudgetModel) throws {
         modelContext.insert(budget)
         try modelContext.save()
     }
@@ -56,7 +56,7 @@ final class BudgetRepository {
     }
     
     func findMonthBudget(
-        categoryId: String?,
+        categoryId: UUID?,
         month: Date
     ) throws -> BudgetModel? {
 
@@ -75,7 +75,7 @@ final class BudgetRepository {
     }
     
     func findCoveringPeriodBudget(
-        categoryId: String?,
+        categoryId: UUID?,
         month: Date
     ) throws -> BudgetModel? {
         let descriptor = FetchDescriptor<BudgetModel>(
@@ -93,7 +93,7 @@ final class BudgetRepository {
     }
     
     func deleteBudgetsStartingFrom(
-        categoryId: String?,
+        categoryId: UUID?,
         month: Date
     ) throws  {
         let descriptor = FetchDescriptor<BudgetModel>(
@@ -116,6 +116,16 @@ final class BudgetRepository {
     func deleteBudget(_ budget: BudgetModel) throws {
         modelContext.delete(budget)
         try modelContext.save()
+    }
+    
+    func deleteAllBudgets() throws {
+        let budgets = try modelContext.fetch(
+               FetchDescriptor<BudgetModel>()
+           )
+
+       for budget in budgets {
+           modelContext.delete(budget)
+       }
     }
     
     func deleteBudget(_ id: UUID) throws {

@@ -48,3 +48,45 @@ enum EditFixedTransitionError: LocalizedError {
         }
     }
 }
+
+enum BackupError: LocalizedError {
+    case invalidFormat
+    case invalidHeader
+    case invalidUUID(String)
+    case invalidInteger(String)
+    case invalidDate(String)
+    case invalidBoolean(String)
+
+    case invalidEnumValue(type: String, value: String)
+
+    case categoryNotFound(UUID)
+
+    var errorDescription: String? {
+
+        switch self {
+        case .invalidFormat:
+            return "バックアップファイルの形式が正しくありません。"
+
+        case .invalidHeader:
+            return "バックアップファイルのヘッダーが正しくありません。"
+
+        case .invalidUUID(let value):
+            return "UUIDが正しくありません: \(value)"
+
+        case .invalidInteger(let value):
+            return "数値が正しくありません: \(value)"
+
+        case .invalidDate(let value):
+            return "日付が正しくありません: \(value)"
+
+        case .invalidBoolean(let value):
+            return "真偽値が正しくありません: \(value)"
+
+        case .invalidEnumValue(let type, let value):
+            return "\(type) の値が正しくありません: \(value)"
+
+        case .categoryNotFound(let id):
+            return "指定されたカテゴリが見つかりません: \(id)"
+        }
+    }
+}

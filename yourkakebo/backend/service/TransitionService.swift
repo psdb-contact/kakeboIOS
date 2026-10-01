@@ -37,7 +37,7 @@ final class TransitionService {
     ) throws {
         try modelContext.transaction {
             print(transition.transitionDate)
-            try transitionRepository.addTransition(transition)
+            try transitionRepository.insertTransition(transition)
         }
     }
 

@@ -27,7 +27,7 @@ final class AppSettings {
         }
     }
 
-    var backupDate: String? {
+    var backupDate: Date? {
         didSet {
             defaults.set(backupDate, forKey: Key.backupDate)
         }
@@ -70,9 +70,9 @@ final class AppSettings {
             )
         }
 
-        self.backupDate = defaults.string(
+        self.backupDate = defaults.object(
             forKey: Key.backupDate
-        )
+        ) as? Date
 
         self.appLaunchCount = defaults.integer(
             forKey: Key.appLaunchCount

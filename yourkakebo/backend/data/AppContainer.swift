@@ -18,6 +18,8 @@ final class AppContainer {
     let templateService: TemplateService
     let fixedTransitionService: FixedTransitionService
     
+    let backupService: BackupService
+    
     init(modelContext: ModelContext) {
         self.appSettings = AppSettings()
         
@@ -66,6 +68,15 @@ final class AppContainer {
         self.fixedTransitionService = FixedTransitionService(
             modelContext: modelContext,
             fixedTransitionRepository: fixedTransitionRepository
+        )
+        
+        self.backupService = BackupService(
+            modelContext:modelContext,
+            categoryRepository: categoryRepository,
+            budgetRepository: budgetRepository,
+            fixedTransitionRepository: fixedTransitionRepository,
+            templateRepisitory: templateRepository,
+            transitionRepository: transitionRepository
         )
     }
 }

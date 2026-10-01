@@ -39,7 +39,7 @@ final class CategoryRepository {
         }
     }
     
-    func addCategory(_ category: CategoryModel) throws {
+    func insertCategory(_ category: CategoryModel) throws {
         let minSortOrder = try getMinSortOrder()
         
         category.sortOrder = minSortOrder - 1

@@ -23,7 +23,7 @@ final class TemplateService {
 
     func addTemplate(_ template: TemplateModel) throws {
         try modelContext.transaction {
-            try templateRepository.addTemplate(template)
+            try templateRepository.insertTemplate(template)
         }
     }
 

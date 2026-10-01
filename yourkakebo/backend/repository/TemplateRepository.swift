@@ -40,7 +40,7 @@ final class TemplateRepository {
         }
     }
 
-    func addTemplate(_ template: TemplateModel) throws {
+    func insertTemplate(_ template: TemplateModel) throws {
         modelContext.insert(template)
         try modelContext.save()
     }
@@ -64,14 +64,12 @@ final class TemplateRepository {
 
     func deleteAllTemplates() throws {
         let templates = try modelContext.fetch(
-            FetchDescriptor<TemplateModel>()
+         FetchDescriptor<TemplateModel>()
         )
 
         for template in templates {
-            modelContext.delete(template)
+         modelContext.delete(template)
         }
-
-        try modelContext.save()
     }
 
     func replaceAllTemplates(_ templates: [TemplateModel]) throws {

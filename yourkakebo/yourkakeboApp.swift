@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct YourKakeboApp: App {
+    @Environment(\.scenePhase)
+    private var scenePhase
+    
     let modelContainer: ModelContainer
     let appContainer: AppContainer
         
@@ -56,5 +59,15 @@ struct YourKakeboApp: App {
         }
         .modelContainer(modelContainer)
         .environment(appContainer)
+        .onChange(of: scenePhase) {
+             guard scenePhase == .background else { return }
+
+             do {
+                 try appContainer.backupService.importInternalBackup()
+                 appContainer.appSettings.backupDate = Date()
+             } catch {
+                 print("自動バックアップに失敗しました: \(error)")
+             }
+         }
     }
 }

@@ -37,6 +37,7 @@ enum PreviewTransitionData {
             // **MARK: - 今月**
 
             TransitionModel(
+                category: categories[0],
                 amount: 1200,
                 transitionType: .expense,
                 transitionDate: date(
@@ -45,11 +46,11 @@ enum PreviewTransitionData {
                     day: 1
                 ),
                 createdAt: now,
-                category: categories[0],
                 memo: "昼食"
             ),
 
             TransitionModel(
+                category: categories[1],
                 amount: 3500,
                 transitionType: .expense,
                 transitionDate: date(
@@ -58,11 +59,11 @@ enum PreviewTransitionData {
                     day: 3
                 ),
                 createdAt: now,
-                category: categories[1],
                 memo: "電車・バス"
             ),
 
             TransitionModel(
+                category: categories[2],
                 amount: 5800,
                 transitionType: .expense,
                 transitionDate: date(
@@ -71,11 +72,12 @@ enum PreviewTransitionData {
                     day: 5
                 ),
                 createdAt: now,
-                category: categories[2],
                 memo: "日用品"
             ),
 
             TransitionModel(
+                category: categories[0],
+
                 amount: 9800,
                 transitionType: .expense,
                 transitionDate: date(
@@ -84,36 +86,35 @@ enum PreviewTransitionData {
                     day: 8
                 ),
                 createdAt: now,
-                category: categories[0],
                 memo: "外食"
             ),
 
             // **MARK: - 今日**
 
             TransitionModel(
+                category: categories[0],
                 amount: 980,
                 transitionType: .expense,
                 transitionDate: today,
                 createdAt: now,
-                category: categories[0],
                 memo: "朝食"
             ),
 
             TransitionModel(
+                category: categories[2],
                 amount: 2480,
                 transitionType: .expense,
                 transitionDate: today,
                 createdAt: now,
-                category: categories[2],
                 memo: "日用品"
             ),
 
             TransitionModel(
+                category: categories[4],
                 amount: 12000,
                 transitionType: .income,
                 transitionDate: today,
                 createdAt: now,
-                category: categories[4],
                 memo: "副業収入"
             ),
 
@@ -121,6 +122,7 @@ enum PreviewTransitionData {
             // **MARK: - 未来**
 
             TransitionModel(
+                category: categories[2],
                 amount: 15000,
                 transitionType: .income,
                 transitionDate: date(
@@ -129,13 +131,13 @@ enum PreviewTransitionData {
                     day: 10
                 ),
                 createdAt: now,
-                category: categories[2],
                 memo: "臨時収入"
             ),
 
             // **MARK: - 過去**
 
             TransitionModel(
+                category: categories[3],
                 amount: 4200,
                 transitionType: .expense,
                 transitionDate: date(
@@ -144,11 +146,11 @@ enum PreviewTransitionData {
                     day: 15
                 ),
                 createdAt: now,
-                category: categories[3],
                 memo: "映画"
             ),
 
             TransitionModel(
+                category: categories[4],
                 amount: 250000,
                 transitionType: .income,
                 transitionDate: date(
@@ -157,13 +159,13 @@ enum PreviewTransitionData {
                     day: 25
                 ),
                 createdAt: now,
-                category: categories[4],
                 memo: "給与"
             ),
 
             // **MARK: - 未分類**
 
             TransitionModel(
+                category: nil,
                 amount: 780,
                 transitionType: .expense,
                 transitionDate: date(
@@ -172,13 +174,13 @@ enum PreviewTransitionData {
                     day: 12
                 ),
                 createdAt: now,
-                category: nil,
                 memo: "未分類の支出"
             ),
 
             // **MARK: - 高額**
 
             TransitionModel(
+                category: categories[5],
                 amount: 85000,
                 transitionType: .expense,
                 transitionDate: date(
@@ -187,7 +189,6 @@ enum PreviewTransitionData {
                     day: 20
                 ),
                 createdAt: now,
-                category: categories[5],
                 memo: "家電購入"
             )
         ]

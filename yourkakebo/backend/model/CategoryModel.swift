@@ -10,7 +10,7 @@ import Foundation
 
 @Model
 final class CategoryModel: Hashable  {
-    @Attribute(.unique) var categoryId: String
+    @Attribute(.unique) var categoryId: UUID
     var categoryName: String
     var transitionType: TransitionType
     var colorHex: Int
@@ -36,7 +36,7 @@ final class CategoryModel: Hashable  {
     var templates: [TemplateModel] = []
 
     init(
-        categoryId: String = UUID().uuidString,
+        categoryId: UUID = UUID(),
         categoryName: String,
         transitionType: TransitionType,
         colorHex: Int,
@@ -78,5 +78,44 @@ struct CategoryResult {
     init(cancelled: Void = ()) {
         self.type = .cancelled
         self.category = nil
+    }
+}
+
+struct CategoryBackup: Encodable, Decodable {
+    let categoryId: UUID
+    let categoryName: String
+    let transitionType: TransitionType
+    let colorHex: Int
+    let isSystem: Bool
+    let sortOrder: Int
+}
+
+extension CategoryBackup {
+    init(model: CategoryModel) {
+        self.init(
+            categoryId: model.categoryId,
+            categoryName: model.categoryName,
+            transitionType: model.transitionType,
+            colorHex: model.colorHex,
+            isSystem: model.isSystem,
+            sortOrder: model.sortOrder
+        )
+    }
+}
+
+func parseCategories(_ section: CSVSection) throws -> [CategoryBackup] {
+    let index = try makeHeaderIndex(section.header, expected: [
+        "categoryId", "categoryName", "transitionType", "colorHex", "isSystem", "sortOrder"
+    ])
+    
+    return try section.rows.map { row in
+            CategoryBackup(
+                categoryId: try parseUUID(row[index["categoryId"]!]),
+                categoryName: row[index["categoryName"]!],
+                transitionType: try parseEnum(row[index["transitionType"]!], as: TransitionType.self),
+                colorHex: try parseInt(row[index["colorHex"]!]),
+                isSystem: try parseBool(row[index["isSystem"]!]),
+                sortOrder: try parseInt(row[index["sortOrder"]!])
+            )
     }
 }
