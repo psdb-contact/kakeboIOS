@@ -38,9 +38,7 @@ private struct FixedTransitionSettingContentView: View {
         self.fixedTransitionService = fixedTransitionService
         self.categoryService = categoryService
         
-        _viewModel = State(initialValue: FixedTransitionSettingViewModel(
-        )
-        )
+        _viewModel = State(initialValue: FixedTransitionSettingViewModel())
     }
     
     var body: some View {

@@ -13,6 +13,9 @@ final class AppSettings {
         static let appLaunchCount = "appLaunchCount"
         static let lastReviewRequestAt = "lastReviewRequestAt"
         static let themeType = "themeType"
+        static let isNotificationOn = "isNotificationOn"
+        static let notificationTime = "notificationTime"
+        static let notificationDays = "notificationDays"
     }
 
     var isFirstLaunch: Bool {
@@ -48,6 +51,27 @@ final class AppSettings {
     var themeType: AppThemeType {
         didSet {
             defaults.set(themeType.rawValue, forKey: Key.themeType)
+        }
+    }
+
+    var isNotificationOn: Bool {
+        didSet {
+            defaults.set(isNotificationOn, forKey: Key.isNotificationOn)
+        } 
+    }
+
+    var notificationTime: Int {
+        didSet {
+            defaults.set(notificationTime, forKey: Key.notificationTime)
+        }
+    }
+    
+    var notificationDays: Set<Weekday> {
+        didSet {
+            defaults.set(
+                notificationDays.map(\.rawValue),
+                forKey: Key.notificationDays
+            )
         }
     }
 
@@ -87,6 +111,35 @@ final class AppSettings {
             self.themeType = themeType
         } else {
             self.themeType = .system
+        }
+
+        if defaults.object(forKey: Key.isNotificationOn) == nil {
+            self.isNotificationOn = false
+        } else {
+            self.isNotificationOn = defaults.bool(forKey: Key.isNotificationOn)
+        }
+        
+        if defaults.object(forKey: Key.notificationTime) == nil {
+            self.notificationTime = 20 * 60
+        } else {
+            self.notificationTime = defaults.integer(
+                forKey: Key.notificationTime
+            )
+        }
+        
+        if let values = defaults.array(forKey: Key.notificationDays) as? [Int] {
+            self.notificationDays = Set(values.compactMap{
+                    Weekday(rawValue: $0)
+            })
+        } else {
+            self.notificationDays = [
+                .sunday,
+                .tuesday,
+                .wednesday,
+                .thursday,
+                .friday,
+                .saturday
+            ]
         }
     }
 }

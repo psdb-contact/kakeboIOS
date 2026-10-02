@@ -13,10 +13,13 @@ struct BackupView: View {
     private var appContainer
     
     var body: some View {
-        BackupContentView(
-            appSettings: appContainer.appSettings,
-            backupService: appContainer.backupService
-        )
+        ZStack {
+            Color.secondBackground.ignoresSafeArea()
+            BackupContentView(
+                appSettings: appContainer.appSettings,
+                backupService: appContainer.backupService
+            )
+        }
     }
 }
 
@@ -24,13 +27,11 @@ private struct BackupContentView: View {
     @Environment(\.dismiss) private var dismiss
     
     private let appSettings: AppSettings
-    private let backupService: BackupService
     
     @State private var viewModel: BackupViewModel
     
     init(appSettings: AppSettings, backupService: BackupService) {
         self.appSettings = appSettings
-        self.backupService = backupService
         
         _viewModel = State(initialValue: BackupViewModel(appSettings: appSettings, backupService: backupService))
     }

@@ -19,6 +19,7 @@ final class AppContainer {
     let fixedTransitionService: FixedTransitionService
     
     let backupService: BackupService
+    let notificationService: NotificationService
     
     init(modelContext: ModelContext) {
         self.appSettings = AppSettings()
@@ -78,5 +79,7 @@ final class AppContainer {
             templateRepisitory: templateRepository,
             transitionRepository: transitionRepository
         )
+        
+        self.notificationService = NotificationService()
     }
 }
