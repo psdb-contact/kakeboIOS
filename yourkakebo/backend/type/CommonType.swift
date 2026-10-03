@@ -53,6 +53,11 @@ enum Weekday: Int, CaseIterable, Hashable {
     }
 }
 
+enum PasscodeInputType {
+    case set
+    case remove
+}
+
 extension Set where Element == Weekday {
     var displayText: String {
         if self == Set(Weekday.allCases) {

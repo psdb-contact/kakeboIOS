@@ -7,29 +7,29 @@
 
 import SwiftUI
 
-struct NotificationView: View {
+struct NotificationSettingView: View {
     @Environment(AppContainer.self)
     private var appContainer
     
     var body: some View {
         ZStack {
             Color.secondBackground.ignoresSafeArea()
-            NotificationContentView(appSettings: appContainer.appSettings, notificationService: appContainer.notificationService)
+            NotificationSettingContentView(appSettings: appContainer.appSettings, notificationService: appContainer.notificationService)
         }
     }
 }
 
-private struct NotificationContentView: View {
+private struct NotificationSettingContentView: View {
     @Environment(\.dismiss) private var dismiss
     
     private let appSettings: AppSettings
     
-    @State private var viewModel: NotificationViewModel
+    @State private var viewModel: NotificationSettingViewModel
     
     init(appSettings: AppSettings, notificationService: NotificationService) {
         self.appSettings = appSettings
         
-        _viewModel = State(initialValue: NotificationViewModel(appSettings: appSettings, notificationService: notificationService))
+        _viewModel = State(initialValue: NotificationSettingViewModel(appSettings: appSettings, notificationService: notificationService))
     }
     
     var body: some View {
@@ -190,7 +190,7 @@ private struct PreviewContent: View {
     
     var body: some View {
         NavigationStack {
-            NotificationView()
+            NotificationSettingView()
                 .background(Color.modalSheetBackground)
         }
         .modelContainer(container)

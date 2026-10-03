@@ -40,7 +40,7 @@ struct YourKakeboApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            AppLockView()
                 .onAppear {
                     let context = ModelContext(modelContainer)
                     

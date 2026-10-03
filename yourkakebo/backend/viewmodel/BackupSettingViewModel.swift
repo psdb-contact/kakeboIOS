@@ -9,7 +9,7 @@ import Observation
 import Foundation
 
 @Observable
-final class BackupViewModel {
+final class BackupSettingViewModel {
     let appSettings: AppSettings
     private let backupService: BackupService
     

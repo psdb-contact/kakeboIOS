@@ -8,14 +8,14 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct BackupView: View {
+struct BackupSettingView: View {
     @Environment(AppContainer.self)
     private var appContainer
     
     var body: some View {
         ZStack {
             Color.secondBackground.ignoresSafeArea()
-            BackupContentView(
+            BackupSettingContentView(
                 appSettings: appContainer.appSettings,
                 backupService: appContainer.backupService
             )
@@ -23,17 +23,17 @@ struct BackupView: View {
     }
 }
 
-private struct BackupContentView: View {
+private struct BackupSettingContentView: View {
     @Environment(\.dismiss) private var dismiss
     
     private let appSettings: AppSettings
     
-    @State private var viewModel: BackupViewModel
+    @State private var viewModel: BackupSettingViewModel
     
     init(appSettings: AppSettings, backupService: BackupService) {
         self.appSettings = appSettings
         
-        _viewModel = State(initialValue: BackupViewModel(appSettings: appSettings, backupService: backupService))
+        _viewModel = State(initialValue: BackupSettingViewModel(appSettings: appSettings, backupService: backupService))
     }
     
     var body: some View {
@@ -182,7 +182,7 @@ private struct PreviewContent: View {
     
     var body: some View {
         NavigationStack {
-            BackupView()
+            BackupSettingView()
                 .background(Color.modalSheetBackground)
         }
         .modelContainer(container)

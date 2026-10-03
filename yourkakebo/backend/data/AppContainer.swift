@@ -20,6 +20,8 @@ final class AppContainer {
     
     let backupService: BackupService
     let notificationService: NotificationService
+    let passcodeService: PasscodeService
+    let biometricAuthenticationService: BiometricAuthenticationService
     
     init(modelContext: ModelContext) {
         self.appSettings = AppSettings()
@@ -81,5 +83,9 @@ final class AppContainer {
         )
         
         self.notificationService = NotificationService()
+        
+        self.passcodeService = PasscodeService()
+        
+        self.biometricAuthenticationService = BiometricAuthenticationService()
     }
 }

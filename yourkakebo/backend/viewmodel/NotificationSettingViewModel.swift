@@ -9,7 +9,7 @@ import Observation
 import Foundation
 
 @Observable
-final class NotificationViewModel {
+final class NotificationSettingViewModel {
     var appSetting: AppSettings
     private let notificationService: NotificationService
     

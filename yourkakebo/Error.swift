@@ -90,3 +90,63 @@ enum BackupError: LocalizedError {
         }
     }
 }
+
+enum PasscodeError: Error {
+    case alreadySet
+    case invalidPasscode
+    case keychain(OSStatus)
+}
+
+extension PasscodeError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .alreadySet:
+            return "パスコードはすでに設定されています。"
+
+        case .invalidPasscode:
+            return "パスコードが正しくありません。"
+
+        case .keychain:
+            return "パスコードの処理に失敗しました。"
+        }
+    }
+}
+
+enum BiometricAuthenticationError: Error {
+    case notAvailable
+    case notEnrolled
+    case lockout
+    case userCancel
+    case userFallback
+    case systemCancel
+    case failed
+}
+
+extension BiometricAuthenticationError: LocalizedError {
+
+    var errorDescription: String? {
+        switch self {
+        case .notAvailable:
+            return "この端末では生体認証を利用できません。"
+
+        case .notEnrolled:
+            return "生体認証が設定されていません。"
+
+        case .lockout:
+            return "生体認証がロックされています。"
+
+        case .userCancel:
+            return "生体認証がキャンセルされました。"
+
+        case .userFallback:
+            return "パスコードでの認証が選択されました。"
+
+        case .systemCancel:
+            return "生体認証がキャンセルされました。"
+
+        case .failed:
+            return "生体認証に失敗しました。"
+        }
+    }
+}
+

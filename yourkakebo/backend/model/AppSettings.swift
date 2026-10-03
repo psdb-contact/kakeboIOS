@@ -16,6 +16,7 @@ final class AppSettings {
         static let isNotificationOn = "isNotificationOn"
         static let notificationTime = "notificationTime"
         static let notificationDays = "notificationDays"
+        static let isBiometricAuthenticationOn = "isBiometricAuthenticationOn"
     }
 
     var isFirstLaunch: Bool {
@@ -72,6 +73,12 @@ final class AppSettings {
                 notificationDays.map(\.rawValue),
                 forKey: Key.notificationDays
             )
+        }
+    }
+    
+    var isBiometricAuthenticationOn: Bool {
+        didSet {
+            defaults.set(isBiometricAuthenticationOn, forKey: Key.isBiometricAuthenticationOn)
         }
     }
 
@@ -140,6 +147,12 @@ final class AppSettings {
                 .friday,
                 .saturday
             ]
+        }
+        
+        if defaults.object(forKey: Key.isBiometricAuthenticationOn) == nil {
+            self.isBiometricAuthenticationOn = false
+        } else {
+            self.isBiometricAuthenticationOn = defaults.bool(forKey: Key.isBiometricAuthenticationOn)
         }
     }
 }
