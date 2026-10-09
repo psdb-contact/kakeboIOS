@@ -14,6 +14,7 @@ struct HistoryView: View {
     
     var body: some View {
         HistoryContentView(
+            appSettings: appContainer.appSettings,
             transitionService: appContainer.transitionService,
             fixedTransitionService: appContainer.fixedTransitionService
         )
@@ -24,12 +25,14 @@ private struct HistoryContentView: View {
     @Environment(\.dismiss)
     private var dismiss
     
+    private let appSettings: AppSettings
     private let transitionService: TransitionService
     private let fixedTransitionService: FixedTransitionService
     
     @State private var viewModel: HistoryViewModel
     
-    init(transitionService: TransitionService, fixedTransitionService: FixedTransitionService) {
+    init(appSettings: AppSettings, transitionService: TransitionService, fixedTransitionService: FixedTransitionService) {
+        self.appSettings = appSettings
         self.transitionService = transitionService
         self.fixedTransitionService = fixedTransitionService
         
@@ -58,26 +61,21 @@ private struct HistoryContentView: View {
                 .frame(height: 44)
             }
             HStack(spacing: 0) {
-                ForEach(
-                    ["日", "月", "火", "水", "木", "金", "土"],
-                    id: \.self
-                ) { weekday in
-                    Text(weekday)
+                ForEach(weekdays, id: \.self) { weekday in
+                    Text(weekday.displayShortName)
                         .font(
                             .system(
                                 size: 12,
                                 weight: .bold
                             )
                         )
-                        .frame(
-                            maxWidth: .infinity
-                        )
+                        .frame(maxWidth: .infinity)
                 }
             }
             .padding(.top, 16)
             
             Divider()
-            .padding(.top, 4)
+                .padding(.top, 4)
             
             LazyVGrid(
                 columns: Array(
@@ -155,6 +153,12 @@ private struct HistoryContentView: View {
         }
     }
     
+    private var weekdays: [Weekday] {
+        let all = Weekday.allCases
+        let startIndex = all.firstIndex(of: appSettings.weeklyStartDay) ?? 0
+        
+        return Array(all[startIndex...]) + Array(all[..<startIndex])
+    }
     
     private var formattedMonth: String {
         let formatter = DateFormatter()
@@ -178,12 +182,12 @@ private struct HistoryContentView: View {
             return []
         }
         
-        let weekday = calendar.component(
+        let calendarWeekday = calendar.component(
             .weekday,
             from: monthStart
         )
-        
-        let leadingEmptyDays = weekday - 1
+
+        let leadingEmptyDays = (calendarWeekday - appSettings.weeklyStartDay.rawValue + 7) % 7
         
         guard let range = calendar.range(
             of: .day,
@@ -296,38 +300,38 @@ private struct HistoryContentView: View {
 
 @MainActor
 private struct PreviewContent: View {
-
+    
     private let container: ModelContainer
     private let appContainer: AppContainer
-
+    
     init() {
         let container = try! ModelContainer(
             for:
                 CategoryModel.self,
-                TransitionModel.self,
-                BudgetModel.self,
-                TemplateModel.self,
-                FixedTransitionModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true
             )
         )
-
+        
         let context = container.mainContext
-
+        
         PreviewSeeder.seed(
             context: context
         )
-
+        
         self.container = container
         self.appContainer = AppContainer(
             modelContext: context
         )
     }
-
+    
     var body: some View {
         HistoryView()
-        .modelContainer(container)
-        .environment(appContainer)
+            .modelContainer(container)
+            .environment(appContainer)
     }
 }

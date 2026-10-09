@@ -12,6 +12,7 @@ struct FixedTransitionCalendarScreen: View {
     
     var body: some View {
         FixedTransitionCalendarContentScreen(
+            appSettings: appContainer.appSettings,
             fixedTransitionService: appContainer.fixedTransitionService
         )
     }
@@ -22,13 +23,16 @@ private struct FixedTransitionCalendarContentScreen: View {
     @Environment(\.dismiss)
     private var dismiss
     
+    private let appSettings: AppSettings
     private let fixedTransitionService: FixedTransitionService
     
     @State private var viewModel: FixedTransitionCalendarViewModel
     
     init(
+        appSettings: AppSettings,
         fixedTransitionService: FixedTransitionService
     ) {
+        self.appSettings = appSettings
         self.fixedTransitionService = fixedTransitionService
         
         _viewModel = State(
@@ -66,22 +70,15 @@ private struct FixedTransitionCalendarContentScreen: View {
             // MARK: - Weekday
             
             HStack(spacing: 0) {
-                
-                ForEach(
-                    ["日", "月", "火", "水", "木", "金", "土"],
-                    id: \.self
-                ) { weekday in
-                    
-                    Text(weekday)
+                ForEach(weekdays, id: \.self) { weekday in
+                    Text(weekday.displayShortName)
                         .font(
                             .system(
-                                size: 11,
-                                weight: .medium
+                                size: 12,
+                                weight: .bold
                             )
                         )
-                        .frame(
-                            maxWidth: .infinity
-                        )
+                        .frame(maxWidth: .infinity)
                 }
             }
             .padding(.horizontal, 8)
@@ -135,6 +132,12 @@ private struct FixedTransitionCalendarContentScreen: View {
         }
     }
     
+    private var weekdays: [Weekday] {
+        let all = Weekday.allCases
+        let startIndex = all.firstIndex(of: appSettings.weeklyStartDay) ?? 0
+        
+        return Array(all[startIndex...]) + Array(all[..<startIndex])
+    }
     
     // MARK: - Days
     
@@ -151,12 +154,12 @@ private struct FixedTransitionCalendarContentScreen: View {
             return []
         }
         
-        let weekday = calendar.component(
+        let calendarWeekday = calendar.component(
             .weekday,
             from: monthStart
         )
-        
-        let leadingEmptyDays = weekday - 1
+
+        let leadingEmptyDays = (calendarWeekday - appSettings.weeklyStartDay.rawValue + 7) % 7
         
         guard let range = calendar.range(
             of: .day,

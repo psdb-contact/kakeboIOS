@@ -17,6 +17,8 @@ final class AppSettings {
         static let notificationTime = "notificationTime"
         static let notificationDays = "notificationDays"
         static let isBiometricAuthenticationOn = "isBiometricAuthenticationOn"
+        static let yearlyStartMonth = "yearlyStartMonth"
+        static let weeklyStartDay = "weeklyStartDay"
     }
 
     var isFirstLaunch: Bool {
@@ -81,6 +83,18 @@ final class AppSettings {
             defaults.set(isBiometricAuthenticationOn, forKey: Key.isBiometricAuthenticationOn)
         }
     }
+    
+    var yearlyStartMonth: Int {
+        didSet {
+            defaults.set(yearlyStartMonth, forKey: Key.yearlyStartMonth)
+        }
+    }
+    
+    var weeklyStartDay: Weekday {
+        didSet {
+            defaults.set(weeklyStartDay.rawValue, forKey: Key.weeklyStartDay)
+        }
+    }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -105,16 +119,20 @@ final class AppSettings {
             forKey: Key.backupDate
         ) as? Date
 
-        self.appLaunchCount = defaults.integer(
-            forKey: Key.appLaunchCount
-        )
+        if defaults.object(forKey: Key.appLaunchCount) == nil {
+            self.appLaunchCount = 0
+        } else {
+            self.appLaunchCount = defaults.integer(
+                forKey: Key.appLaunchCount
+            )
+        }
 
         self.lastReviewRequestAt = defaults.string(
             forKey: Key.lastReviewRequestAt
         )
 
-        if let rawValue = defaults.string(forKey: Key.themeType),
-           let themeType = AppThemeType(rawValue: rawValue) {
+        if let themeTypeRawValue = defaults.string(forKey: Key.themeType),
+           let themeType = AppThemeType(rawValue: themeTypeRawValue) {
             self.themeType = themeType
         } else {
             self.themeType = .system
@@ -153,6 +171,21 @@ final class AppSettings {
             self.isBiometricAuthenticationOn = false
         } else {
             self.isBiometricAuthenticationOn = defaults.bool(forKey: Key.isBiometricAuthenticationOn)
+        }
+        
+        if defaults.object(forKey: Key.yearlyStartMonth) == nil {
+            self.yearlyStartMonth = 1
+        } else {
+            self.yearlyStartMonth = defaults.integer(
+                forKey: Key.yearlyStartMonth
+            )
+        }
+        
+        if let weekDayRawValue = defaults.object(forKey: Key.weeklyStartDay) as? Int,
+           let weekDay = Weekday(rawValue: weekDayRawValue) {
+            self.weeklyStartDay = weekDay
+        } else {
+            self.weeklyStartDay = .sunday
         }
     }
 }

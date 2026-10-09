@@ -21,16 +21,20 @@ struct SettingView: View {
 }
 
 private struct SettingContentView: View {
-    let appSettings: AppSettings
+    //let appSettings: AppSettings
+    
+    @State private var viewModel: SettingViewModel
     
     init(appSettings: AppSettings
     ) {
-        self.appSettings = appSettings
+        //self.appSettings = appSettings
+        
+        _viewModel = State(initialValue: SettingViewModel(appSettings: appSettings))
     }
     
     var body: some View {
-        @Bindable var appSettings = appSettings
-
+        @Bindable var viewModel = viewModel
+        
         ScrollView {
             VStack(spacing: 16) {
                 VStack {
@@ -94,17 +98,18 @@ private struct SettingContentView: View {
                     NavigationLink {
                         SelectionView(
                             title: "ダークモード",
-                            selection: $appSettings.themeType,
+                            options: AppThemeType.allCases,
+                            selection: $viewModel.appSettings.themeType,
                             displayName: \.displayName
                         )
                     } label: {
                         HStack {
                             Text("ダークモード")
-
+                            
                             Spacer()
-
-                            Text(appSettings.themeType.displayName).foregroundStyle(.secondary)
-
+                            
+                            Text(viewModel.appSettings.themeType.displayName).foregroundStyle(.secondary)
+                            
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
@@ -124,10 +129,10 @@ private struct SettingContentView: View {
                     } label: {
                         HStack {
                             Text("バックアップ")
-
+                            
                             Spacer()
-
-
+                            
+                            
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
@@ -147,10 +152,10 @@ private struct SettingContentView: View {
                     } label: {
                         HStack {
                             Text("入れ忘れ通知")
-
+                            
                             Spacer()
-
-
+                            
+                            
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
@@ -170,10 +175,10 @@ private struct SettingContentView: View {
                     } label: {
                         HStack {
                             Text("パスコードロック")
-
+                            
                             Spacer()
-
-
+                            
+                            
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
@@ -187,6 +192,55 @@ private struct SettingContentView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.container)
                 )
+                VStack {
+                    NavigationLink {
+                        IntSelectionView(
+                            title: "年度の開始月",
+                            values:Array(1...12),
+                            selection: $viewModel.appSettings.yearlyStartMonth,
+                        )
+                    } label: {
+                        HStack {
+                            Text("年度の開始月")
+                            Spacer()
+                            Text("\(viewModel.appSettings.yearlyStartMonth)月")
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                    }
+                    .tint(.primary)
+                    NavigationLink {
+                        SelectionView(
+                            title: "週の開始日",
+                            options: [.sunday, .monday],
+                            selection: $viewModel.appSettings.weeklyStartDay,
+                            displayName: \.displayName
+                        )
+                    } label: {
+                        HStack {
+                            Text("週の開始日")
+                            
+                            Spacer()
+                            
+                            Text(viewModel.appSettings.weeklyStartDay.displayName)
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                    }
+                    .tint(.primary)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.container)
+                )
+                
             }
         }
         .padding(.horizontal, 16)

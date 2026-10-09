@@ -10,6 +10,7 @@ import SwiftUI
 struct SelectionView<T>: View where T: CaseIterable & Hashable {
 
     let title: String
+    let options: [T]
     @Binding var selection: T
     let displayName: (T) -> String
     
@@ -18,7 +19,7 @@ struct SelectionView<T>: View where T: CaseIterable & Hashable {
     var body: some View {
         ScrollView {
             VStack(spacing: 12) {
-                ForEach(Array(T.allCases), id: \.self) { option in
+                ForEach(options, id: \.self) { option in
                     Button {
                         selection = option
                         dismiss()
