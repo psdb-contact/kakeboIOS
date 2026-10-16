@@ -8,6 +8,8 @@ import SwiftUI
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     
+    @State private var isKeyboardVisible = false
+    
     @State private var viewModel: EditCategoryViewModel
     
     init(
@@ -32,109 +34,121 @@ struct EditCategorySheet: View {
         VStack(spacing: 0) {
             
             // MARK: - Form
-            
-            VStack(spacing: 24) {
-                
-                // 種類
-                VStack(alignment: .leading, spacing: 8) {
-                    Picker(
-                        "種類",
-                        selection: $viewModel.transitionType
-                    ) {
-                        Text("支出")
-                            .tag(TransitionType.expense)
-                        
-                        Text("収入")
-                            .tag(TransitionType.income)
-                    }
-                    .pickerStyle(.segmented)
-                }
-                
-                VStack {
-                    HStack {
-                        Text("カテゴリ名")
-                            .font(.system(size: 16)).foregroundStyle(.black)
-                            .frame(width: 108, alignment: .leading)
-                        TextField(
-                            "未入力",
-                            text: $viewModel.categoryName
-                        )
-                        .padding(.horizontal, 12)
-                        .multilineTextAlignment(.trailing)
-                        .textFieldStyle(.plain)
-                        .frame(height: 52)
-                    }
-                    .padding(.leading, 12)
+            ScrollView {
+                VStack(spacing: 24) {
                     
-                }
-                .background(
-                    RoundedRectangle(cornerRadius: 12).fill(Color.container)
-                )
-                
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(CategoryColors.all, id: \.self) { hex in
-                        Button {
-                            viewModel.colorHex = hex
-                        } label: {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(hex: hex))
-                                .aspectRatio(1, contentMode: .fit)
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(
-                                            isSelectedColor(hex)  ? Color.containerColor : Color.clear,
-                                            lineWidth: 3
-                                        )
-                                }
-                                .overlay {
-                                    if isSelectedColor(hex) {
-                                        Image(systemName: "checkmark")
-                                            .foregroundStyle(.white)
-                                    }
-                                }
+                    // 種類
+                    VStack(alignment: .leading, spacing: 8) {
+                        Picker(
+                            "種類",
+                            selection: $viewModel.transitionType
+                        ) {
+                            Text("支出")
+                                .tag(TransitionType.expense)
+                            
+                            Text("収入")
+                                .tag(TransitionType.income)
                         }
-                        .buttonStyle(.plain)
+                        .pickerStyle(.segmented)
                     }
+                    
+                    VStack {
+                        HStack {
+                            Text("カテゴリ名")
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .frame(width: 108, alignment: .leading)
+                            TextField(
+                                "未入力",
+                                text: $viewModel.categoryName
+                            )
+                            .padding(.horizontal, 12)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                            .frame(height: 52)
+                        }
+                        .padding(.leading, 12)
+                        
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 12).fill(Color.container)
+                    )
+                    
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(CategoryColors.all, id: \.self) { hex in
+                            Button {
+                                viewModel.colorHex = hex
+                            } label: {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(hex: hex))
+                                    .aspectRatio(1, contentMode: .fit)
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(
+                                                isSelectedColor(hex)  ? Color.containerColor : Color.clear,
+                                                lineWidth: 3
+                                            )
+                                    }
+                                    .overlay {
+                                        if isSelectedColor(hex) {
+                                            Image(systemName: "checkmark")
+                                                .foregroundStyle(.white)
+                                        }
+                                    }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    
+                    Spacer()
                 }
-                
-                Spacer()
             }
             .padding(20)
         }
         .toolbar{
             ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                }
+                CancelButton(action:  {dismiss() }, tint: .secondaryCancelColor)
             }
             ToolbarItem(placement: .principal) {
                 let title =  viewModel.category != nil ? "カテゴリ編集" : "新規カテゴリ"
                 Text(title)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
+                SubmitButton {
                     save()
-                } label: {
-                    Image(systemName: "checkmark")
                 }
             }
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button() {
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if isKeyboardVisible {
+                CloseComponentOnKeyboard {
                     UIApplication.shared.sendAction(
                         #selector(UIResponder.resignFirstResponder),
                         to: nil,
                         from: nil,
                         for: nil
                     )
-                } label: {
-                    Image(systemName: "checkmark")
                 }
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .animation(
+            .easeInOut(duration: 0.25),
+            value: isKeyboardVisible
+        )
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIResponder.keyboardWillShowNotification
+            )
+        ) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIResponder.keyboardWillHideNotification
+            )
+        ) { _ in
+            isKeyboardVisible = false
+        }
         .toast(toast: $viewModel.toast)
         .task {
             do {

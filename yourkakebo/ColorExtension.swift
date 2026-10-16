@@ -15,6 +15,9 @@ extension Color {
     static let secondBackgroundColor = Color("SecondBackgroundColor")
     static let iconColor = Color("IconColor")
     static let modalSheetBackgroundColor = Color("ModalSheetBackground")
+    static let submitColor = Color("SubmitColor")
+    static let cancelColor = Color("CancelColor")
+    static let secondaryCancelColor = Color("SecondaryCancelColor")
     
     init(hex: Int) {
         let red = Double((hex >> 16) & 0xFF) / 255

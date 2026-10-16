@@ -17,6 +17,7 @@ final class BudgetSettingViewModel {
     var selectedMonth: Date = Calendar.current.startOfDay(for: Date())
     var showSetEndDate: Bool = false
     
+    var allBudgetData: BudgetSettingData = BudgetSettingData(budget: nil, category: nil, amountInput: nil)
     var budgetData: [BudgetSettingData] = []
     
     var focusedDataId: UUID?
@@ -31,9 +32,12 @@ final class BudgetSettingViewModel {
     func load(_ selectedMonth: Date) throws {
         let budgets = try budgetService.getAllBudgetsByMonth(selectedMonth)
         let categories = try categoryService.getAllCategoriesByTransitionType(.expense)
-        let baseCategories: [CategoryModel?] = [nil] + categories
-                
-        budgetData = baseCategories.map { category in
+        
+        let budgetForAll = resolveBudget(for: nil, budgets: budgets, month: selectedMonth )
+        allBudgetData.budget = budgetForAll
+        allBudgetData.amountInput = budgetForAll != nil ? String(budgetForAll!.amount) : nil
+        
+        budgetData = categories.map { category in
             let budget = resolveBudget(
                 for: category,
                 budgets: budgets,
@@ -47,7 +51,7 @@ final class BudgetSettingViewModel {
             )
         }
     }
-        
+    
     func moveMonth(by value: Int) {
         selectedMonth = Calendar.current.date(
             byAdding: .month,
@@ -56,19 +60,27 @@ final class BudgetSettingViewModel {
         ) ?? selectedMonth
     }
     
-    func setTotal() throws {
+    func cancel() {
         guard let editingDataId else {
-                 return
-             }
-        
-        guard let index = budgetData.firstIndex(
-            where: {$0.id == editingDataId }
-        ) else {
-                return
+            return
         }
         
-        let data = budgetData[index]
+        guard let index = budgetData.firstIndex(where: {$0.id == editingDataId }) else {
+            return
+        }
         
+        budgetData[index].amountInput = budgetData[index].budget.map {
+            String($0.amount)
+        }
+        self.focusedDataId = nil
+        self.editingDataId = nil
+    }
+    
+    func cancelAll() {
+            
+    }
+    
+    func setTotal() throws {
         let total = budgetData
             .filter { $0.category != nil }
             .compactMap { $0.budget?.amount }
@@ -76,26 +88,26 @@ final class BudgetSettingViewModel {
         
         let budget: BudgetModel
         
-        if let existingBudget = data.budget {
+        if let existingBudget = allBudgetData.budget {
             existingBudget.amount = total
             existingBudget.endMonth = selectedMonth
-
+            
             try? budgetService.updateBudget(existingBudget)
             budget = existingBudget
         } else {
-                let newBudget = BudgetModel(
-                    category: data.category,
-                    amount: total,
-                    startMonth: selectedMonth,
-                    endMonth: selectedMonth,
-                )
+            let newBudget = BudgetModel(
+                category: nil,
+                amount: total,
+                startMonth: selectedMonth,
+                endMonth: selectedMonth,
+            )
             
             try? budgetService.updateBudget(newBudget)
             budget = newBudget
         }
         
-        budgetData[index].amountInput = String(total)
-        budgetData[index].budget = budget
+        allBudgetData.amountInput = String(total)
+        allBudgetData.budget = budget
         
         self.editingDataId = nil
         
@@ -118,7 +130,7 @@ final class BudgetSettingViewModel {
             if let exisitingBudget = data.budget {
                 exisitingBudget.amount = amount
                 exisitingBudget.endMonth =  isPeriod ? BudgetModel.noExpirationDate : exisitingBudget.endMonth
-
+                
                 try? budgetService.updateBudget(exisitingBudget)
                 budget = exisitingBudget
                 
@@ -145,7 +157,7 @@ final class BudgetSettingViewModel {
                 budgetData[index].budget = nil
             }
         }
-    
+        
         self.focusedDataId = nil
         self.editingDataId = nil
     }

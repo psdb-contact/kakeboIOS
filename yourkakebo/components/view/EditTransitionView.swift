@@ -19,6 +19,7 @@ struct EditTransitionView: View {
 }
 
 private struct EditTransitionContentView: View {
+    @State private var isKeyboardVisible = false
     @State private var viewModel: EditTransitionViewModel
     
     init(
@@ -106,6 +107,7 @@ private struct EditTransitionContentView: View {
                 .scrollIndicators(.visible)
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
         .padding(.bottom, 8)
         .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
@@ -131,54 +133,53 @@ private struct EditTransitionContentView: View {
                     }
                 )
             }
-            ToolbarItemGroup(placement: .keyboard) {
-                Button {
-                    if let index = viewModel.transitions.firstIndex(where: {
-                        $0.isAddingAmount
-                    }) {
-                        viewModel.transitions[index].isAddingAmount = false
-                        viewModel.transitions[index].addingAmount = nil
-                    }
-                    
-                    UIApplication.shared.sendAction(
-                        #selector(UIResponder.resignFirstResponder),
-                        to: nil,
-                        from: nil,
-                        for: nil
-                    )
-                } label: {
-                    Image(systemName: "xmark")
-                }
-                
-                Spacer()
-                
-                Button() {
-                    
-                    if let index = viewModel.transitions.firstIndex(where: {
-                        $0.isAddingAmount
-                    }) {
-                        addAmount(index)
-                    } else {
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if(isKeyboardVisible) {
+                CloseSaveComponentOnKeyboard(
+                    closeAction: {
+                        if let index = viewModel.transitions.firstIndex(where: {
+                            $0.isAddingAmount
+                        }) {
+                            viewModel.transitions[index].isAddingAmount = false
+                            viewModel.transitions[index].addingAmount = nil
+                        }
+                        
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil,
+                            from: nil,
+                            for: nil
+                        )
+                    },
+                    action: {
+                        if let index = viewModel.transitions.firstIndex(where: {
+                            $0.isAddingAmount
+                        }) {
+                            addAmount(index)
+                        } else {
+                            saveTransition()
+                        }
+                        
+                        viewModel.isSaving = true
                         saveTransition()
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil,
+                            from: nil,
+                            for: nil
+                        )
+                        DispatchQueue.main.async {
+                            viewModel.isSaving = false
+                        }
                     }
-                    
-                    viewModel.isSaving = true
-                    saveTransition()
-                    UIApplication.shared.sendAction(
-                        #selector(UIResponder.resignFirstResponder),
-                        to: nil,
-                        from: nil,
-                        for: nil
-                    )
-                    DispatchQueue.main.async {
-                        viewModel.isSaving = false
-                    }
-                } label: {
-                    Image(systemName: "checkmark")
-                }
+                )
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .animation(
+                 .easeInOut(duration: 0.25),
+                 value: isKeyboardVisible
+             )
         .sheet(isPresented: $viewModel.showSelectCategory) {
             let usedCategories: [CategoryModel] = viewModel.transitions.map {
                 $0.category
@@ -188,6 +189,20 @@ private struct EditTransitionContentView: View {
                     .presentationDragIndicator(.hidden)
             }
         }
+        .onReceive(
+              NotificationCenter.default.publisher(
+                  for: UIResponder.keyboardWillShowNotification
+              )
+          ) { _ in
+              isKeyboardVisible = true
+          }
+          .onReceive(
+              NotificationCenter.default.publisher(
+                  for: UIResponder.keyboardWillHideNotification
+              )
+          ) { _ in
+              isKeyboardVisible = false
+          }
         .task(id: viewModel.transitionPeriod) {
             do {
                 try viewModel.load(transitionPeriod: viewModel.transitionPeriod)

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct EditFixedTransitionSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var isKeyboardVisible = false
     
     @State private var viewModel: EditFixedTransitionViewModel
     
@@ -56,7 +57,7 @@ struct EditFixedTransitionSheet: View {
                                 .font(.system(size: 16)).foregroundStyle(.black)
                                 .frame(width: 108, alignment: .leading)
                             TextField(
-                                "",
+                                "未入力",
                                 text: $viewModel.fixedTransitionName
                             )
                             .padding(.horizontal, 12)
@@ -92,6 +93,7 @@ struct EditFixedTransitionSheet: View {
                         }
                         .padding(.leading, 12)
                     }
+                    .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.container)
@@ -105,9 +107,13 @@ struct EditFixedTransitionSheet: View {
                                     .font(.system(size: 16)).foregroundStyle(.black)
                                     .frame(width: 108, alignment: .leading)
                                 Spacer()
-                                
                                 Text(viewModel.category?.categoryName ?? "未選択")
-                                    .font(.system(size: 16)).foregroundStyle(.black)
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(
+                                        viewModel.category == nil
+                                        ? Color(uiColor: .placeholderText)
+                                        : Color.primary
+                                    )
                                     .lineLimit(1)
                                     .truncationMode(.tail)
                             }
@@ -183,7 +189,12 @@ struct EditFixedTransitionSheet: View {
                                         )
                                     ?? "未選択"
                                 )
-                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .font(.system(size: 16))
+                                .foregroundStyle(
+                                    viewModel.endDate == nil
+                                    ? Color(uiColor: .placeholderText)
+                                    : Color.primary
+                                )
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                             }
@@ -210,6 +221,7 @@ struct EditFixedTransitionSheet: View {
                             .frame(height: 52)
                         }
                     }
+                    .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.container)
@@ -219,64 +231,46 @@ struct EditFixedTransitionSheet: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
         }
-        
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 24))
-                        .foregroundStyle(
-                            Color(
-                                red: 0.27,
-                                green: 0.27,
-                                blue: 0.27
-                            )
-                        )
-                }
+                CancelButton(action:  {dismiss() }, tint: .secondaryCancelColor)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
+                SubmitButton {
                     save()
-                } label: {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 24))
-                        .foregroundStyle(
-                            Color(
-                                red: 0.27,
-                                green: 0.27,
-                                blue: 0.27
-                            )
-                        )
                 }
             }
-            ToolbarItemGroup(placement: .keyboard) {
-                Button {
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if isKeyboardVisible {
+                CloseComponentOnKeyboard {
                     UIApplication.shared.sendAction(
                         #selector(UIResponder.resignFirstResponder),
                         to: nil,
                         from: nil,
                         for: nil
                     )
-                } label: {
-                    Image(systemName: "xmark")
-                }
-                
-                Spacer()
-                
-                Button() {
-                    UIApplication.shared.sendAction(
-                        #selector(UIResponder.resignFirstResponder),
-                        to: nil,
-                        from: nil,
-                        for: nil
-                    )
-                } label: {
-                    Image(systemName: "checkmark")
                 }
             }
+        }
+        .animation(
+            .easeInOut(duration: 0.25),
+            value: isKeyboardVisible
+        )
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIResponder.keyboardWillShowNotification
+            )
+        ) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIResponder.keyboardWillHideNotification
+            )
+        ) { _ in
+            isKeyboardVisible = false
         }
         .sheet(isPresented: $viewModel.showCategorySheet) {
             NavigationStack {
@@ -301,27 +295,6 @@ struct EditFixedTransitionSheet: View {
                 .pickerStyle(.wheel)
                 .navigationTitle("カテゴリ")
                 .navigationBarTitleDisplayMode(.inline)
-                
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            viewModel.showCategorySheet = false
-                        } label: {
-                            Image(systemName: "xmark")
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            if let category = viewModel.editingCategory {
-                                viewModel.category = category
-                            }
-                            viewModel.showCategorySheet = false
-                        } label: {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
             }
             .presentationDetents([.medium])
         }
@@ -462,12 +435,12 @@ struct EditFixedTransitionSheet: View {
             NavigationStack {
                 Picker("休日の扱い",
                        selection:  Binding(
-                            get: {
-                                viewModel.editingCycleHoliday ?? viewModel.cycleHolidayType
-                            },
-                            set: {
-                                viewModel.editingCycleHoliday = $0
-                            }
+                        get: {
+                            viewModel.editingCycleHoliday ?? viewModel.cycleHolidayType
+                        },
+                        set: {
+                            viewModel.editingCycleHoliday = $0
+                        }
                        )
                 ){
                     ForEach(CycleHolidayType.allCases, id: \.self) { option in

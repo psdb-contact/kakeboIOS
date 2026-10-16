@@ -47,9 +47,9 @@ private struct FixedTransitionSettingContentView: View {
         VStack(spacing: 0) {
             switch viewModel.screenType {
             case .list:
-                FixedTransitionListScreen(                )
+                FixedTransitionListScreen()
             case .calendar:
-                FixedTransitionCalendarScreen(                )
+                FixedTransitionCalendarScreen()
             }
         }
         .sheet(isPresented: $viewModel.showingAddFixedTransition) {

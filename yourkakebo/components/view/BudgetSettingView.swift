@@ -27,6 +27,7 @@ private struct BudgetSettingContentView: View {
     private let budgetService: BudgetService
     private let categoryService: CategoryService
     
+    @State private var isKeyboardVisible = false
     
     @State private var viewModel: BudgetSettingViewModel
     
@@ -34,10 +35,11 @@ private struct BudgetSettingContentView: View {
         self.budgetService = budgetService
         self.categoryService = categoryService
         
-        _viewModel = State(initialValue: BudgetSettingViewModel(
-            budgetService: budgetService,
-            categoryService: categoryService
-        )
+        _viewModel = State(
+            initialValue: BudgetSettingViewModel(
+                budgetService: budgetService,
+                categoryService: categoryService
+            )
         )
     }
     
@@ -50,88 +52,85 @@ private struct BudgetSettingContentView: View {
                 onPrevious: {viewModel.moveMonth(by: -1)},
                 onNext: { viewModel.moveMonth(by: 1)}
             )
-            List {
+            allBudgetCard(
+                data: $viewModel.allBudgetData,
+                onFocus: {
+                    viewModel.focusedDataId = viewModel.allBudgetData.id
+                },
+                onUnfocus: {
+                    viewModel.focusedDataId = nil
+                },
+                onSetTotal: {
+                    try? viewModel.setTotal()
+                },
+                isSaving: viewModel.isSaving
+            )
+            ScrollView {
                 ForEach($viewModel.budgetData) { $data in
-                    if(data.category == nil) {
-                        allBudgetCard(
-                            data: $data,
-                            onFocus: {
-                                viewModel.focusedDataId = data.id
-                            },
-                            onUnfocus: {
-                                viewModel.focusedDataId = nil
-                            },
-                            onSetTotal: {
-                                viewModel.editingDataId = data.id
-                                try? viewModel.setTotal()
-                            },
-                            isSaving: viewModel.isSaving)
-                        .listRowInsets(
-                            EdgeInsets(
-                                top: 4,
-                                leading: 8,
-                                bottom: 4,
-                                trailing: 8
-                            )
-                        )
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    } else {
-                        budgetCard(
-                            data: $data,
-                            onFocus: {
-                                viewModel.focusedDataId = data.id
-                            },
-                            onUnfocus: {
-                                viewModel.focusedDataId = nil
-                            },
-                            isSaving: viewModel.isSaving)
-                        .listRowInsets(
-                            EdgeInsets(
-                                top: 4,
-                                leading: 8,
-                                bottom: 4,
-                                trailing: 8
-                            )
-                        )
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
+                    budgetCard(
+                        data: $data,
+                        onFocus: {
+                            viewModel.focusedDataId = data.id
+                        },
+                        onUnfocus: {
+                            viewModel.focusedDataId = nil
+                        },
+                        isSaving: viewModel.isSaving
+                    )
+                    if data.id != viewModel.budgetData.last?.id {
+                        Divider()
+                            .padding(.horizontal, 8)
                     }
                 }
             }
-            .listStyle(.plain)
             .scrollIndicators(.visible)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
+            )
+            .padding(8)
         }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Button {
-                    UIApplication.shared.sendAction(
-                        #selector(UIResponder.resignFirstResponder),
-                        to: nil,
-                        from: nil,
-                        for: nil
-                    )
-                } label: {
-                    Image(systemName: "xmark")
-                }
-                Spacer()
-                Button() {
-                    viewModel.isSaving = true
-                    viewModel.editingDataId = viewModel.focusedDataId
-                    UIApplication.shared.sendAction(
-                        #selector(UIResponder.resignFirstResponder),
-                        to: nil,
-                        from: nil,
-                        for: nil
-                    )
-                    DispatchQueue.main.async {
-                        viewModel.isSaving = false
-                    }
-                } label: {
-                    Image(systemName: "checkmark")
-                }
+        .navigationBarBackButtonHidden(true)
+        .toolbar{
+            ToolbarItem(placement: .topBarLeading) {
+                CancelButton(action:  {dismiss() }, tint: .secondaryCancelColor)
+            }
+            ToolbarItem(placement: .principal) {
+                
             }
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if isKeyboardVisible {
+                CloseSaveComponentOnKeyboard(
+                    closeAction: {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil,
+                            from: nil,
+                            for: nil
+                        )
+                    },
+                    action: {
+                        viewModel.isSaving = true
+                        viewModel.editingDataId = viewModel.focusedDataId
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil,
+                            from: nil,
+                            for: nil
+                        )
+                        DispatchQueue.main.async {
+                            viewModel.isSaving = false
+                        }
+                    }
+                )
+            }
+        }
+        .animation(
+            .easeInOut(duration: 0.25),
+            value: isKeyboardVisible
+        )
         .alert(
             "予算設定",
             isPresented: Binding(
@@ -152,9 +151,22 @@ private struct BudgetSettingContentView: View {
                 save(true)
             }
             Button("キャンセル", role: .cancel) {
-                viewModel.focusedDataId = nil
-                viewModel.editingDataId = nil
+                viewModel.cancel()
             }
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIResponder.keyboardWillShowNotification
+            )
+        ) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIResponder.keyboardWillHideNotification
+            )
+        ) { _ in
+            isKeyboardVisible = false
         }
         .task(id: viewModel.selectedMonth) {
             do {
@@ -207,64 +219,73 @@ struct allBudgetCard: View {
     }
     
     var body: some View {
-        VStack {
-            HStack{
-                Text("全て")
-                    .font(.system(size: 17))
-                    .lineLimit(1)
-                Spacer()
-                TextField("未設定",
-                          text: Binding(
-                            get: {
-                                data.amountInput ?? ""
-                            },
-                            set: { newValue in
-                                let value = String(
-                                    newValue
-                                        .filter { $0.isNumber }
-                                        .prefix(6)
-                                )
-                                data.amountInput = value.isEmpty ? nil : value
-                            }
-                          )
-                )
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .font(.system(size: 18))
-                .padding(.horizontal, 12)
-                .frame(height: 44)
-                .focused($isFocused)
-                .onChange(of: isFocused) { _, focused in
-                    if focused {
-                        onFocus()
-                    } else if !isSaving {
-                        data.amountInput = data.budget != nil ? String(data.budget!.amount) : nil
-                        onUnfocus()
+        VStack{
+            VStack(spacing: 0) {
+                HStack{
+                    Text("全て")
+                        .font(.system(size: 17))
+                        .fontWeight(.semibold)
+                        .lineLimit(1)
+                    Spacer()
+                    TextField("未設定",
+                              text: Binding(
+                                get: {
+                                    data.amountInput ?? ""
+                                },
+                                set: { newValue in
+                                    let value = String(
+                                        newValue
+                                            .filter { $0.isNumber }
+                                            .prefix(6)
+                                    )
+                                    data.amountInput = value.isEmpty ? nil : value
+                                }
+                              )
+                    )
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .font(.system(size: 18))
+                    .padding(.horizontal, 12)
+                    .frame(height: 44)
+                    .focused($isFocused)
+                    .onChange(of: isFocused) { _, focused in
+                        if focused {
+                            onFocus()
+                        } else if !isSaving {
+                            data.amountInput = data.budget != nil ? String(data.budget!.amount) : nil
+                            onUnfocus()
+                        }
                     }
+                    
                 }
-                
+                .padding(.top, 8)
+                .padding(.leading, 16)
+                .padding(.trailing, 4)
+                .frame(maxWidth: .infinity)
+                .shadow(
+                    color: Color.black.opacity(0.05),
+                    radius: 10,
+                    x: 0,
+                    y: 4
+                )
+                HStack {
+                    Spacer()
+                    Button {
+                        onSetTotal()
+                    } label: {
+                        Text("全カテゴリの合計を設定")
+                            .font(.system(size: 14))
+                            .fontWeight(.bold)
+                            .foregroundStyle(Color.submitColor)
+                    }
+                    .frame(minHeight: 44)
+                }
+                .padding(.trailing, 8)
             }
-            .padding(.top, 16)
-            .padding(.bottom, 16)
-            .padding(.leading, 16)
-            .padding(.trailing, 4)
-            .frame(maxWidth: .infinity)
-            .background(Color.white)
-            .clipShape(
+            .background {
                 RoundedRectangle(cornerRadius: 8)
-            )
-            .shadow(
-                color: Color.black.opacity(0.05),
-                radius: 10,
-                x: 0,
-                y: 4
-            )
-        }
-        HStack {
-            Spacer()
-            Button("全カテゴリの合計額を設定") {
-                onSetTotal()
-            }
+                    .fill(Color.white)
+            }            .padding(8)
         }
     }
 }
@@ -305,7 +326,7 @@ struct budgetCard: View {
             TextField("未設定",
                       text: Binding(
                         get: {
-                            data.amountInput ?? ""
+                            data.amountInput.map { "\($0)円" } ?? ""
                         },
                         set: { newValue in
                             let value = String(
@@ -333,21 +354,11 @@ struct budgetCard: View {
             }
             
         }
-        .padding(.top, 16)
-        .padding(.bottom, 16)
+        .padding(.top, 2)
+        .padding(.bottom, 2)
         .padding(.leading, 16)
         .padding(.trailing, 4)
         .frame(maxWidth: .infinity)
-        .background(Color.white)
-        .clipShape(
-            RoundedRectangle(cornerRadius: 8)
-        )
-        .shadow(
-            color: Color.black.opacity(0.05),
-            radius: 10,
-            x: 0,
-            y: 4
-        )
     }
 }
 
@@ -367,13 +378,13 @@ private struct PreviewContent: View {
         let container = try! ModelContainer(
             for:
                 CategoryModel.self,
-            TransitionModel.self,
-            BudgetModel.self,
-            TemplateModel.self,
-            FixedTransitionModel.self,
-            configurations: ModelConfiguration(
-                isStoredInMemoryOnly: true
-            )
+                TransitionModel.self,
+                BudgetModel.self,
+                TemplateModel.self,
+                FixedTransitionModel.self,
+                configurations: ModelConfiguration(
+                    isStoredInMemoryOnly: true
+                )
         )
         
         let context = container.mainContext
