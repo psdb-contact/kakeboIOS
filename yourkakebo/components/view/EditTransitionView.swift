@@ -74,18 +74,14 @@ private struct EditTransitionContentView: View {
                 ScrollView {
                     VStack(spacing: 12) {
                         ForEach($viewModel.transitions) { $item in
-                            TransitionInputForm(
+                            TransitionCard(
                                 data: $item,
-                                onFocus: {
-                                    viewModel.setEditingTransitionId(id:item.id)
-                                },
-                                onBlur: {
-                                    item.editingAmount = item.amount
-                                },
-                                onAddAmount: {
-                                    viewModel.setAddingAmount(for: item.id)
-                                },
-                                isSaving: viewModel.isSaving,
+                                onEdit: {
+                                    viewModel.editingDataId = item.id
+                                    viewModel.editingTransition = item.transition
+                                    viewModel.editingCategory = item.category
+                                    viewModel.showEditTransition = true
+                                }
                             )
                             
                             if item.id != viewModel.transitions.last?.id {
@@ -96,7 +92,6 @@ private struct EditTransitionContentView: View {
                     }
                     .padding(.top, 16)
                     .padding(.bottom, 8)
-                    .padding(.horizontal, 12)
                 }
                 .clipped()
                 .background(
@@ -134,6 +129,7 @@ private struct EditTransitionContentView: View {
                 )
             }
         }
+        /*
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if(isKeyboardVisible) {
                 CloseSaveComponentOnKeyboard(
@@ -203,6 +199,21 @@ private struct EditTransitionContentView: View {
           ) { _ in
               isKeyboardVisible = false
           }
+         */
+        .sheet(isPresented: $viewModel.showEditTransition, onDismiss: {viewModel.editingDataId = nil}) {
+            NavigationStack {
+                EditTransitionSheet(
+                    transitionService: viewModel.transitionService,
+                    transition: viewModel.editingTransition,
+                    category: viewModel.editingCategory!,
+                    transitionPeriod: viewModel.transitionPeriod,
+                ){ updatedTransition in
+                    viewModel.refreash(updatedTransition)
+                }
+            }
+            .presentationBackground(Color.modalSheetBackground)
+            .presentationDragIndicator(.hidden)
+        }
         .task(id: viewModel.transitionPeriod) {
             do {
                 try viewModel.load(transitionPeriod: viewModel.transitionPeriod)
@@ -222,152 +233,55 @@ private struct EditTransitionContentView: View {
             from: viewModel.transitionPeriod.date
         )
     }
-    
-    // MARK: - Action
-    
-    private func saveTransition() {
-        do {
-            try viewModel.saveTransition()
-        } catch {
-            print("Transition：\(error)")
-        }
-    }
-    
-    private func addAmount(_ index: Int) {
-        do {
-            try viewModel.addAmount(at: index)
-        } catch {
-            print("Transition：\(error)")
-        }
-    }
 }
 
 
 // MARK: - TransitionInputForm
 
-struct TransitionInputForm: View {
+struct TransitionCard: View {
     @Binding var data: TransitionInputData
     
-    let onFocus: () -> Void
-    let onBlur: () -> Void
-    let onAddAmount: () -> Void
-    let isSaving: Bool
-    
-    @FocusState private var isFocused: Bool
-    @FocusState private var isAddingFocused: Bool
+    let onEdit: () -> Void
     
     init(
         data: Binding<TransitionInputData>,
-        onFocus: @escaping () -> Void,
-        onBlur: @escaping () -> Void,
-        onAddAmount: @escaping () -> Void,
-        isSaving: Bool,
+        onEdit: @escaping () -> Void,
     ) {
         self._data = data
-        self.onFocus = onFocus
-        self.onBlur = onBlur
-        self.onAddAmount = onAddAmount
-        self.isSaving =  isSaving
+        self.onEdit = onEdit
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        Button {
+            onEdit()
+        } label: {
             HStack(spacing: 0) {
                 HStack(spacing: 12) {
                     Circle()
                         .fill(Color(hex: data.category.colorHex))
                         .frame(width: 12, height: 12)
                     Text(data.category.categoryName)
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.system(size: 18))
                         .frame(
                             width: 92,
                             alignment: .leading
                         )
                 }
-                
-                TextField(
-                    "",
-                    text:Binding(
-                        get: {
-                            data.editingAmount.map(String.init) ?? ""
-                        },
-                        set: { newValue in
-                            data.editingAmount = Int(
-                                newValue
-                                    .filter { $0.isNumber }
-                                    .prefix(6)
-                            )
-                        }
-                    )
-                )
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .font(.system(size: 19))
-                .padding(.leading, 4)
-                .frame(height: 44)
-                .focused($isFocused)
-                .onChange(of: isFocused) { _, focused in
-                    if focused {
-                        if data.editingAmount == 0 {
-                            data.editingAmount = nil
-                        }
-                        onFocus()
-                    } else if !isSaving {
-                        data.editingAmount = data.amount
-                    }
-                }
-                /*
-                 .onSubmit {
-                 saveTransition()
-                 }
-                 */
-                Button {
-                    onAddAmount()
-                    
-                    DispatchQueue.main.async {
-                        isAddingFocused = true
-                    }
-                    
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color.iconColor)
-                        .frame(width: 44, height: 44)
-                }
-                .padding(.leading, 24)
-                .buttonStyle(.borderless)
+                Spacer()
+                Text("\(data.transition?.amount.formatted() ?? "0")円")
+                    .foregroundStyle(.secondary)
             }
-            if(data.isAddingAmount) {
-                TextField(
-                    "",
-                    text: Binding(
-                        get: {
-                            data.addingAmount.map(String.init) ?? ""
-                        },
-                        set: { newValue in
-                            data.addingAmount = Int(
-                                newValue
-                                    .filter(\.isNumber)
-                                    .prefix(6)
-                            )
-                        }
-                    )
-                )
-                .focused($isAddingFocused)
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .font(.system(size: 20))
-            }
+            .padding(.top, 8)
+            .padding(.bottom, 8)
+            .padding(.leading, 16)
+            .padding(.trailing, 16)
+            .frame(maxWidth: .infinity)
+            .clipShape(
+                RoundedRectangle(cornerRadius: 8)
+            )
+            .contentShape(Rectangle())
         }
-        .padding(.top, 2)
-        .padding(.bottom, 2)
-        .padding(.leading, 8)
-        .padding(.trailing, 0)
-        .frame(maxWidth: .infinity)
-        .clipShape(
-            RoundedRectangle(cornerRadius: 8)
-        )
-        .contentShape(Rectangle())
+        .buttonStyle(.plain)
     }
 }
 
@@ -413,7 +327,7 @@ private struct PreviewContent: View {
             EditTransitionView()
                 .background(Color.secondBackground)
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .modelContainer(container)
         .environment(appContainer)
     }

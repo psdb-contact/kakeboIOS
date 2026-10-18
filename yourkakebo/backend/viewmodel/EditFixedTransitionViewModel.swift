@@ -32,7 +32,7 @@ final class EditFixedTransitionViewModel {
     var categories: [CategoryModel] = []
     
     var fixedTransitionName: String = ""
-    var amountInput: String  = "0"
+    var amountInput: String?
     var category: CategoryModel? = nil
     var transitionType: TransitionType = .expense
     var startDate: Date =  Calendar.current.startOfDay(for: Date())
@@ -125,8 +125,7 @@ final class EditFixedTransitionViewModel {
             throw EditFixedTransitionError.emptyName
         }
         
-        guard let amountValue = Int(amountInput),
-              amountValue > 0 else {
+        guard let amount = Int(amountInput ?? ""), amount >= 1 else {
             throw EditFixedTransitionError.invalidAmount
         }
         
@@ -140,7 +139,7 @@ final class EditFixedTransitionViewModel {
             fixedTransition.fixedTransitionName = fixedTransitionName
             fixedTransition.category = category
             fixedTransition.transitionType = transitionType
-            fixedTransition.amount = amountValue
+            fixedTransition.amount = amount
             fixedTransition.startDate = startDate
             fixedTransition.endDate = endDate
             fixedTransition.cycleType = cycleData.type
@@ -155,7 +154,7 @@ final class EditFixedTransitionViewModel {
                     fixedTransitionName: fixedTransitionName,
                     category: category,
                     transitionType: transitionType,
-                    amount: amountValue,
+                    amount: amount,
                     startDate: startDate,
                     endDate: endDate,
                     cycleType: cycleData.type,

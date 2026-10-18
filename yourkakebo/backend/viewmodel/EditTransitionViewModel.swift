@@ -9,16 +9,17 @@ import Observation
 @Observable
 final class EditTransitionViewModel {
 
-    private let transitionService: TransitionService
+    let transitionService: TransitionService
     private let templateService: TemplateService
     
 
     // MARK: - State
     var transitions: [TransitionInputData] = []
     var showSelectCategory = false
-    var addingTransition: TransitionInputData?
-    var editingTransitionID: UUID?
-    var isSaving = false
+    var showEditTransition = false
+    var editingDataId: UUID? = nil
+    var editingTransition: TransitionModel? = nil
+    var editingCategory: CategoryModel? = nil
     
     var transitionPeriod: TransitionPeriod
 
@@ -38,7 +39,6 @@ final class EditTransitionViewModel {
     // MARK: - Action
 
     func moveDate(by value: Int) {
-        resetAddingAmount()
         
         let date = Calendar.current.date(
             byAdding: .day,
@@ -48,13 +48,6 @@ final class EditTransitionViewModel {
         
         transitionPeriod = TransitionPeriod(type: transitionPeriod.type, date: date)
     }
-    
-    func setEditingTransitionId(id: UUID) {
-        resetAddingAmount()
-
-        editingTransitionID = id
-    }
-    
 
     func load(transitionPeriod: TransitionPeriod) throws {
         let templates = try templateService.getAllTemplatesByTransitionType(transitionPeriod.type)
@@ -115,15 +108,11 @@ final class EditTransitionViewModel {
                 continue
             }
 
-            let amount = transition?.amount ?? 0
-
             result.append(
                 TransitionInputData(
                     category: category,
                     transition: transition,
                     isTemplate: template != nil,
-                    amount: amount,
-                    editingAmount: amount
                 )
             )
         }
@@ -148,95 +137,14 @@ final class EditTransitionViewModel {
         transitions = result
     }
     
-    func addAmount(at index: Int) throws {
-        let data = transitions[index]
-        
-        guard let addingAmount = data.addingAmount,
-              addingAmount > 0 else {
-            resetAddingAmount()
-
-                return
-        }
-        
-        let currentAmount = data.editingAmount ?? data.amount
-        let newAmount = currentAmount + addingAmount
-        
-        if let transition = data.transition {
-
-            try transitionService.editTransition(id: transition.transitionId, amount: newAmount)
-        
-            transitions[index].transition?.amount = newAmount
-        } else {
-            let newTransition = TransitionModel(
-                category: data.category,
-                amount: newAmount,
-                transitionType: data.category.transitionType,
-                transitionDate: transitionPeriod.date,
-                createdAt: Date(),
-            )
-
-            try transitionService.addTransition(newTransition)
-            
-            transitions[index].transition = newTransition
-        }
-        
-        transitions[index].editingAmount = newAmount
-        transitions[index].amount = newAmount
-        transitions[index].addingAmount = nil
-        transitions[index].isAddingAmount = false
-        }
-
-    func saveTransition() throws {
-        guard let editingTransitionID else {
-            return
-        }
-
+    func refreash(_ transition: TransitionModel) {
         guard let index = transitions.firstIndex(
-            where: { $0.id == editingTransitionID }
+            where: { $0.id == editingDataId }
         ) else {
             return
         }
-
-        let data = transitions[index]
-        let amount = data.editingAmount ?? data.amount
-
-        if let transition = data.transition {
-            try transitionService.editTransition(
-                id: transition.transitionId,
-                amount: amount
-            )
-            
-            transitions[index].transition?.amount = amount
-        } else {
-            let newTransition = TransitionModel(
-                category: data.category,
-                amount: amount,
-                transitionType: data.category.transitionType,
-                transitionDate: transitionPeriod.date,
-                createdAt: Date(),
-            )
-
-            try transitionService.addTransition(
-                newTransition
-            )
-            
-            transitions[index].transition = newTransition
-        }
-
-        transitions[index].amount = amount
-        transitions[index].editingAmount = amount
-        self.editingTransitionID = nil
-    }
-    
-    func setAddingAmount(for id: UUID) {
-        for index in transitions.indices {
-            if transitions[index].id == id {
-                transitions[index].isAddingAmount = true
-            } else {
-                transitions[index].isAddingAmount = false
-                transitions[index].addingAmount = nil
-            }
-        }
+                    
+        transitions[index].transition = transition
     }
     
     func setTransitionPeriodType(_ transitionType: TransitionType) {
@@ -244,15 +152,7 @@ final class EditTransitionViewModel {
     }
     
     func setShowSelectedCategory() {
-        resetAddingAmount()
         showSelectCategory = true
-    }
-    
-    func resetAddingAmount() {
-        for index in transitions.indices {
-            transitions[index].isAddingAmount = false
-            transitions[index].addingAmount = nil
-        }
     }
 }
 
@@ -265,10 +165,4 @@ struct TransitionInputData: Identifiable {
     let category: CategoryModel
     var transition: TransitionModel?
     let isTemplate: Bool
-    
-    var amount: Int
-    var editingAmount: Int?
-    
-    var isAddingAmount = false
-    var addingAmount: Int?
 }

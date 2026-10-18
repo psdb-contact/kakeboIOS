@@ -25,3 +25,17 @@ struct TransitionPeriod: Equatable {
     let type: TransitionType
     let date: Date
 }
+
+enum EditTransitionType: String {
+    case add
+    case overwrite
+    
+    var displayString: String {
+        switch self {
+        case .add:
+            return "加算"
+        case .overwrite:
+            return "上書き"
+        }
+    }
+}

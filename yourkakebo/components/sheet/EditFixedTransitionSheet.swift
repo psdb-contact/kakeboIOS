@@ -7,6 +7,7 @@ struct EditFixedTransitionSheet: View {
     
     @State private var viewModel: EditFixedTransitionViewModel
     
+    @FocusState private var isNameFocused: Bool
     @FocusState private var isAmountFocused: Bool
     
     private let cycleOptions: [CycleOptionType] = [
@@ -53,43 +54,60 @@ struct EditFixedTransitionSheet: View {
                     
                     VStack {
                         HStack {
-                            Text("固定出費名")
-                                .font(.system(size: 16)).foregroundStyle(.black)
-                                .frame(width: 108, alignment: .leading)
                             TextField(
-                                "未入力",
+                                "固定出費名",
                                 text: $viewModel.fixedTransitionName
                             )
+                            .focused($isNameFocused)
                             .padding(.horizontal, 12)
-                            .multilineTextAlignment(.trailing)
                             .textFieldStyle(.plain)
                             .frame(height: 52)
+                            if(isNameFocused && viewModel.fixedTransitionName != "") {
+                                Button {
+                                    viewModel.fixedTransitionName = ""
+                                }  label: {
+                                   Image(systemName: "xmark.circle.fill")
+                                       .foregroundStyle(.secondary)
+                               }
+                               .padding(.trailing, 16)
+                               .buttonStyle(.plain)
+                            }
                         }
                         .padding(.leading, 12)
                         Divider().padding(.horizontal, 12)
                         HStack{
-                            Text("金額")
-                                .font(.system(size: 16)).foregroundStyle(.black)
-                                .frame(width: 108, alignment: .leading)
                             TextField(
-                                "",
-                                text: $viewModel.amountInput
+                                "金額",
+                                text: Binding(
+                                    get: {
+                                        viewModel.amountInput ?? ""
+                                    },
+                                    set: { newValue in
+                                        let value = String(
+                                            newValue
+                                                .filter { $0.isNumber }
+                                                .prefix(6)
+                                        )
+                                        viewModel.amountInput = value.isEmpty ? nil : value
+                                    }
+                                )
                             )
                             .focused($isAmountFocused)
-                            .onChange(of: isAmountFocused) { _, isFocused in
-                                if isFocused && viewModel.amountInput == "0" {
-                                    viewModel.amountInput = ""
-                                } else {
-                                    if viewModel.amountInput.isEmpty {
-                                        viewModel.amountInput = "0"
-                                    }
-                                }
-                            }
                             .padding(.horizontal, 12)
-                            .multilineTextAlignment(.trailing)
                             .keyboardType(.numberPad)
                             .textFieldStyle(.plain)
                             .frame(height: 52)
+                            
+                            if(isAmountFocused && viewModel.amountInput != nil) {
+                               Button {
+                                   viewModel.amountInput = nil
+                               }  label: {
+                                   Image(systemName: "xmark.circle.fill")
+                                       .foregroundStyle(.secondary)
+                               }
+                               .padding(.trailing, 16)
+                               .buttonStyle(.plain)
+                           }
                         }
                         .padding(.leading, 12)
                     }

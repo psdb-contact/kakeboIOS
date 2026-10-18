@@ -10,6 +10,8 @@ struct EditCategorySheet: View {
     
     @State private var isKeyboardVisible = false
     
+    @FocusState private var isNameFocused: Bool
+    
     @State private var viewModel: EditCategoryViewModel
     
     init(
@@ -54,20 +56,26 @@ struct EditCategorySheet: View {
                     
                     VStack {
                         HStack {
-                            Text("カテゴリ名")
-                                .font(.system(size: 16)).foregroundStyle(.black)
-                                .frame(width: 108, alignment: .leading)
                             TextField(
-                                "未入力",
+                                "カテゴリ名",
                                 text: $viewModel.categoryName
                             )
+                            .focused($isNameFocused)
                             .padding(.horizontal, 12)
-                            .multilineTextAlignment(.trailing)
                             .textFieldStyle(.plain)
                             .frame(height: 52)
+                            if(isNameFocused && viewModel.categoryName != "") {
+                                Button {
+                                   viewModel.categoryName = ""
+                                }  label: {
+                                   Image(systemName: "xmark.circle.fill")
+                                       .foregroundStyle(.secondary)
+                               }
+                               .padding(.trailing, 16)
+                               .buttonStyle(.plain)
+                            }
                         }
                         .padding(.leading, 12)
-                        
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 12).fill(Color.container)
