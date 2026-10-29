@@ -12,24 +12,29 @@ import SwiftData
 struct SelectTransitionCategorySheet: View {
     @Environment(AppContainer.self)
     private var appContainer
-    private var usedCategories: [CategoryModel]
+    private var usedExpenseIds: [UUID]
+    private var usedIncomeIds: [UUID]
     
-    private let transitionType: TransitionType
-    private let selectedDate: Date
+    let onSave: (TransitionModel) -> Void
     
-    init(usedCategories: [CategoryModel], transitionType: TransitionType, selectedDate: Date ) {
-        self.usedCategories = usedCategories
-        self.transitionType = transitionType
-        self.selectedDate = selectedDate
+    private let transitionPeriod: TransitionPeriod
+    
+    init(usedExpenseIds: [UUID], usedIncomeIds: [UUID], transitionPeriod: TransitionPeriod, onSave: @escaping (TransitionModel) -> Void ) {
+        self.usedExpenseIds = usedExpenseIds
+        self.usedIncomeIds = usedIncomeIds
+        self.transitionPeriod = transitionPeriod
+        
+        self.onSave = onSave
     }
     
     var body: some View {
         SelectTransitionCategoryContentSheet(
             categoryService: appContainer.categoryService,
             transitionService: appContainer.transitionService,
-            usedCategories: self.usedCategories,
-            transitionType: self.transitionType,
-            selectedDate: self.selectedDate
+            usedExpenseIds: self.usedExpenseIds,
+            usedIncomeIds: self.usedIncomeIds,
+            transitionPeriod: self.transitionPeriod,
+            onSave: self.onSave
         )
     }
 }
@@ -40,16 +45,17 @@ private struct SelectTransitionCategoryContentSheet: View {
     private let categoryService: CategoryService
     private let transitionService: TransitionService
     
-    let selectedDate: Date
-    
+    let onSave: (TransitionModel) -> Void
+
     @State private var viewModel: SelectTransitionCategoryViewModel
     
-    init(categoryService: CategoryService, transitionService: TransitionService, usedCategories: [CategoryModel], transitionType: TransitionType, selectedDate: Date) {
+    init(categoryService: CategoryService, transitionService: TransitionService,usedExpenseIds: [UUID], usedIncomeIds: [UUID], transitionPeriod: TransitionPeriod, onSave: @escaping (TransitionModel) -> Void) {
         self.categoryService = categoryService
         self.transitionService = transitionService
-        self.selectedDate = selectedDate
         
-        _viewModel = State(initialValue: SelectTransitionCategoryViewModel(categoryService: categoryService, transitionService: transitionService, usedCategories: usedCategories, transitionType: transitionType ))
+        self.onSave = onSave
+        
+        _viewModel = State(initialValue: SelectTransitionCategoryViewModel(categoryService: categoryService, transitionService: transitionService, usedExpenseIds: usedExpenseIds,usedIncomeIds:  usedIncomeIds, transitionPeriod: transitionPeriod ))
     }
     
     var body: some View {
@@ -63,11 +69,7 @@ private struct SelectTransitionCategoryContentSheet: View {
                         SelectTransitionCategoryForm(
                             category: item.category,
                             isUsed: item.isUsed,
-                            onSelect: { save(
-                                category: item.category
-                            )
-                                dismiss()
-                            }
+                            onSelect: { viewModel.selectedCategory = item.category }
                         )
                     }
                 }
@@ -82,29 +84,31 @@ private struct SelectTransitionCategoryContentSheet: View {
                 }
             }
             ToolbarItem(placement: .principal) {
-                Text(
-                    "カテゴリ追加"
+                TextToggle(
+                    items: [
+                        .init(title: "支出", value: .expense),
+                        .init(title: "収入", value: .income)
+                    ],
+                    selection: viewModel.transitionPeriod.type,
+                    onSelectionChanged: { value in
+                        viewModel.transitionPeriod = TransitionPeriod(type: value, date: viewModel.transitionPeriod.date)
+                    }
                 )
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .task{
+        .navigationDestination(item: $viewModel.selectedCategory) {category in
+            AddTransitionView(category: category, transitionPeriod: viewModel.transitionPeriod) { updatedTransition in
+                onSave(updatedTransition)
+            }
+            .background(Color.modalSheetBackground)
+        }
+        .task(id: viewModel.transitionPeriod){
             do {
-                try viewModel.load()
+                try viewModel.load(viewModel.transitionPeriod)
             } catch {
                 print("Ctegoryの読み込みに失敗しました: \(error)")
             }
-        }
-    }
-    
-    private func save(category: CategoryModel) {
-        do {
-            try viewModel.save(
-                transition:
-                    TransitionModel(category: category, amount: 0, transitionType: category.transitionType, transitionDate: selectedDate, createdAt: Date.now)
-            )
-        } catch {
-            
         }
     }
 }
@@ -127,7 +131,7 @@ struct SelectTransitionCategoryForm : View {
     var body: some View {
         HStack(spacing: 0) {
             Text(category.categoryName)
-                .font(.system(size: 16))
+                .font(.system(size: 18))
                 .frame(
                     width: 92,
                     alignment: .leading
@@ -188,9 +192,10 @@ private struct PreviewContent: View {
     var body: some View {
         NavigationStack {
             SelectTransitionCategorySheet(
-                usedCategories: [],
-                transitionType: .expense,
-                selectedDate: Calendar.current.startOfDay(for: Date())
+                usedExpenseIds: [],
+                usedIncomeIds: [],
+                transitionPeriod: TransitionPeriod(type: .expense, date: Date()),
+                onSave: {item in}
             )
         }
         .modelContainer(container)

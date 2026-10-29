@@ -63,7 +63,7 @@ struct YourKakeboApp: App {
              guard scenePhase == .background else { return }
 
              do {
-                 try appContainer.backupService.importInternalBackup()
+                 try appContainer.backupService.exportInternalBackup()
                  appContainer.appSettings.backupDate = Date()
              } catch {
                  print("自動バックアップに失敗しました: \(error)")

@@ -40,41 +40,15 @@ struct HistoryDetailsSheet: View {
                         viewModel.moveDate(by: 1)
                     }
                 )
-                HStack {
-                   Spacer()
-                   NavigationLink {
-                       
-                   } label: {
-                       Image(systemName: "plus")
-                           .font(.system(size: 26))
-                           .foregroundStyle(
-                               Color(
-                                   red: 0.267,
-                                   green: 0.267,
-                                   blue: 0.267
-                               )
-                           )
-                           .frame(
-                               width: 44,
-                               height: 44
-                           )
-                   }
-                   .modifier(GlassEffectModifier())
-               }
-               .safeAreaPadding(.horizontal)
             }
             ScrollView {
                 VStack(spacing: 32) {
                     VStack(spacing: 0) {
                         HStack {
                             Text("出費")
-                                .font(
-                                    .system(size: 20, weight: .bold)
-                                )
-                                .frame(
-                                    maxWidth: .infinity,
-                                    alignment: .leading
-                                )
+                                .font(.system(size: 18, weight: .semibold))
+                                         .foregroundStyle(.primary)
+                                         .padding(.leading, 8)
                             Spacer()
                             Text("\(viewModel.totalExpense)")
                         }
@@ -119,14 +93,9 @@ struct HistoryDetailsSheet: View {
                     VStack(spacing: 0){
                         HStack {
                             Text("収入")
-                                .font(
-                                    .system(size: 20, weight: .bold)
-                                )
-                                .frame(
-                                    maxWidth: .infinity,
-                                    alignment: .leading
-                                )
-                            
+                                .font(.system(size: 18, weight: .semibold))
+                                         .foregroundStyle(.primary)
+                                         .padding(.leading, 8)
                             Spacer()
                             Text("\(viewModel.totalIncome)")
                         }
@@ -173,7 +142,7 @@ struct HistoryDetailsSheet: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 20)
             .padding(.top, 24)
         }
         .toolbar {
@@ -183,6 +152,15 @@ struct HistoryDetailsSheet: View {
                 } label: {
                     Image(systemName: "xmark")
                 }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                          
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 22))
+                }
+                .buttonStyle(.plain)
             }
         }
         .navigationBarTitleDisplayMode(.inline)

@@ -108,7 +108,16 @@ enum PreviewTransitionData {
                 createdAt: now,
                 memo: "日用品"
             ),
-
+            
+            TransitionModel(
+                category: nil,
+                amount: 2480,
+                transitionType: .expense,
+                transitionDate: today,
+                createdAt: now,
+                memo: ""
+            ),
+            
             TransitionModel(
                 category: categories[4],
                 amount: 12000,

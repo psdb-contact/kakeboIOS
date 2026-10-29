@@ -40,15 +40,23 @@ final class TransitionService {
         }
     }
 
-    func editTransition(
-        id: UUID,
-        amount: Int
-    ) throws {
+    func editTransition(_ transition: TransitionModel) throws {
         try modelContext.transaction {
-            try transitionRepository.updateAmount(
-                id: id,
-                amount: amount
-            )
+            try transitionRepository.updateTransition(transition)
+        }
+    }
+    
+    func addAndDeleteTransition(add: TransitionModel, delete: TransitionModel) throws {
+        try modelContext.transaction {
+            try transitionRepository.insertTransition(add)
+            try transitionRepository.deleteTransition(delete.transitionId)
+        }
+    }
+    
+    func editAndDeleteTransition(edit: TransitionModel, delete: TransitionModel) throws {
+        try modelContext.transaction {
+            try transitionRepository.updateTransition(edit)
+            try transitionRepository.deleteTransition(delete.transitionId)
         }
     }
 

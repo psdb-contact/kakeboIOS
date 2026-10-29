@@ -14,6 +14,7 @@ struct PeriodNavigationBar: View {
                         .font(.system(size: 22))
                         .frame(width: 44, height: 44)
                 }
+                .buttonStyle(.plain)
 
                 Text(formattedDate)
                     .font(.system(size: 19, weight: .semibold))
@@ -27,6 +28,7 @@ struct PeriodNavigationBar: View {
                         .font(.system(size: 22))
                         .frame(width: 44, height: 44)
                 }
+                .buttonStyle(.plain)
             }
         .foregroundStyle(.primary)
         .padding(.horizontal, 8)

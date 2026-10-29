@@ -1,8 +1,6 @@
 //
-//  AddTransitionViewModel.swift
+//  EditTransitionViewModel.swift
 //  yourkakebo
-//
-//  Created by hiroki hosokawa on 2026/09/20.
 //
 
 import Foundation
@@ -10,20 +8,47 @@ import Observation
 
 @Observable
 final class AddTransitionViewModel {
+    
     private let transitionService: TransitionService
-    private let categoryService: CategoryService
     
-    var selectedDate: Date
+    // MARK: - State
     
-    let transitionType: TransitionType = .expense
-    let category: CategoryModel? = nil
-    let amount: Int? = nil
+    let category: CategoryModel
+    let transitionPeriod: TransitionPeriod
     
-    init(transitionService: TransitionService, categoryService: CategoryService, selectedDate: Date) {
+    var amountInput: String?
+    
+    var toast: ToastData?
+    
+    // MARK: - Init
+    
+    init(
+        transitionService: TransitionService,
+        category: CategoryModel,
+        transitionPeriod: TransitionPeriod
+    ) {
         self.transitionService = transitionService
-        self.categoryService = categoryService
-        self.selectedDate = selectedDate
+        
+        self.category = category
+        self.transitionPeriod = transitionPeriod
     }
     
     
+    // MARK: - Action
+    
+    func save() throws -> TransitionModel {
+        let newTransition = TransitionModel(
+            category: category,
+            amount: Int(amountInput ?? "") ?? 0,
+            transitionType: transitionPeriod.type,
+            transitionDate: transitionPeriod.date,
+            createdAt: Date(),
+        )
+        
+        try transitionService.addTransition(
+            newTransition
+        )
+        
+        return newTransition
+    }
 }

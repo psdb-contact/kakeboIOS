@@ -64,15 +64,17 @@ final class EditTransitionSheetViewModel {
                 newAmount = Int(amountInput ?? "") ?? 0
             }
             
-            try transitionService.editTransition(id: transition!.transitionId, amount: newAmount)
-            
-            return TransitionModel(
+            let newTransition =  TransitionModel(
                 category: category,
                 amount: newAmount,
                 transitionType: transition!.transitionType,
                 transitionDate: transition!.transitionDate,
-                createdAt: transition!.createdAt
+                createdAt: Date()
             )
+            
+            try transitionService.editTransition(newTransition)
+            
+            return newTransition
         } else {
             let newTransition = TransitionModel(
                 category: category,

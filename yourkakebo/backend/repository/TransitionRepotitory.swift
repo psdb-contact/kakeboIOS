@@ -94,10 +94,12 @@ final class TransitionRepository {
         try modelContext.save()
     }
     
-    func updateAmount(id: UUID, amount: Int) throws {
+    func updateTransition(_ update: TransitionModel) throws {
+        let transitionID = update.transitionId
+        
         let descriptor = FetchDescriptor<TransitionModel>(
             predicate: #Predicate {
-                $0.transitionId == id
+                $0.transitionId == transitionID
             }
         )
         
@@ -105,7 +107,8 @@ final class TransitionRepository {
             return
         }
         
-        transition.amount = amount
+        transition.amount = update.amount
+        transition.createdAt = update.createdAt
         try modelContext.save()
     }
     
