@@ -74,8 +74,8 @@ private struct EditTransitionContentView: View {
                     .buttonStyle(.plain)
                     .modifier(GlassEffectModifier())
                 }
-                .safeAreaPadding(.horizontal)
             }
+            
             
             // MARK: - Transition List
             
