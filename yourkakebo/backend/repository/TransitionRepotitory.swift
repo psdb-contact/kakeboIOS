@@ -89,6 +89,17 @@ final class TransitionRepository {
         return try modelContext.fetch(descriptor)
     }
     
+    func getTransitionByDateAndCategoryId(date: Date, categoryId: UUID) throws -> TransitionModel? {
+            let descriptor = FetchDescriptor<TransitionModel>(
+                predicate: #Predicate {
+                    $0.category?.categoryId == categoryId &&
+                    $0.transitionDate == date
+                }
+            )
+        
+        return try modelContext.fetch(descriptor).first
+    }
+    
     func insertTransition(_ transition: TransitionModel) throws {
         modelContext.insert(transition)
         try modelContext.save()

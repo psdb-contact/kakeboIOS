@@ -47,8 +47,8 @@ struct HistoryDetailsSheet: View {
                         HStack {
                             Text("出費")
                                 .font(.system(size: 18, weight: .semibold))
-                                         .foregroundStyle(.primary)
-                                         .padding(.leading, 8)
+                                .foregroundStyle(.primary)
+                                .padding(.leading, 8)
                             Spacer()
                             Text("\(viewModel.totalExpense)")
                         }
@@ -94,8 +94,8 @@ struct HistoryDetailsSheet: View {
                         HStack {
                             Text("収入")
                                 .font(.system(size: 18, weight: .semibold))
-                                         .foregroundStyle(.primary)
-                                         .padding(.leading, 8)
+                                .foregroundStyle(.primary)
+                                .padding(.leading, 8)
                             Spacer()
                             Text("\(viewModel.totalIncome)")
                         }
@@ -104,7 +104,6 @@ struct HistoryDetailsSheet: View {
                         VStack(spacing: 16) {
                             ForEach(viewModel.incomes) {item in
                                 HStack {
-                                    
                                     Circle()
                                         .fill(Color(hex: item.category != nil ? item.category!.colorHex : 0xFFBBBBBB))
                                         .frame(width: 12, height: 12)
@@ -147,15 +146,13 @@ struct HistoryDetailsSheet: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                }
+               CancelButton(action:  {dismiss() }, tint: .secondaryCancelColor)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
-                          
+                    AddTransitionOnCalendarView(selectedDate:  viewModel.selectedDate, onSave: { transition in }
+                    )
+                    .background(Color.modalSheetBackground)
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 22))
