@@ -14,7 +14,7 @@ enum Weekday: Int, CaseIterable, Hashable {
     case friday
     case saturday
     
-    var displayName: String {
+    var displayString: String {
         switch self {
             case .sunday:
                 return "日曜"

@@ -26,7 +26,7 @@ struct TransitionPeriod: Equatable {
     let date: Date
 }
 
-enum EditTransitionType: String {
+enum EditTransitionType: String, CaseIterable, Hashable {
     case add
     case overwrite
     

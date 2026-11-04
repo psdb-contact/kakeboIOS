@@ -11,7 +11,7 @@ enum AppThemeType: String, CaseIterable, Hashable {
     case light
     case dark
     
-    var displayName: String {
+    var displayString: String {
         switch self {
         case .system:
             return "デバイスのモードを使用"

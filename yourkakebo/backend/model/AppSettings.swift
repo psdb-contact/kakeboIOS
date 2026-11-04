@@ -3,15 +3,16 @@ import Observation
 
 @Observable
 final class AppSettings {
-
+    
     private let defaults: UserDefaults
-
+    
     private enum Key {
         static let isFirstLaunch = "isFirstLaunch"
         static let confirmWhenDelete = "confirmWhenDelete"
         static let backupDate = "backupDate"
         static let appLaunchCount = "appLaunchCount"
         static let lastReviewRequestAt = "lastReviewRequestAt"
+        static let editTransitionType = "editTransitionType"
         static let themeType = "themeType"
         static let isNotificationOn = "isNotificationOn"
         static let notificationTime = "notificationTime"
@@ -20,49 +21,55 @@ final class AppSettings {
         static let yearlyStartMonth = "yearlyStartMonth"
         static let weeklyStartDay = "weeklyStartDay"
     }
-
+    
     var isFirstLaunch: Bool {
         didSet {
             defaults.set(isFirstLaunch, forKey: Key.isFirstLaunch)
         }
     }
-
+    
     var confirmWhenDelete: Bool {
         didSet {
             defaults.set(confirmWhenDelete, forKey: Key.confirmWhenDelete)
         }
     }
-
+    
     var backupDate: Date? {
         didSet {
             defaults.set(backupDate, forKey: Key.backupDate)
         }
     }
-
+    
     var appLaunchCount: Int {
         didSet {
             defaults.set(appLaunchCount, forKey: Key.appLaunchCount)
         }
     }
-
+    
     var lastReviewRequestAt: String? {
         didSet {
             defaults.set(lastReviewRequestAt, forKey: Key.lastReviewRequestAt)
         }
     }
-
+    
+    var editTransitionType: EditTransitionType {
+        didSet {
+            defaults.set(editTransitionType.rawValue, forKey: Key.editTransitionType)
+        }
+    }
+    
     var themeType: AppThemeType {
         didSet {
             defaults.set(themeType.rawValue, forKey: Key.themeType)
         }
     }
-
+    
     var isNotificationOn: Bool {
         didSet {
             defaults.set(isNotificationOn, forKey: Key.isNotificationOn)
-        } 
+        }
     }
-
+    
     var notificationTime: Int {
         didSet {
             defaults.set(notificationTime, forKey: Key.notificationTime)
@@ -95,10 +102,10 @@ final class AppSettings {
             defaults.set(weeklyStartDay.rawValue, forKey: Key.weeklyStartDay)
         }
     }
-
+    
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-
+        
         if defaults.object(forKey: Key.isFirstLaunch) == nil {
             self.isFirstLaunch = true
         } else {
@@ -106,7 +113,7 @@ final class AppSettings {
                 forKey: Key.isFirstLaunch
             )
         }
-
+        
         if defaults.object(forKey: Key.confirmWhenDelete) == nil {
             self.confirmWhenDelete = true
         } else {
@@ -114,11 +121,11 @@ final class AppSettings {
                 forKey: Key.confirmWhenDelete
             )
         }
-
+        
         self.backupDate = defaults.object(
             forKey: Key.backupDate
         ) as? Date
-
+        
         if defaults.object(forKey: Key.appLaunchCount) == nil {
             self.appLaunchCount = 0
         } else {
@@ -126,18 +133,25 @@ final class AppSettings {
                 forKey: Key.appLaunchCount
             )
         }
-
+        
         self.lastReviewRequestAt = defaults.string(
             forKey: Key.lastReviewRequestAt
         )
-
+        
+        if let editTransitionTypeRawValue = defaults.string(forKey: Key.editTransitionType),
+           let editTransitionType = EditTransitionType(rawValue: editTransitionTypeRawValue) {
+            self.editTransitionType = editTransitionType
+        } else {
+            self.editTransitionType = .add
+        }
+        
         if let themeTypeRawValue = defaults.string(forKey: Key.themeType),
            let themeType = AppThemeType(rawValue: themeTypeRawValue) {
             self.themeType = themeType
         } else {
             self.themeType = .system
         }
-
+        
         if defaults.object(forKey: Key.isNotificationOn) == nil {
             self.isNotificationOn = false
         } else {
@@ -154,7 +168,7 @@ final class AppSettings {
         
         if let values = defaults.array(forKey: Key.notificationDays) as? [Int] {
             self.notificationDays = Set(values.compactMap{
-                    Weekday(rawValue: $0)
+                Weekday(rawValue: $0)
             })
         } else {
             self.notificationDays = [
@@ -191,25 +205,26 @@ final class AppSettings {
 }
 
 extension AppSettings {
-
+    
     static var preview: AppSettings {
         let defaults = UserDefaults(
             suiteName: "yourkakebo.preview"
         )!
-
+        
         defaults.removePersistentDomain(
             forName: "yourkakebo.preview"
         )
-
+        
         let settings = AppSettings(
             defaults: defaults
         )
-
+        
         settings.isFirstLaunch = false
         settings.confirmWhenDelete = true
         settings.appLaunchCount = 10
+        settings.editTransitionType = .add
         settings.themeType = .system
-
+        
         return settings
     }
 }

@@ -97,10 +97,39 @@ private struct SettingContentView: View {
                 VStack {
                     NavigationLink {
                         SelectionView(
+                            title: "再入力時の動作",
+                            options: EditTransitionType.allCases,
+                            selection: $viewModel.appSettings.editTransitionType,
+                            displayString: \.displayString
+                        )
+                    } label: {
+                        HStack {
+                            Text("再入力時の動作")
+                            
+                            Spacer()
+                            
+                            Text(viewModel.appSettings.editTransitionType.displayString).foregroundStyle(.secondary)
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                    }
+                    .tint(.primary)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.container)
+                )
+                VStack {
+                    NavigationLink {
+                        SelectionView(
                             title: "ダークモード",
                             options: AppThemeType.allCases,
                             selection: $viewModel.appSettings.themeType,
-                            displayName: \.displayName
+                            displayString: \.displayString
                         )
                     } label: {
                         HStack {
@@ -108,7 +137,7 @@ private struct SettingContentView: View {
                             
                             Spacer()
                             
-                            Text(viewModel.appSettings.themeType.displayName).foregroundStyle(.secondary)
+                            Text(viewModel.appSettings.themeType.displayString).foregroundStyle(.secondary)
                             
                             Image(systemName: "chevron.right")
                                 .font(.caption)
@@ -217,7 +246,7 @@ private struct SettingContentView: View {
                             title: "週の開始日",
                             options: [.sunday, .monday],
                             selection: $viewModel.appSettings.weeklyStartDay,
-                            displayName: \.displayName
+                            displayString: \.displayString
                         )
                     } label: {
                         HStack {
@@ -225,7 +254,7 @@ private struct SettingContentView: View {
                             
                             Spacer()
                             
-                            Text(viewModel.appSettings.weeklyStartDay.displayName)
+                            Text(viewModel.appSettings.weeklyStartDay.displayString)
                             
                             Image(systemName: "chevron.right")
                                 .font(.caption)

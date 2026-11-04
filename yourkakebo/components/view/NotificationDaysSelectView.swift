@@ -17,7 +17,7 @@ struct NotificationDaysSelectView: View {
             ScrollView {
                 ForEach(Weekday.allCases, id: \.self) {day in
                     Toggle(
-                        day.displayName,
+                        day.displayString,
                         isOn: Binding(
                             get: {
                                 selection.contains(day)

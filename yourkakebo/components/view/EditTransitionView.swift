@@ -12,6 +12,7 @@ struct EditTransitionView: View {
     var body: some View {
         
         EditTransitionContentView(
+            appSettings: appContainer.appSettings,
             transitionService: appContainer.transitionService,
             templateService: appContainer.templateService
         )
@@ -22,12 +23,16 @@ private struct EditTransitionContentView: View {
     @State private var isKeyboardVisible = false
     @State private var viewModel: EditTransitionViewModel
     
+    @Namespace private var animation
+    
     init(
+        appSettings: AppSettings,
         transitionService: TransitionService,
         templateService: TemplateService
     ) {
         _viewModel = State(
             initialValue: EditTransitionViewModel(
+                appSettings: appSettings,
                 transitionService: transitionService,
                 templateService: templateService
             )
@@ -74,6 +79,7 @@ private struct EditTransitionContentView: View {
                     .buttonStyle(.plain)
                     .modifier(GlassEffectModifier())
                 }
+                .padding(.horizontal, 16)
             }
             
             
@@ -84,43 +90,65 @@ private struct EditTransitionContentView: View {
                 if(count > 0) {
                     if isExpense  {
                         ForEach($viewModel.expenses) { $item in
-                            TransitionCard(
-                                data: $item,
-                                onEdit: {
-                                    viewModel.editingDataId = item.id
-                                    viewModel.editingTransition = item.transition
-                                    viewModel.editingCategory = item.category
-                                    viewModel.showEditTransition = true
-                                },
-                            )
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparator(.hidden)
-                            .swipeActions(edge: .trailing) {
-                                Button {
-                                    viewModel.transitionDataToDelete = item
-                                } label: {
-                                    Image(systemName: "trash")
+                            if let editingData = viewModel.editingTransition,
+                               editingData.id == item.id {
+                                
+                                TransitionEditForm(
+                                    namespace: animation,
+                                    editingData: editingData,
+                                    amountInput: $viewModel.amountInput,
+                                    editType: $viewModel.editType,
+                                )
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparator(.hidden)
+                                
+                            } else {
+                                TransitionCard(
+                                    data: $item,
+                                    onEdit: {
+                                        viewModel.setEditingTransition(item)
+                                    }
+                                )
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparator(.hidden)
+                                .swipeActions(edge: .trailing) {
+                                    Button {
+                                        viewModel.transitionDataToDelete = item
+                                    } label: {
+                                        Image(systemName: "trash")
+                                    }
                                 }
                             }
                         }
                     }else  {
                         ForEach($viewModel.incomes) { $item in
-                            TransitionCard(
-                                data: $item,
-                                onEdit: {
-                                    viewModel.editingDataId = item.id
-                                    viewModel.editingTransition = item.transition
-                                    viewModel.editingCategory = item.category
-                                    viewModel.showEditTransition = true
-                                },
-                            )
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparator(.hidden)
-                            .swipeActions(edge: .trailing) {
-                                Button{
-                                    viewModel.transitionDataToDelete = item
-                                } label: {
-                                    Image(systemName: "trash")
+                            if let editingData = viewModel.editingTransition,
+                               editingData.id == item.id {
+                                
+                                TransitionEditForm(
+                                    namespace: animation,
+                                    editingData: editingData,
+                                    amountInput: $viewModel.amountInput,
+                                    editType: $viewModel.editType,
+                                )
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparator(.hidden)
+                                
+                            } else {
+                                TransitionCard(
+                                    data: $item,
+                                    onEdit: {
+                                        viewModel.setEditingTransition(item)
+                                    }
+                                )
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparator(.hidden)
+                                .swipeActions(edge: .trailing) {
+                                    Button {
+                                        viewModel.transitionDataToDelete = item
+                                    } label: {
+                                        Image(systemName: "trash")
+                                    }
                                 }
                             }
                         }
@@ -135,6 +163,7 @@ private struct EditTransitionContentView: View {
                                     .padding(.leading, 8)
                                 Divider()
                             }
+                            .padding(.horizontal, 8)
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                             ForEach($viewModel.uncategorizedExpenses) { $item in
@@ -197,26 +226,39 @@ private struct EditTransitionContentView: View {
             }
             .contentMargins(.all, 0, for: .scrollContent)
             .scrollContentBackground(.hidden)
-            .background(Color(uiColor: .container))
             .clipShape(
                 RoundedRectangle(cornerRadius: 12)
             )
             .scrollIndicators(.visible)
         }
         .padding(.bottom, 8)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 0)
         .navigationBarTitleDisplayMode(.inline)
         .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink {
-                    SettingView()
-                        .toolbar(.hidden, for: .tabBar)
-                } label: {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 19))
+            if viewModel.editingTransition != nil {
+                ToolbarItem(placement: .topBarLeading) {
+                    CancelButton(action:  {
+                        viewModel.editingTransition = nil
+                    }, tint: .secondaryCancelColor)
                 }
-                .buttonStyle(.plain)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                if viewModel.editingTransition != nil {
+                    SubmitButton {
+                        save()
+                        viewModel.editingTransition = nil
+                    }
+                } else {
+                    NavigationLink {
+                        SettingView()
+                            .toolbar(.hidden, for: .tabBar)
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 19))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             ToolbarItem(placement: .principal) {
                 TextToggle(
@@ -232,7 +274,7 @@ private struct EditTransitionContentView: View {
             }
         }
         .alert("収支削除",
-            isPresented: Binding(
+               isPresented: Binding(
                 get: {
                     viewModel.transitionDataToDelete != nil
                 },
@@ -241,7 +283,7 @@ private struct EditTransitionContentView: View {
                         viewModel.cancelDelete()
                     }
                 }
-            )
+               )
         ) {
             Button("キャンセル", role: .cancel) {
                 viewModel.cancelDelete()
@@ -255,7 +297,7 @@ private struct EditTransitionContentView: View {
             )
         }
         .alert("収支削除",
-            isPresented: Binding(
+               isPresented: Binding(
                 get: {
                     viewModel.uncategorizedTransitionDataToDelete != nil
                 },
@@ -264,7 +306,7 @@ private struct EditTransitionContentView: View {
                         viewModel.cancelUncategorizedDelete()
                     }
                 }
-            )
+               )
         ) {
             Button("キャンセル", role: .cancel) {
                 viewModel.cancelUncategorizedDelete()
@@ -280,83 +322,7 @@ private struct EditTransitionContentView: View {
         .sheet(isPresented: $viewModel.showSelectCategory) {
             NavigationStack {
                 SelectTransitionCategorySheet(usedExpenseIds: viewModel.expenseIds, usedIncomeIds: viewModel.incomeIds, transitionPeriod: viewModel.transitionPeriod) { updatedTransition in
-                    viewModel.refreash(updatedTransition)
-                }
-            }
-            .presentationBackground(Color.modalSheetBackground)
-            .presentationDragIndicator(.hidden)
-        }
-        /*
-         .safeAreaInset(edge: .bottom, spacing: 0) {
-         if(isKeyboardVisible) {
-         CloseSaveComponentOnKeyboard(
-         closeAction: {
-         if let index = viewModel.transitions.firstIndex(where: {
-         $0.isAddingAmount
-         }) {
-         viewModel.transitions[index].isAddingAmount = false
-         viewModel.transitions[index].addingAmount = nil
-         }
-         
-         UIApplication.shared.sendAction(
-         #selector(UIResponder.resignFirstResponder),
-         to: nil,
-         from: nil,
-         for: nil
-         )
-         },
-         action: {
-         if let index = viewModel.transitions.firstIndex(where: {
-         $0.isAddingAmount
-         }) {
-         addAmount(index)
-         } else {
-         saveTransition()
-         }
-         
-         viewModel.isSaving = true
-         saveTransition()
-         UIApplication.shared.sendAction(
-         #selector(UIResponder.resignFirstResponder),
-         to: nil,
-         from: nil,
-         for: nil
-         )
-         DispatchQueue.main.async {
-         viewModel.isSaving = false
-         }
-         }
-         )
-         }
-         }
-         .animation(
-         .easeInOut(duration: 0.25),
-         value: isKeyboardVisible
-         )
-         .onReceive(
-         NotificationCenter.default.publisher(
-         for: UIResponder.keyboardWillShowNotification
-         )
-         ) { _ in
-         isKeyboardVisible = true
-         }
-         .onReceive(
-         NotificationCenter.default.publisher(
-         for: UIResponder.keyboardWillHideNotification
-         )
-         ) { _ in
-         isKeyboardVisible = false
-         }
-         */
-        .sheet(isPresented: $viewModel.showEditTransition, onDismiss: {viewModel.editingDataId = nil}) {
-            NavigationStack {
-                EditTransitionSheet(
-                    transitionService: viewModel.transitionService,
-                    transition: viewModel.editingTransition,
-                    category: viewModel.editingCategory!,
-                    transitionPeriod: viewModel.transitionPeriod,
-                ){ updatedTransition in
-                    viewModel.refreash(updatedTransition)
+                    viewModel.addToData(updatedTransition)
                 }
             }
             .presentationBackground(Color.modalSheetBackground)
@@ -378,6 +344,16 @@ private struct EditTransitionContentView: View {
         }
     }
     
+    private func save() {
+        do {
+            let savedTransition = try viewModel.save()
+            viewModel.refreash(savedTransition)
+        } catch {
+            //viewModel.toast = .error(error.localizedDescription)
+            print("収支の保存に失敗しました: \(error)")
+        }
+    }
+    
     // MARK: - Computed
     
     private var formattedDate: String {
@@ -388,91 +364,225 @@ private struct EditTransitionContentView: View {
             from: viewModel.transitionPeriod.date
         )
     }
-}
-
-
-// MARK: - TransitionInputForm
-
-struct TransitionCard: View {
-    @Binding var data: TransitionInputData
     
-    let onEdit: () -> Void
-    
-    init(
-        data: Binding<TransitionInputData>,
-        onEdit: @escaping () -> Void,
-    ) {
-        self._data = data
-        self.onEdit = onEdit
+    struct TransitionCard: View {
+        @Binding var data: TransitionInputData
+        
+        let onEdit: () -> Void
+        
+        init(
+            data: Binding<TransitionInputData>,
+            onEdit: @escaping () -> Void,
+        ) {
+            self._data = data
+            self.onEdit = onEdit
+        }
+        
+        var body: some View {
+            
+            Button {
+                onEdit()
+            }
+            label: {
+                HStack(spacing: 0) {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(Color(hex: data.category.colorHex))
+                            .frame(width: 12, height: 12)
+                        Text(data.category.categoryName)
+                            .font(.system(size: 18))
+                            .frame(
+                                width: 92,
+                                alignment: .leading
+                            )
+                    }
+                    Spacer()
+                    Text("\(data.transition?.amount.formatted() ?? "0")円")
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 16)
+                .padding(.leading, 20)
+                .padding(.trailing, 20)
+                .frame(maxWidth: .infinity)
+                .clipShape(
+                    RoundedRectangle(cornerRadius: 8)
+                )
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .zIndex(0)
+        }
     }
     
-    var body: some View {
+    struct TransitionEditForm: View {
+        var namespace: Namespace.ID
+        let editingData: TransitionInputData
         
-        Button {
-            onEdit()
-        }
-        label: {
-            HStack(spacing: 0) {
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(Color(hex: data.category.colorHex))
-                        .frame(width: 12, height: 12)
-                    Text(data.category.categoryName)
-                        .font(.system(size: 18))
-                        .frame(
-                            width: 92,
-                            alignment: .leading
+        @Binding var amountInput: String?
+        @Binding var editType: EditTransitionType
+        
+        @FocusState private var isFocused: Bool
+        
+        var body: some View {
+            
+            //let placeholder = editingData.transition != nil && editType == .add ? "加算額" : "金額"
+            
+            VStack {
+                VStack(spacing: 6) {
+                    HStack(spacing: 0) {
+                        HStack(spacing: 12) {
+                            Circle()
+                                .fill(Color(hex: editingData.category.colorHex))
+                                .frame(width: 12, height: 12)
+                            Text(editingData.category.categoryName)
+                                .font(.system(size: 18, weight: .semibold))
+                                .frame(
+                                    width: 92,
+                                    alignment: .leading
+                                )
+                        }
+                        Spacer()
+                        if(editingData.transition != nil) {
+                            Picker(
+                                "種類",
+                                selection: $editType
+                            ) {
+                                Text(EditTransitionType.add.displayString)
+                                    .tag(EditTransitionType.add)
+                                
+                                Text(EditTransitionType.overwrite.displayString)
+                                    .tag(EditTransitionType.overwrite)
+                            }
+                            .pickerStyle(.segmented)
+                            .frame(width: 140)
+                            .onChange(of: editType) { oldValue, newValue in
+                                handleEditTypeChanged(newValue)
+                            }
+                        }
+                    }
+                    HStack {
+                        TextField("",
+                                  text: Binding(
+                                    get: {
+                                        amountInput ?? ""
+                                    },
+                                    set: { newValue in
+                                        let value = String(
+                                            newValue
+                                                .filter { $0.isNumber }
+                                                .prefix(6)
+                                        )
+                                        amountInput = value.isEmpty ? nil : value
+                                    }
+                                  )
+                        )
+                        .keyboardType(.numberPad)
+                        .font(.system(size: 19))
+                        .frame(height: 52)
+                        .focused($isFocused)
+                        if(amountInput != nil) {
+                            Button {
+                                amountInput = nil
+                            }  label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.trailing, 8)
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    if(editingData.transition != nil && editType == .add) {
+                        HStack {
+                            Text("加算後の金額")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.secondary)
+                            
+                            Text("\((editingData.transition!.amount + (Int(amountInput ?? "") ?? 0)).formatted())円")                                .font(.system(size: 14))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
+                .background {
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(.container)
+                        .matchedGeometryEffect(
+                            id: editingData.id,
+                            in: namespace
                         )
                 }
-                Spacer()
-                Text("\(data.transition?.amount.formatted() ?? "0")円")
-                    .foregroundStyle(.secondary)
+                .shadow(
+                    color: Color.black.opacity(0.10),
+                    radius: 8,
+                    x: 0,
+                    y: 4
+                )
+                .transition(
+                    .opacity.combined(
+                        with: .scale(scale: 0.97, anchor: .top)
+                    )
+                )
             }
-            .padding(.top, 16)
-            .padding(.bottom, 16)
-            .padding(.leading, 20)
-            .padding(.trailing, 20)
-            .frame(maxWidth: .infinity)
-            .clipShape(
-                RoundedRectangle(cornerRadius: 8)
-            )
-            .contentShape(Rectangle())
+            .zIndex(1)
+            .padding(.horizontal, 8)
+            .task {
+                isFocused = true
+            }
+            
         }
-        .buttonStyle(.plain)
+        
+        private func handleEditTypeChanged(_ type: EditTransitionType) {
+            switch type {
+            case .add:
+                amountInput = nil
+                break
+            case .overwrite:
+                amountInput = String(editingData.transition?.amount ?? 0)
+                break
+            }
+        }
     }
+
+    struct UncategorizedTransitionCard: View {
+        @Binding var data: UncategoriezedTransitionInputData
+        
+        let onEdit: () -> Void
+        
+        init(data: Binding<UncategoriezedTransitionInputData>, onEdit: @escaping () -> Void) {
+            self._data = data
+            self.onEdit = onEdit
+        }
+        
+        var body: some View {
+            Button {
+                onEdit()
+            } label: {
+                HStack(spacing: 0) {
+                    Text("\(data.transition.createdAt.formatted(date: .omitted,time: .shortened))")
+                    Spacer()
+                    Text("\(data.transition.amount.formatted())円")
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 16)
+                .frame(maxWidth: .infinity)
+                .clipShape(
+                    RoundedRectangle(cornerRadius: 8)
+                )
+                .padding(.leading, 20)
+                .padding(.trailing, 20)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
 }
 
-struct UncategorizedTransitionCard: View {
-    @Binding var data: UncategoriezedTransitionInputData
-    
-    let onEdit: () -> Void
-    
-    init(data: Binding<UncategoriezedTransitionInputData>, onEdit: @escaping () -> Void) {
-        self._data = data
-        self.onEdit = onEdit
-    }
-    
-    var body: some View {
-        Button {
-            onEdit()
-        } label: {
-            HStack(spacing: 0) {
-                Text("\(data.transition.createdAt.formatted(date: .omitted,time: .shortened))")
-                Spacer()
-                Text("\(data.transition.amount.formatted())円")
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.top, 16)
-            .padding(.bottom, 16)
-            .frame(maxWidth: .infinity)
-            .clipShape(
-                RoundedRectangle(cornerRadius: 8)
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
 
 import SwiftData
 
@@ -514,7 +624,6 @@ private struct PreviewContent: View {
     var body: some View {
         NavigationStack{
             EditTransitionView()
-                .background(Color.secondBackground)
         }
         .preferredColorScheme(.light)
         .modelContainer(container)

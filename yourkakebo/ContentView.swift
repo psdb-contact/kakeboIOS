@@ -16,7 +16,6 @@ struct ContentView: View {
             TabView {
                 NavigationStack {
                     EditTransitionView()
-                        .background(Color(uiColor: .systemGroupedBackground))
                 }
                 .tabItem {
                     Label("入力", systemImage: "pencil")

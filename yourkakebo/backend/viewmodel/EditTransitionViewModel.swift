@@ -8,7 +8,7 @@ import Observation
 
 @Observable
 final class EditTransitionViewModel {
-    
+    let appSettings: AppSettings
     let transitionService: TransitionService
     private let templateService: TemplateService
     
@@ -24,10 +24,10 @@ final class EditTransitionViewModel {
     var incomeIds: [UUID] = []
     
     var showSelectCategory = false
-    var showEditTransition = false
-    var editingDataId: UUID? = nil
-    var editingTransition: TransitionModel? = nil
-    var editingCategory: CategoryModel? = nil
+    
+    var editingTransition: TransitionInputData? = nil
+    var amountInput: String? = nil
+    var editType: EditTransitionType = .add
     
     var showAssignTransition = false
     var assigningTransitionData: UncategoriezedTransitionInputData? = nil
@@ -40,9 +40,11 @@ final class EditTransitionViewModel {
     // MARK: - Init
     
     init(
+        appSettings: AppSettings,
         transitionService: TransitionService,
         templateService: TemplateService
     ) {
+        self.appSettings = appSettings
         self.transitionService = transitionService
         self.templateService = templateService
         
@@ -61,6 +63,22 @@ final class EditTransitionViewModel {
         ) ?? transitionPeriod.date
         
         transitionPeriod = TransitionPeriod(type: transitionPeriod.type, date: date)
+    }
+    
+    func setEditingTransition(_ data: TransitionInputData) {
+        if data.transition != nil {
+            if appSettings.editTransitionType == .add {
+                amountInput = nil
+                editType = .add
+            } else {
+                amountInput = String(data.transition!.amount)
+                editType = .overwrite
+            }
+        } else {
+            amountInput = nil
+        }
+        
+        editingTransition = data
     }
     
     func cancelDelete() {
@@ -346,6 +364,38 @@ final class EditTransitionViewModel {
         assigningTransitionData = nil
     }
     
+    func save() throws -> TransitionModel {
+        if let transition = editingTransition!.transition {
+            var newAmount = 0
+            if(editType == .add) {
+                newAmount = transition.amount + (Int(amountInput ?? "") ?? 0)
+            } else {
+                newAmount = Int(amountInput ?? "") ?? 0
+            }
+            
+            transition.amount = newAmount
+            transition.createdAt = Date()
+            
+            try transitionService.editTransition(transition)
+            
+            return transition
+        } else {
+            let newTransition = TransitionModel(
+                category: editingTransition!.category,
+                amount: Int(amountInput ?? "") ?? 0,
+                transitionType: transitionPeriod.type,
+                transitionDate: transitionPeriod.date,
+                createdAt: Date(),
+            )
+            
+            try transitionService.addTransition(
+                newTransition
+            )
+            
+            return newTransition
+        }
+    }
+    
     func deleteTransition() throws {
         guard let data = transitionDataToDelete else {
             return
@@ -393,7 +443,7 @@ final class EditTransitionViewModel {
     func refreash(_ transition: TransitionModel) {
         if(transition.transitionType == .expense) {
             if let index = expenses.firstIndex(
-                where: { $0.id == editingDataId }
+                where: { $0.id == editingTransition!.id }
             ){
                 expenses[index].transition = transition
             } else {
@@ -408,7 +458,7 @@ final class EditTransitionViewModel {
             
         } else {
             if let index = incomes.firstIndex(
-                where: { $0.id == editingDataId }
+                where: { $0.id == editingTransition!.id }
             ) {
                 incomes[index].transition = transition
                 
@@ -422,6 +472,16 @@ final class EditTransitionViewModel {
                 )
             }
             
+        }
+    }
+    
+    func addToData(_ transition: TransitionModel) {
+        let data = TransitionInputData(category: transition.category!, transition: transition, isTemplate: false)
+
+        if(transition.transitionType == .expense) {
+            expenses.append(data)
+        } else  {
+            incomes.append(data)
         }
     }
     

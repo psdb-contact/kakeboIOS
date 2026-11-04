@@ -12,7 +12,7 @@ struct SelectionView<T>: View where T: CaseIterable & Hashable {
     let title: String
     let options: [T]
     @Binding var selection: T
-    let displayName: (T) -> String
+    let displayString: (T) -> String
     
     @Environment(\.dismiss) private var dismiss
 
@@ -25,7 +25,7 @@ struct SelectionView<T>: View where T: CaseIterable & Hashable {
                         dismiss()
                     } label: {
                         HStack {
-                            Text(displayName(option))
+                            Text(displayString(option))
 
                             Spacer()
 
