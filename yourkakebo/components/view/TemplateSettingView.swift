@@ -21,7 +21,8 @@ struct TemplateSettingView: View {
     
     var body: some View {
         ZStack {
-            Color.secondBackground.ignoresSafeArea()
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             TemplateSettingContentView(
                 templateService:  appContainer.templateService
             )
@@ -44,54 +45,68 @@ private struct TemplateSettingContentView: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         
-        VStack(spacing: 0) {
+        VStack {
+            TextToggle(
+                items: [
+                    .init(title: "支出", value: .expense),
+                    .init(title: "収入", value: .income)
+                ],
+                selection: viewModel.transitionType,
+                onSelectionChanged: { value in
+                    viewModel.transitionType = value;
+                }
+            )
+            
             List {
                 ForEach(viewModel.templates) { item in
                     templateCard(item)
                         .listRowInsets(
                             EdgeInsets(
-                                top: 4,
-                                leading: 8,
-                                bottom: 4,
-                                trailing: 8
+                                top: 20,
+                                leading: 0,
+                                bottom: 20,
+                                trailing: 0
                             )
                         )
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
+                        .alignmentGuide(.listRowSeparatorLeading) { _ in
+                            12
+                        }
+                        .alignmentGuide(.listRowSeparatorTrailing) { dimensions in
+                            dimensions.width - 12
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button {
+                                viewModel.templateToDelete = item
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                        }
                 }
                 .onMove(
                     perform: moveTemplate
                 )
             }
-            .listStyle(.plain)
+            .listStyle(.insetGrouped)
             .scrollIndicators(.visible)
+            .contentMargins(.top, 8, for: .scrollContent)
         }
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                TextToggle(
-                    items: [
-                        .init(title: "支出", value: .expense),
-                        .init(title: "収入", value: .income)
-                    ],
-                    selection: viewModel.transitionType,
-                    onSelectionChanged: { value in
-                        viewModel.transitionType = value;
-                    }
-                )
+            ToolbarItem(placement: .topBarTrailing) {
+                EditButton()
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    viewModel.showSelectCategory = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 24))
-                        .foregroundStyle(
-                            Color(
-                                red: 0.27,
-                                green: 0.27,
-                                blue: 0.27
+                    Button {
+                        viewModel.showSelectCategory = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 24))
+                            .foregroundStyle(
+                                Color(
+                                    red: 0.27,
+                                    green: 0.27,
+                                    blue: 0.27
+                                )
                             )
-                        )
                 }
             }
         }
@@ -128,7 +143,7 @@ private struct TemplateSettingContentView: View {
                 deleteTemplate()
             }
         } message: {
-                Text("※すでに記録されているこのカテゴリの収支は削除されません。")
+            Text("※すでに記録されているこのカテゴリの収支は削除されません。")
         }
         .task(id: viewModel.transitionType) {
             try? viewModel.load()
@@ -138,43 +153,18 @@ private struct TemplateSettingContentView: View {
     private func templateCard (
         _ template: TemplateModel
     ) -> some View {
-        HStack {
+        HStack(spacing: 14) {
+            Circle()
+                .fill(Color(hex: template.category.colorHex))
+                             .frame(width: 12, height: 12)
             Text(template.category.categoryName)
                 .font(.system(size: 17))
                 .lineLimit(1)
             
             Spacer()
-            
-            HStack(spacing: 0) {
-                Button {
-                    viewModel.selectDeleteForDeletion(template)
-                } label: {
-                    Image(systemName: "trash")
-                        .foregroundStyle(Color.iconColor)
-                        .font(.system(size: 20))
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.borderless)
-            }
         }
-        .padding(.top, 16)
-        .padding(.bottom, 16)
-        .padding(.leading, 16)
-        .padding(.trailing, 4)
+        .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
-        .clipShape(
-            RoundedRectangle(cornerRadius: 8)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.containerColor)
-        )
-        .shadow(
-            color: Color.black.opacity(0.05),
-            radius: 10,
-            x: 0,
-            y: 4
-        )
     }
     
     private func moveTemplate (

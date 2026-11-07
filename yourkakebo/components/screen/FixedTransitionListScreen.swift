@@ -33,27 +33,35 @@ struct FixedTransitionListContentScreen: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         
-        NavigationStack {
-            VStack(spacing: 0) {
-                List {
-                    ForEach(viewModel.fixedTransitionData) {item in
-                        fixedTransitionCard(item.fixedTransition)
-                            .listRowInsets(
-                                EdgeInsets(
-                                    top: 4,
-                                    leading: 8,
-                                    bottom: 4,
-                                    trailing: 8
-                                )
-                            )
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
+        List {
+            ForEach(viewModel.fixedTransitionData) {item in
+                fixedTransitionCard(item.fixedTransition)
+                    .listRowInsets(
+                        EdgeInsets(
+                            top: 20,
+                            leading: 0,
+                            bottom: 20,
+                            trailing: 0
+                        )
+                    )
+                    .alignmentGuide(.listRowSeparatorLeading) { _ in
+                        12
                     }
-                }
-                .listStyle(.plain)
-                .scrollIndicators(.visible)
+                    .alignmentGuide(.listRowSeparatorTrailing) { dimensions in
+                        dimensions.width - 12
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button {
+                            viewModel.selectFixedTransitionForDeletion(item.fixedTransition)
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                    }
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollIndicators(.visible)
+        .contentMargins(.top, 8, for: .scrollContent)
         .task {
             do{
                 try viewModel.load()
@@ -111,68 +119,38 @@ struct FixedTransitionListContentScreen: View {
     
     private func fixedTransitionCard (_ fixedTransition: FixedTransitionModel) -> some View{
         
-        VStack {
-            HStack {
-                Text(fixedTransition.fixedTransitionName)
-                    .font(.system(size: 17))
-                    .lineLimit(1)
-                
-                Spacer()
-                Text("\(fixedTransition.amount)")
-                HStack(spacing: 0) {
-                    Button {
-                        viewModel.fixedTransitionToEdit = fixedTransition
-                    } label: {
-                        Image(systemName: "pencil")
-                            .font(.system(size: 20))
-                            .foregroundStyle(Color.iconColor)
-                            .frame(width: 44, height: 44)
-                    }
-                    .buttonStyle(.borderless)
+        Button {
+            viewModel.fixedTransitionToEdit = fixedTransition
+        } label: {
+            VStack {
+                HStack {
+                    Text(fixedTransition.fixedTransitionName)
+                        .font(.system(size: 17))
+                        .lineLimit(1)
                     
-                    
-                    Button {
-                        viewModel.selectFixedTransitionForDeletion(fixedTransition)
-                    } label: {
-                        Image(systemName: "trash")
-                            .foregroundStyle(Color.iconColor)
-                            .font(.system(size: 20))
-                            .frame(width: 44, height: 44)
-                    }
-                    .buttonStyle(.borderless)
-                    
+                    Spacer()
+                    Text("\(fixedTransition.amount)")
+                }
+                HStack {
+                    Text("\(fixedTransition.category?.categoryName ?? "未選択")")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Color.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color(hex: fixedTransition.category?.colorHex ?? 0xFF888888), in: Capsule())
+                    Text("\(fixedTransition.cycleDisplayString)")
+                        .font(.system(size: 14))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(.secondary.opacity(0.1), in: Capsule())
+                    Spacer()
                 }
             }
-            HStack {
-                Text("\(fixedTransition.category?.categoryName ?? "未選択")")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(Color(hex: fixedTransition.category?.colorHex ?? 0xFF888888), in: Capsule())
-                Text("\(fixedTransition.cycleDisplayString)")
-                    .font(.system(size: 14))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(.secondary.opacity(0.1), in: Capsule())
-                Spacer()
-            }
+            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
-        .padding(.top, 16)
-        .padding(.bottom, 16)
-        .padding(.leading, 16)
-        .padding(.trailing, 4)
-        .frame(maxWidth: .infinity)
-        .clipShape(
-            RoundedRectangle(cornerRadius: 8)
-        )
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.containerColor))
-        .shadow(
-            color: Color.black.opacity(0.05),
-            radius: 10,
-            x: 0,
-            y: 4
-        )
+        .buttonStyle(.plain)
     }
 }
 

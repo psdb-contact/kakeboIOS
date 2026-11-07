@@ -52,6 +52,13 @@ private struct CategorySettingContentView: View {
         @Bindable var viewModel = viewModel
         
         VStack(spacing: 0) {
+            TextToggle(
+                items: [.init(title: "支出", value: .expense),
+                        .init(title: "収入", value:.income)
+                ],
+                selection: viewModel.transitionType,
+                onSelectionChanged: {value in viewModel.transitionType = value}
+            )
             if filteredCategories.isEmpty {
                 Spacer()
             } else {
@@ -60,28 +67,39 @@ private struct CategorySettingContentView: View {
                         categoryCard(category)
                             .listRowInsets(
                                 EdgeInsets(
-                                    top: 4,
-                                    leading: 8,
-                                    bottom: 4,
-                                    trailing: 8
+                                    top: 20,
+                                    leading: 0,
+                                    bottom: 20,
+                                    trailing: 0
                                 )
                             )
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
+                            .alignmentGuide(.listRowSeparatorLeading) { _ in
+                                12
+                            }
+                            .alignmentGuide(.listRowSeparatorTrailing) { dimensions in
+                                dimensions.width - 12
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button {
+                                    viewModel.selectCategoryForDeletion(category)
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                            }
                     }
                     .onMove(
                         perform: moveCategory
                     )
                 }
-                .listStyle(.plain)
+                .listStyle(.insetGrouped)
                 .scrollIndicators(.visible)
+                .contentMargins(.top, 8, for: .scrollContent)
             }
         }
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                transitionTypeSelector
-            }
-            
+            ToolbarItem(placement: .topBarTrailing) {
+                 EditButton()
+             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     viewModel.showingAddCategory = true
@@ -163,71 +181,29 @@ private struct CategorySettingContentView: View {
         }
     }
     
-    private var transitionTypeSelector: some View {
-        TextToggle(
-            items: [.init(title: "支出", value: .expense),
-                    .init(title: "収入", value:.income)
-            ],
-            selection: viewModel.transitionType,
-            onSelectionChanged: {value in viewModel.transitionType = value}
-        )
-    }
-    
     private func categoryCard(
         _ category: CategoryModel
     ) -> some View {
-        HStack(spacing: 0) {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(Color(hex: category.colorHex))
-                    .frame(width: 12, height: 12)
-                Text(category.categoryName)
-                    .font(.system(size: 18, weight: .regular))
-                    .lineLimit(1)
-            }
-            
-            Spacer()
-            
+        Button {
+            viewModel.selectCategoryForEditing(category)
+        } label: {
             HStack(spacing: 0) {
-                Button {
-                    viewModel.selectCategoryForEditing(category)
-                } label: {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color.iconColor)
-                        .frame(width: 44, height: 44)
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(Color(hex: category.colorHex))
+                        .frame(width: 12, height: 12)
+                    Text(category.categoryName)
+                        .font(.system(size: 18, weight: .regular))
+                        .lineLimit(1)
                 }
-                .buttonStyle(.borderless)
                 
-                Button {
-                    viewModel.selectCategoryForDeletion(category)
-                } label: {
-                    Image(systemName: "trash")
-                        .font(.system(size: 20))
-                        .foregroundStyle(Color.iconColor)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.borderless)
+                Spacer()
             }
+            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
-        .padding(.top, 12)
-        .padding(.bottom, 12)
-        .padding(.leading, 16)
-        .padding(.trailing, 4)
-        .frame(maxWidth: .infinity)
-        .clipShape(
-            RoundedRectangle(cornerRadius: 8)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.containerColor)
-        )
-        .shadow(
-            color: Color.black.opacity(0.05),
-            radius: 10,
-            x: 0,
-            y: 4
-        )
+        .buttonStyle(.plain)
     }
     
     private func moveCategory(

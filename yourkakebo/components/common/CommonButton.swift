@@ -49,6 +49,27 @@ struct CancelButton: View {
     }
 }
 
+struct PrevPageButton: View {
+    let action: () -> Void
+    var tint: Color = Color.white
+    var size: CGFloat = 44
+    var systemName: String = "xmark"
+    
+    var body: some View {
+        Button(action: action) {
+            if #unavailable(iOS 26.0) {
+                PrevPageIcon()
+                    .frame(width: size, height: size)
+                    .background(Circle().fill(tint))
+            } else {
+                PrevPageIcon()
+                    .foregroundColor(.primary)
+            }
+        }
+        .modifier(GlassButtonStyleModifier(tint: tint))
+    }
+}
+
 struct CloseKeyboardButton: View {
     let action: () -> Void
 

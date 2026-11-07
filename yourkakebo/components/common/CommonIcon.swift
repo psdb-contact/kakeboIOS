@@ -13,7 +13,7 @@ struct CloseIcon: View {
     var body: some View {
         Image(systemName: "xmark")
             .font(.system(size: 22, weight: .light))
-            .foregroundColor(.primary)
+            .foregroundColor(color)
     }
 }
 
@@ -61,7 +61,7 @@ struct PrevPageIcon: View {
     var color: Color = .primary
     
     var body: some View {
-        Image("chevron.left")
+        Image(systemName: "chevron.left")
             .font(.system(size: 22, weight: .light))
             .foregroundColor(color)
     }
@@ -81,7 +81,7 @@ struct PeriodBackIcon: View {
     var color: Color = .primary
     
     var body: some View {
-        Image("chevron.left")
+        Image(systemName: "chevron.left")
             .font(.system(size: 18))
             .foregroundColor(color)
     }
@@ -91,7 +91,7 @@ struct PeriodNextIcon: View {
     var color: Color = .primary
     
     var body: some View {
-        Image("chevron.right")
+        Image(systemName: "chevron.right")
             .font(.system(size: 18))
             .foregroundColor(color)
     }
@@ -101,7 +101,7 @@ struct EditIcon: View {
     var color: Color = .primary
     
     var body: some View {
-        Image("pencil")
+        Image(systemName: "pencil")
             .font(.system(size: 22, weight: .light))
             .foregroundColor(color)
     }
@@ -111,7 +111,7 @@ struct DeleteIcon: View {
     var color: Color = .primary
     
     var body: some View {
-        Image("trash")
+        Image(systemName: "trash")
             .font(.system(size: 22, weight: .light))
             .foregroundColor(color)
     }

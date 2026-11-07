@@ -17,12 +17,13 @@ final class BudgetSettingViewModel {
     var selectedMonth: Date = Calendar.current.startOfDay(for: Date())
     var showSetEndDate: Bool = false
     
-    var allBudgetData: BudgetSettingData = BudgetSettingData(budget: nil, category: nil, amountInput: nil)
+    var allBudgetData: BudgetSettingData = BudgetSettingData(budget: nil, category: nil)
     var budgetData: [BudgetSettingData] = []
     
-    var focusedDataId: UUID?
-    var editingDataId: UUID?
-    var isSaving = false
+    var editingBudgetData: BudgetSettingData?
+    var amountInput: String?
+    
+    var alertBudgetData: BudgetSettingData?
     
     init (budgetService: BudgetService, categoryService: CategoryService)  {
         self.budgetService = budgetService
@@ -35,7 +36,6 @@ final class BudgetSettingViewModel {
         
         let budgetForAll = resolveBudget(for: nil, budgets: budgets, month: selectedMonth )
         allBudgetData.budget = budgetForAll
-        allBudgetData.amountInput = budgetForAll != nil ? String(budgetForAll!.amount) : nil
         
         budgetData = categories.map { category in
             let budget = resolveBudget(
@@ -47,9 +47,13 @@ final class BudgetSettingViewModel {
             return BudgetSettingData(
                 budget: budget,
                 category: category,
-                amountInput: budget != nil ? String(budget!.amount) : nil
             )
         }
+    }
+    
+    func setAlertBudgetData() {
+        alertBudgetData = editingBudgetData
+        editingBudgetData = nil
     }
     
     func moveMonth(by value: Int) {
@@ -61,19 +65,16 @@ final class BudgetSettingViewModel {
     }
     
     func cancel() {
-        guard let editingDataId else {
+        guard let editingBudgetData else {
             return
         }
         
-        guard let index = budgetData.firstIndex(where: {$0.id == editingDataId }) else {
+        guard let index = budgetData.firstIndex(where: {$0.id == editingBudgetData.id }) else {
             return
         }
         
-        budgetData[index].amountInput = budgetData[index].budget.map {
-            String($0.amount)
-        }
-        self.focusedDataId = nil
-        self.editingDataId = nil
+   
+        self.editingBudgetData = nil
     }
     
     func cancelAll() {
@@ -106,25 +107,24 @@ final class BudgetSettingViewModel {
             budget = newBudget
         }
         
-        allBudgetData.amountInput = String(total)
         allBudgetData.budget = budget
         
-        self.editingDataId = nil
+        self.editingBudgetData = nil
         
     }
     
     func save(isPeriod: Bool) throws {
-        guard let editingDataId else {
+        guard let editingBudgetData else {
             return
         }
         
-        guard let index = budgetData.firstIndex(where: {$0.id == editingDataId }) else {
+        guard let index = budgetData.firstIndex(where: {$0.id == editingBudgetData.id }) else {
             return
         }
         
         let data = budgetData[index]
         
-        if let amountInput = data.amountInput, let amount = Int(amountInput) {
+        if let amountInput = amountInput, let amount = Int(amountInput) {
             let budget: BudgetModel
             
             if let exisitingBudget = data.budget {
@@ -146,20 +146,16 @@ final class BudgetSettingViewModel {
                 budget = newBudget
             }
             
-            budgetData[index].amountInput = String(amount)
-            budgetData[index].budget = budget
             
             
         } else {
             if let exisitingBudget = data.budget {
                 try? budgetService.deleteBudget(exisitingBudget)
-                budgetData[index].amountInput = nil
                 budgetData[index].budget = nil
             }
         }
         
-        self.focusedDataId = nil
-        self.editingDataId = nil
+        self.editingBudgetData = nil
     }
     
     private func resolveBudget(
@@ -212,10 +208,9 @@ final class BudgetSettingViewModel {
     }
 }
 
-struct BudgetSettingData: Identifiable {
+struct BudgetSettingData: Identifiable, Hashable {
     let id = UUID()
     
     var budget: BudgetModel?
     let category: CategoryModel?
-    var amountInput: String?
 }
