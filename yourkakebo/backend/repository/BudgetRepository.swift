@@ -48,11 +48,10 @@ final class BudgetRepository {
     
     func insertBudget(_ budget: BudgetModel) throws {
         modelContext.insert(budget)
-        try modelContext.save()
     }
     
     func updateBudget(_ budget: BudgetModel) throws {
-        try modelContext.save()
+        // SwiftDataの変更追跡に任せる
     }
     
     func findMonthBudget(
@@ -79,16 +78,17 @@ final class BudgetRepository {
         month: Date
     ) throws -> BudgetModel? {
         let descriptor = FetchDescriptor<BudgetModel>(
-            predicate: #Predicate { budget in
-                budget.startMonth == month &&
-                budget.endMonth == month
-            }
-        )
+             predicate: #Predicate { budget in
+                 budget.startMonth <= month &&
+                 budget.endMonth >= month
+             }
+         )
 
         let budgets = try modelContext.fetch(descriptor)
 
         return budgets.first {
-            $0.category?.categoryId == categoryId
+            $0.category?.categoryId == categoryId &&
+            $0.startMonth < $0.endMonth
         }
     }
     
@@ -109,13 +109,10 @@ final class BudgetRepository {
                 modelContext.delete(budget)
             }
         }
-        
-        try modelContext.save()
     }
     
     func deleteBudget(_ budget: BudgetModel) throws {
         modelContext.delete(budget)
-        try modelContext.save()
     }
     
     func deleteAllBudgets() throws {
@@ -126,20 +123,5 @@ final class BudgetRepository {
        for budget in budgets {
            modelContext.delete(budget)
        }
-    }
-    
-    func deleteBudget(_ id: UUID) throws {
-        let descriptor = FetchDescriptor<BudgetModel>(
-            predicate: #Predicate { budget in
-                budget.budgetId == id
-            }
-        )
-        
-        guard let budget = try modelContext.fetch(descriptor).first else {
-            return
-        }
-        
-        modelContext.delete(budget)
-        try modelContext.save()
     }
 }

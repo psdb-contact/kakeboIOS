@@ -427,112 +427,108 @@ private struct EditTransitionContentView: View {
         var body: some View {
             
             //let placeholder = editingData.transition != nil && editType == .add ? "加算額" : "金額"
-            
-            VStack {
-                VStack(spacing: 6) {
-                    HStack(spacing: 0) {
-                        HStack(spacing: 12) {
-                            Circle()
-                                .fill(Color(hex: editingData.category.colorHex))
-                                .frame(width: 12, height: 12)
-                            Text(editingData.category.categoryName)
-                                .font(.system(size: 18, weight: .semibold))
-                                .frame(
-                                    width: 92,
-                                    alignment: .leading
-                                )
-                        }
-                        Spacer()
-                        if(editingData.transition != nil) {
-                            Picker(
-                                "種類",
-                                selection: $editType
-                            ) {
-                                Text(EditTransitionType.add.displayString)
-                                    .tag(EditTransitionType.add)
-                                
-                                Text(EditTransitionType.overwrite.displayString)
-                                    .tag(EditTransitionType.overwrite)
-                            }
-                            .pickerStyle(.segmented)
-                            .frame(width: 140)
-                            .onChange(of: editType) { oldValue, newValue in
-                                handleEditTypeChanged(newValue)
-                            }
-                        }
+            VStack(spacing: 6) {
+                HStack(spacing: 0) {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(Color(hex: editingData.category.colorHex))
+                            .frame(width: 12, height: 12)
+                        Text(editingData.category.categoryName)
+                            .font(.system(size: 18, weight: .semibold))
+                            .frame(
+                                width: 92,
+                                alignment: .leading
+                            )
                     }
-                    HStack {
-                        TextField("",
-                                  text: Binding(
-                                    get: {
-                                        amountInput ?? ""
-                                    },
-                                    set: { newValue in
-                                        let value = String(
-                                            newValue
-                                                .filter { $0.isNumber }
-                                                .prefix(6)
-                                        )
-                                        amountInput = value.isEmpty ? nil : value
-                                    }
-                                  )
-                        )
-                        .keyboardType(.numberPad)
-                        .font(.system(size: 19))
-                        .frame(height: 52)
-                        .focused($isFocused)
-                        if(amountInput != nil) {
-                            Button {
-                                amountInput = nil
-                            }  label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(.trailing, 8)
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    if(editingData.transition != nil && editType == .add) {
-                        HStack {
-                            Text("加算後の金額")
-                                .font(.system(size: 14))
-                                .foregroundStyle(.secondary)
+                    Spacer()
+                    if(editingData.transition != nil) {
+                        Picker(
+                            "種類",
+                            selection: $editType
+                        ) {
+                            Text(EditTransitionType.add.displayString)
+                                .tag(EditTransitionType.add)
                             
-                            Text("\((editingData.transition!.amount + (Int(amountInput ?? "") ?? 0)).formatted())円")                                .font(.system(size: 14))
-                                .foregroundStyle(.secondary)
-                            Spacer()
+                            Text(EditTransitionType.overwrite.displayString)
+                                .tag(EditTransitionType.overwrite)
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 140)
+                        .onChange(of: editType) { oldValue, newValue in
+                            handleEditTypeChanged(newValue)
                         }
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 8)
-                .background {
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(.container)
-                        .matchedGeometryEffect(
-                            id: editingData.id,
-                            in: namespace
-                        )
-                }
-                .shadow(
-                    color: Color.black.opacity(0.10),
-                    radius: 8,
-                    x: 0,
-                    y: 4
-                )
-                .transition(
-                    .opacity.combined(
-                        with: .scale(scale: 0.97, anchor: .top)
+                HStack {
+                    TextField("",
+                              text: Binding(
+                                get: {
+                                    amountInput ?? ""
+                                },
+                                set: { newValue in
+                                    let value = String(
+                                        newValue
+                                            .filter { $0.isNumber }
+                                            .prefix(6)
+                                    )
+                                    amountInput = value.isEmpty ? nil : value
+                                }
+                              )
                     )
-                )
+                    .keyboardType(.numberPad)
+                    .font(.system(size: 19))
+                    .frame(height: 52)
+                    .focused($isFocused)
+                    if(amountInput != nil) {
+                        Button {
+                            amountInput = nil
+                        }  label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.trailing, 8)
+                        .buttonStyle(.plain)
+                    }
+                }
+                if(editingData.transition != nil && editType == .add) {
+                    HStack {
+                        Text("加算後の金額")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                        
+                        Text("\((editingData.transition!.amount + (Int(amountInput ?? "") ?? 0)).formatted())円")                                .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
+            .background {
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(.container)
+                    .matchedGeometryEffect(
+                        id: editingData.id,
+                        in: namespace
+                    )
+            }
+            .shadow(
+                color: Color.black.opacity(0.10),
+                radius: 8,
+                x: 0,
+                y: 4
+            )
+            .transition(
+                .opacity.combined(
+                    with: .scale(scale: 0.97, anchor: .top)
+                )
+            )
             .zIndex(1)
             .padding(.horizontal, 8)
             .task {
                 isFocused = true
             }
-            
         }
         
         private func handleEditTypeChanged(_ type: EditTransitionType) {
@@ -546,7 +542,7 @@ private struct EditTransitionContentView: View {
             }
         }
     }
-
+    
     struct UncategorizedTransitionCard: View {
         @Binding var data: UncategoriezedTransitionInputData
         
@@ -580,7 +576,7 @@ private struct EditTransitionContentView: View {
             .buttonStyle(.plain)
         }
     }
-
+    
 }
 
 

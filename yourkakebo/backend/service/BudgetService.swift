@@ -37,11 +37,11 @@ final class BudgetService {
         }
     }
     
-    func deleteBudget(_ budget: BudgetModel) throws {
-        if budget.startMonth == budget.endMonth {
-            try deleteMonth(budget)
+    func deleteBudget(budget: BudgetModel, targetMonth: Date, isPeriod: Bool) throws {
+        if isPeriod{
+            try deletePeriod(budget: budget, targetMonth: targetMonth)
         } else {
-            try deletePeriod(budget)
+            try deleteMonth(budget: budget, targetMonth: targetMonth)
         }
     }
     
@@ -97,6 +97,7 @@ final class BudgetService {
             
             try budgetRepository.insertBudget(newBudget)
         }
+        try modelContext.save()
     }
     
     private func editPeriod(_ budget: BudgetModel) throws {
@@ -115,7 +116,6 @@ final class BudgetService {
             
             if let currentPeriod {
                 currentPeriod.endMonth = previousMonth(month)
-                
                 try budgetRepository.updateBudget(currentPeriod)
             }
             
@@ -132,62 +132,69 @@ final class BudgetService {
     
     // MARK: - Delete
     
-    private func deleteMonth(_ budget: BudgetModel) throws {
-        let month = budget.startMonth
+    private func deleteMonth(budget: BudgetModel, targetMonth: Date) throws {
         
         let covering = try budgetRepository.findCoveringPeriodBudget(
             categoryId: budget.category?.categoryId,
-            month: month
+            month: targetMonth
         )
         
         let single = try budgetRepository.findMonthBudget(
             categoryId: budget.category?.categoryId,
-            month: month
+            month: targetMonth
         )
         
-        // 期間予算が存在する場合、
-        // この月だけ0円という予算を作る
-        if covering != nil {
+        try modelContext.transaction {
             if let single {
-                single.amount = 0
-                
-                try budgetRepository.updateBudget(single)
-            } else {
-                let newBudget = BudgetModel(
-                    category: budget.category,
-                    amount: 0,
-                    startMonth: month,
-                    endMonth: month
-                )
-                
-                try budgetRepository.insertBudget(newBudget)
+                try budgetRepository.deleteBudget(single)
             }
             
-            return
-        }
-        
-        // 月単位の予算しか存在しない場合は削除
-        if let single {
-            try budgetRepository.deleteBudget(single.budgetId)
+            guard let covering else {
+                    return
+            }
+            
+            let next = nextMonth(targetMonth)
+            let previous = previousMonth(targetMonth)
+
+            if covering.startMonth == targetMonth {
+                covering.startMonth = next
+                try budgetRepository.updateBudget(covering)
+                return
+            }
+            
+            if covering.endMonth == targetMonth {
+                covering.endMonth = previous
+                try budgetRepository.updateBudget(covering)
+                return
+            }
+            
+            let newBudget = BudgetModel(
+                category: covering.category,
+                amount: covering.amount,
+                startMonth: next,
+                endMonth: covering.endMonth
+            )
+            try budgetRepository.insertBudget(newBudget)
+            
+            covering.endMonth = previous
+            try budgetRepository.updateBudget(covering)
         }
     }
     
-    private func deletePeriod(_ budget: BudgetModel) throws {
-        let month = budget.startMonth
-        
+    private func deletePeriod(budget: BudgetModel, targetMonth: Date) throws {
         try modelContext.transaction {
             try budgetRepository.deleteBudgetsStartingFrom(
                 categoryId: budget.category?.categoryId,
-                month: month
+                month: targetMonth
             )
             
             let current = try budgetRepository.findCoveringPeriodBudget(
                 categoryId: budget.category?.categoryId,
-                month: month
+                month: targetMonth
             )
             
             if let current {
-                current.endMonth = previousMonth(month)
+                current.endMonth = previousMonth(targetMonth)
                 
                 try budgetRepository.updateBudget(current)
             }
@@ -208,6 +215,14 @@ final class BudgetService {
         Calendar.current.date(
             byAdding: .month,
             value: -1,
+            to: date
+        )!
+    }
+    
+    private func nextMonth(_ date: Date) -> Date {
+        Calendar.current.date(
+            byAdding: .month,
+            value: 1,
             to: date
         )!
     }

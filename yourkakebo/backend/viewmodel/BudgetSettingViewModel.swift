@@ -22,8 +22,9 @@ final class BudgetSettingViewModel {
     
     var editingBudgetData: BudgetSettingData?
     var amountInput: String?
+    var alertEditingBudgetData: BudgetSettingData?
     
-    var alertBudgetData: BudgetSettingData?
+    var alertDeleteBudgetData: BudgetSettingData?
     
     init (budgetService: BudgetService, categoryService: CategoryService)  {
         self.budgetService = budgetService
@@ -51,9 +52,162 @@ final class BudgetSettingViewModel {
         }
     }
     
-    func setAlertBudgetData() {
-        alertBudgetData = editingBudgetData
+    func save(isPeriod: Bool) throws {
+        guard let alertEditingBudgetData else {
+            return
+        }
+
+        do {
+            if let index = budgetData.firstIndex(where: {
+                $0.id == alertEditingBudgetData.id
+            }) {
+                let data = budgetData[index]
+
+                if let amountInput, let amount = Int(amountInput) {
+                    let budget: BudgetModel
+
+                    if let existingBudget = data.budget {
+                        existingBudget.amount = amount
+                        existingBudget.endMonth = isPeriod
+                            ? BudgetModel.noExpirationDate
+                            : existingBudget.endMonth
+
+                        try budgetService.updateBudget(existingBudget)
+                        budget = existingBudget
+                    } else {
+                        let newBudget = BudgetModel(
+                            category: data.category,
+                            amount: amount,
+                            startMonth: selectedMonth,
+                            endMonth: isPeriod
+                                ? BudgetModel.noExpirationDate
+                                : selectedMonth
+                        )
+
+                        try budgetService.updateBudget(newBudget)
+                        budget = newBudget
+                    }
+
+                    budgetData[index].budget = budget
+
+                } else if let existingBudget = data.budget {
+                    try budgetService.deleteBudget(
+                        budget: existingBudget,
+                        targetMonth: selectedMonth,
+                        isPeriod: isPeriod
+                    )
+
+                    budgetData[index].budget = nil
+                }
+
+            } else if allBudgetData.id == alertEditingBudgetData.id {
+                if let amountInput, let amount = Int(amountInput) {
+                    let budget: BudgetModel
+
+                    if let existingBudget = allBudgetData.budget {
+                        existingBudget.amount = amount
+                        existingBudget.endMonth = isPeriod
+                            ? BudgetModel.noExpirationDate
+                            : existingBudget.endMonth
+
+                        try budgetService.updateBudget(existingBudget)
+                        budget = existingBudget
+                    } else {
+                        let newBudget = BudgetModel(
+                            category: nil,
+                            amount: amount,
+                            startMonth: selectedMonth,
+                            endMonth: isPeriod
+                                ? BudgetModel.noExpirationDate
+                                : selectedMonth
+                        )
+
+                        try budgetService.updateBudget(newBudget)
+                        budget = newBudget
+                    }
+
+                    allBudgetData.budget = budget
+
+                } else if let existingBudget = allBudgetData.budget {
+                    try budgetService.deleteBudget(
+                        budget: existingBudget,
+                        targetMonth: selectedMonth,
+                        isPeriod: isPeriod
+                    )
+
+                    allBudgetData.budget = nil
+                }
+            }
+
+            self.editingBudgetData = nil
+
+        } catch {
+            throw error
+        }
+    }
+    
+    func delete(_ isPeriod: Bool) throws {
+        guard let alertDeleteBudgetData else {
+            return
+        }
+
+        do {
+            if let index = budgetData.firstIndex(where: {
+                $0.id == alertDeleteBudgetData.id
+            }) {
+                if let existingBudget = budgetData[index].budget {
+                    try budgetService.deleteBudget(
+                        budget: existingBudget,
+                        targetMonth: selectedMonth,
+                        isPeriod: isPeriod
+                    )
+                }
+
+                budgetData[index].budget = nil
+
+            } else if allBudgetData.id == alertDeleteBudgetData.id {
+                if let existingBudget = allBudgetData.budget {
+                    try budgetService.deleteBudget(
+                        budget: existingBudget,
+                        targetMonth: selectedMonth,
+                        isPeriod: isPeriod
+                    )
+                }
+
+                allBudgetData.budget = nil
+            }
+
+            self.alertDeleteBudgetData = nil
+
+        } catch {
+            // エラー処理
+        }
+    }
+    
+    func cancel() {
+        amountInput = nil
+        alertEditingBudgetData = nil
         editingBudgetData = nil
+    }
+    
+    func setTotal() {
+        let total = budgetData
+            .filter { $0.category != nil }
+            .compactMap { $0.budget?.amount }
+            .reduce(0, +)
+        
+        amountInput = String(total)
+    }
+    
+    func setAlertBudgetData() {
+        alertEditingBudgetData = editingBudgetData
+        editingBudgetData = nil
+    }
+    
+    func setEditingBudgetData(_ data: BudgetSettingData) {
+        amountInput = data.budget.map { String($0.amount)}
+        
+        editingBudgetData = data
     }
     
     func moveMonth(by value: Int) {
@@ -62,100 +216,6 @@ final class BudgetSettingViewModel {
             value: value,
             to: selectedMonth
         ) ?? selectedMonth
-    }
-    
-    func cancel() {
-        guard let editingBudgetData else {
-            return
-        }
-        
-        guard let index = budgetData.firstIndex(where: {$0.id == editingBudgetData.id }) else {
-            return
-        }
-        
-   
-        self.editingBudgetData = nil
-    }
-    
-    func cancelAll() {
-            
-    }
-    
-    func setTotal() throws {
-        let total = budgetData
-            .filter { $0.category != nil }
-            .compactMap { $0.budget?.amount }
-            .reduce(0, +)
-        
-        let budget: BudgetModel
-        
-        if let existingBudget = allBudgetData.budget {
-            existingBudget.amount = total
-            existingBudget.endMonth = selectedMonth
-            
-            try? budgetService.updateBudget(existingBudget)
-            budget = existingBudget
-        } else {
-            let newBudget = BudgetModel(
-                category: nil,
-                amount: total,
-                startMonth: selectedMonth,
-                endMonth: selectedMonth,
-            )
-            
-            try? budgetService.updateBudget(newBudget)
-            budget = newBudget
-        }
-        
-        allBudgetData.budget = budget
-        
-        self.editingBudgetData = nil
-        
-    }
-    
-    func save(isPeriod: Bool) throws {
-        guard let editingBudgetData else {
-            return
-        }
-        
-        guard let index = budgetData.firstIndex(where: {$0.id == editingBudgetData.id }) else {
-            return
-        }
-        
-        let data = budgetData[index]
-        
-        if let amountInput = amountInput, let amount = Int(amountInput) {
-            let budget: BudgetModel
-            
-            if let exisitingBudget = data.budget {
-                exisitingBudget.amount = amount
-                exisitingBudget.endMonth =  isPeriod ? BudgetModel.noExpirationDate : exisitingBudget.endMonth
-                
-                try? budgetService.updateBudget(exisitingBudget)
-                budget = exisitingBudget
-                
-            } else {
-                let newBudget = BudgetModel(
-                    category: data.category,
-                    amount: amount,
-                    startMonth: selectedMonth,
-                    endMonth: isPeriod ? BudgetModel.noExpirationDate : selectedMonth,
-                )
-                
-                try? budgetService.updateBudget(newBudget)
-                budget = newBudget
-            }
-            
-            
-            
-        } else {
-            if let exisitingBudget = data.budget {
-                try? budgetService.deleteBudget(exisitingBudget)
-                budgetData[index].budget = nil
-            }
-        }
-        
-        self.editingBudgetData = nil
     }
     
     private func resolveBudget(
