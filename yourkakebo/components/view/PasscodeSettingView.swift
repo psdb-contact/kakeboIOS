@@ -40,7 +40,7 @@ private struct PasscodeSettingContentView: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         
-        ScrollView {
+        List {
             VStack(spacing: 12) {
                 Toggle("パスコードロック",
                        isOn: Binding(
@@ -88,5 +88,54 @@ private struct PasscodeSettingContentView: View {
                 )
             }
         }
+        .listStyle(.insetGrouped)
+       .scrollIndicators(.visible)
+       .contentMargins(.top, 8, for: .scrollContent)
+    }
+}
+
+#Preview {
+    PreviewContent()
+}
+
+import SwiftData
+
+@MainActor
+private struct PreviewContent: View {
+    
+    private let container: ModelContainer
+    private let appContainer: AppContainer
+    
+    init() {
+        let container = try! ModelContainer(
+            for:
+                CategoryModel.self,
+            TransitionModel.self,
+            BudgetModel.self,
+            TemplateModel.self,
+            FixedTransitionModel.self,
+            configurations: ModelConfiguration(
+                isStoredInMemoryOnly: true
+            )
+        )
+        
+        let context = container.mainContext
+        
+        PreviewSeeder.seed(
+            context: context
+        )
+        
+        self.container = container
+        self.appContainer = AppContainer(
+            modelContext: context
+        )
+    }
+    
+    var body: some View {
+        NavigationStack{
+            PasscodeSettingView()
+        }
+        .modelContainer(container)
+        .environment(appContainer)
     }
 }

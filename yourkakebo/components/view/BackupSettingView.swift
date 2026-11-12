@@ -13,13 +13,10 @@ struct BackupSettingView: View {
     private var appContainer
     
     var body: some View {
-        ZStack {
-            Color.secondBackground.ignoresSafeArea()
             BackupSettingContentView(
                 appSettings: appContainer.appSettings,
                 backupService: appContainer.backupService
             )
-        }
     }
 }
 
@@ -39,7 +36,7 @@ private struct BackupSettingContentView: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         
-        ScrollView {
+        List {
             VStack(spacing: 12) {
                 VStack {
                     Button {
@@ -106,8 +103,6 @@ private struct BackupSettingContentView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
         }
         .fileExporter(
             isPresented: $viewModel.isShowingExporter,
@@ -183,7 +178,7 @@ private struct PreviewContent: View {
     var body: some View {
         NavigationStack {
             BackupSettingView()
-                .background(Color.modalSheetBackground)
+                .background(Color(uiColor: .systemGroupedBackground))
         }
         .modelContainer(container)
         .environment(appContainer)

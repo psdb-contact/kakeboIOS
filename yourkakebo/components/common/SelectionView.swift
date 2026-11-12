@@ -17,38 +17,39 @@ struct SelectionView<T>: View where T: CaseIterable & Hashable {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                ForEach(options, id: \.self) { option in
-                    Button {
-                        selection = option
-                        dismiss()
-                    } label: {
-                        HStack {
-                            Text(displayString(option))
+        List {
+            ForEach(options, id: \.self) { option in
+                Button {
+                    selection = option
+                    dismiss()
+                } label: {
+                    HStack {
+                        Text(displayString(option))
 
-                            Spacer()
+                        Spacer()
 
-                            if selection == option {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 15, weight: .semibold))
-                            }
+                        if selection == option {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 15, weight: .semibold))
                         }
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.container)
-                    )
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.container)
+                )
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
+
         }
+        .listStyle(.insetGrouped)
+           .scrollIndicators(.visible)
+           .contentMargins(.top, 8, for: .scrollContent)
+        
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
     }

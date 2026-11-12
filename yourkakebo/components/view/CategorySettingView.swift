@@ -14,7 +14,8 @@ struct CategorySettingView: View {
     
     var body: some View {
         ZStack {
-            Color.secondBackground.ignoresSafeArea()
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
             CategorySettingContentView(
                 categoryService: appContainer.categoryService
             )
@@ -287,6 +288,7 @@ private struct PreviewContent: View {
     var body: some View {
         NavigationStack{
             CategorySettingView()
+                .background(Color(uiColor: .systemGroupedBackground))
         }
         .modelContainer(container)
         .environment(appContainer)

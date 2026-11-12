@@ -313,7 +313,27 @@ struct EditFixedTransitionSheet: View {
                 .pickerStyle(.wheel)
                 .navigationTitle("カテゴリ")
                 .navigationBarTitleDisplayMode(.inline)
+                
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            viewModel.showCategorySheet = false
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.category = viewModel.editingCategory!
+                            viewModel.showCategorySheet = false
+                        } label: {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
             }
+            
             .presentationDetents([.medium])
         }
         .sheet(isPresented:$viewModel.showCycleTypeSheet ) {

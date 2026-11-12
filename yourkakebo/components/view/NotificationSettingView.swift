@@ -12,10 +12,7 @@ struct NotificationSettingView: View {
     private var appContainer
     
     var body: some View {
-        ZStack {
-            Color.secondBackground.ignoresSafeArea()
             NotificationSettingContentView(appSettings: appContainer.appSettings, notificationService: appContainer.notificationService)
-        }
     }
 }
 
@@ -191,7 +188,7 @@ private struct PreviewContent: View {
     var body: some View {
         NavigationStack {
             NotificationSettingView()
-                .background(Color.modalSheetBackground)
+                .background(Color(uiColor: .systemGroupedBackground))
         }
         .modelContainer(container)
         .environment(appContainer)

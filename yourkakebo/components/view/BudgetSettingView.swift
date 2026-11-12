@@ -160,22 +160,13 @@ private struct BudgetSettingContentView: View {
             .scrollIndicators(.visible)
             .contentMargins(.top, 8, for: .scrollContent)
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(viewModel.editingBudgetData != nil)
         .toolbar{
             if(viewModel.editingBudgetData != nil) {
                 ToolbarItem(placement: .topBarLeading) {
                     CancelButton(action:  {
                         viewModel.editingBudgetData = nil
                     }, tint: .secondaryCancelColor)
-                }
-            } else {
-                ToolbarItem(placement: .topBarLeading) {
-                    PrevPageButton(
-                        action:  {
-                            dismiss()
-                        },
-                        tint: .secondaryCancelColor
-                    )
                 }
             }
             if(viewModel.editingBudgetData != nil) {
