@@ -14,7 +14,7 @@ final class BudgetSettingViewModel {
     private let budgetService: BudgetService
     private let categoryService: CategoryService
     
-    var selectedMonth: Date = Calendar.current.startOfDay(for: Date())
+    var selectedMonth: Date = Calendar.current.dateInterval(of: .month, for: Date())!.start
     var showSetEndDate: Bool = false
     
     var allBudgetData: BudgetSettingData = BudgetSettingData(budget: nil, category: nil)
