@@ -30,6 +30,7 @@ final class EditFixedTransitionViewModel {
     var editingEndDate: Date? = nil
     
     var categories: [CategoryModel] = []
+    var typeCategories: [CategoryModel] = []
     
     var fixedTransitionName: String = ""
     var amountInput: String?
@@ -59,26 +60,32 @@ final class EditFixedTransitionViewModel {
     
     func load() throws {
         categories = try categoryService.getAllCategories()
+        
+        typeCategories = categories.filter{$0.transitionType == transitionType}
+    }
+    
+    func onTransitionTypeChanged(_ type: TransitionType) {
+        typeCategories = categories.filter{$0.transitionType == type}
     }
     
     private static func makeCycleOptionType(
         from fixedTransition: FixedTransitionModel
     ) -> CycleOptionType {
         switch fixedTransition.cycleType {
-            case .daily:
-                return .daily
-                
-            case .weekday:
-                return .weekday
-                
-            case .weekly:
-                return .weekly(fixedTransition.cycleInterval ?? 1)
-                
-            case .monthly:
-                return .monthly(fixedTransition.cycleInterval ?? 1)
-                
-            case .yearly:
-                return .yearly
+        case .daily:
+            return .daily
+            
+        case .weekday:
+            return .weekday
+            
+        case .weekly:
+            return .weekly(fixedTransition.cycleInterval ?? 1)
+            
+        case .monthly:
+            return .monthly(fixedTransition.cycleInterval ?? 1)
+            
+        case .yearly:
+            return .yearly
         }
     }
     
@@ -88,35 +95,35 @@ final class EditFixedTransitionViewModel {
         value: Int?
     ) {
         switch cycleOptionType {
-            case .daily:
-                return (.daily, nil, nil)
-                
-            case .weekday:
-                return (.weekday, nil, nil)
-                
-            case .weekly(let interval):
-                let weekday = Calendar.current.component(
-                    .weekday,
-                    from: startDate
-                )
-                
-                let cycleValue = weekday == 1
-                ? 7
-                : weekday - 1
-                
-                return (.weekly, interval, cycleValue)
-                
-            case .monthly(let interval):
-                let cycleValue = Calendar.current.component(
-                    .day,
-                    from: startDate
-                )
-                
-                return (.monthly, interval, cycleValue)
-                
-            case .yearly:
-                return (.yearly, nil, nil)
-            }
+        case .daily:
+            return (.daily, nil, nil)
+            
+        case .weekday:
+            return (.weekday, nil, nil)
+            
+        case .weekly(let interval):
+            let weekday = Calendar.current.component(
+                .weekday,
+                from: startDate
+            )
+            
+            let cycleValue = weekday == 1
+            ? 7
+            : weekday - 1
+            
+            return (.weekly, interval, cycleValue)
+            
+        case .monthly(let interval):
+            let cycleValue = Calendar.current.component(
+                .day,
+                from: startDate
+            )
+            
+            return (.monthly, interval, cycleValue)
+            
+        case .yearly:
+            return (.yearly, nil, nil)
+        }
     }
     
     func save() throws {

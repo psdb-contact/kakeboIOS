@@ -36,219 +36,215 @@ struct EditFixedTransitionSheet: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         
-        VStack(spacing: 0) {
-            
-            ScrollView {
-                VStack(spacing: 16) {
-                    Picker(
-                        "種類",
-                        selection: $viewModel.transitionType
-                    ) {
-                        Text("支出")
-                            .tag(TransitionType.expense)
-                        
-                        Text("収入")
-                            .tag(TransitionType.income)
-                    }
-                    .pickerStyle(.segmented)
+        VStack(spacing: 16) {
+            HStack {
+                Picker(
+                    "種類",
+                    selection: $viewModel.transitionType
+                ) {
+                    Text("支出")
+                        .tag(TransitionType.expense)
                     
-                    VStack {
-                        HStack {
-                            TextField(
-                                "固定出費名",
-                                text: $viewModel.fixedTransitionName
-                            )
-                            .focused($isNameFocused)
-                            .padding(.horizontal, 12)
-                            .textFieldStyle(.plain)
-                            .frame(height: 52)
-                            if(isNameFocused && viewModel.fixedTransitionName != "") {
-                                Button {
-                                    viewModel.fixedTransitionName = ""
-                                }  label: {
-                                   Image(systemName: "xmark.circle.fill")
-                                       .foregroundStyle(.secondary)
-                               }
-                               .padding(.trailing, 16)
-                               .buttonStyle(.plain)
+                    Text("収入")
+                        .tag(TransitionType.income)
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: viewModel.transitionType) { oldValue, newValue in
+                    viewModel.onTransitionTypeChanged(newValue)
+                }
+            }
+            .padding(.horizontal, 16)
+            List {
+                Section {
+                    HStack {
+                        TextField(
+                            "固定出費名",
+                            text: $viewModel.fixedTransitionName
+                        )
+                        .focused($isNameFocused)
+                        .padding(.horizontal, 12)
+                        .textFieldStyle(.plain)
+                        if(isNameFocused && viewModel.fixedTransitionName != "") {
+                            Button {
+                                viewModel.fixedTransitionName = ""
+                            }  label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
                             }
+                            .padding(.trailing, 16)
+                            .buttonStyle(.plain)
                         }
-                        .padding(.leading, 12)
-                        Divider().padding(.horizontal, 12)
-                        HStack{
-                            TextField(
-                                "金額",
-                                text: Binding(
-                                    get: {
-                                        viewModel.amountInput ?? ""
-                                    },
-                                    set: { newValue in
-                                        let value = String(
-                                            newValue
-                                                .filter { $0.isNumber }
-                                                .prefix(6)
-                                        )
-                                        viewModel.amountInput = value.isEmpty ? nil : value
-                                    }
-                                )
-                            )
-                            .focused($isAmountFocused)
-                            .padding(.horizontal, 12)
-                            .keyboardType(.numberPad)
-                            .textFieldStyle(.plain)
-                            .frame(height: 52)
-                            
-                            if(isAmountFocused && viewModel.amountInput != nil) {
-                               Button {
-                                   viewModel.amountInput = nil
-                               }  label: {
-                                   Image(systemName: "xmark.circle.fill")
-                                       .foregroundStyle(.secondary)
-                               }
-                               .padding(.trailing, 16)
-                               .buttonStyle(.plain)
-                           }
-                        }
-                        .padding(.leading, 12)
                     }
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.container)
-                    )
-                    VStack {
-                        Button {
-                            viewModel.showCategorySheet = true
-                        } label: {
-                            HStack {
-                                Text("カテゴリ")
-                                    .font(.system(size: 16)).foregroundStyle(.black)
-                                    .frame(width: 108, alignment: .leading)
-                                Spacer()
-                                Text(viewModel.category?.categoryName ?? "未選択")
-                                    .font(.system(size: 16))
-                                    .foregroundStyle(
-                                        viewModel.category == nil
-                                        ? Color(uiColor: .placeholderText)
-                                        : Color.primary
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
+                    HStack{
+                        TextField(
+                            "金額",
+                            text: Binding(
+                                get: {
+                                    viewModel.amountInput ?? ""
+                                },
+                                set: { newValue in
+                                    let value = String(
+                                        newValue
+                                            .filter { $0.isNumber }
+                                            .prefix(6)
                                     )
-                                    .lineLimit(1)
-                                    .truncationMode(.tail)
-                            }
-                            .padding(.horizontal, 12)
-                            .frame(height: 52)
-                        }
-                        Divider().padding(.horizontal, 12)
+                                    viewModel.amountInput = value.isEmpty ? nil : value
+                                }
+                            )
+                        )
+                        .focused($isAmountFocused)
+                        .padding(.horizontal, 12)
+                        .keyboardType(.numberPad)
+                        .textFieldStyle(.plain)
                         
-                        Button {
-                            viewModel.editingCycleOptionType = viewModel.cycleOptionType
-                            viewModel.showCycleTypeSheet = true
-                        } label: {
-                            HStack {
-                                Text("繰り返しのルール")
-                                    .font(.system(size: 16)).foregroundStyle(.black)
-                                    .frame(width: 128, alignment: .leading)
-                                Spacer()
-                                
-                                Text(viewModel.cycleOptionType.displayString)
-                                    .font(.system(size: 16)).foregroundStyle(.black)
-                                    .lineLimit(1)
-                                    .truncationMode(.tail)
+                        if(isAmountFocused && viewModel.amountInput != nil) {
+                            Button {
+                                viewModel.amountInput = nil
+                            }  label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
                             }
-                            .padding(.horizontal, 12)
-                            .frame(height: 52)
+                            .padding(.trailing, 16)
+                            .buttonStyle(.plain)
                         }
-                        Divider().padding(.horizontal, 12)
-                        
-                        Button {
-                            viewModel.showStartDateSheet = true
-                        } label: {
-                            HStack {
-                                Text("開始日")
-                                    .font(.system(size: 16)).foregroundStyle(.black)
-                                    .frame(width: 108, alignment: .leading)
-                                Spacer()
-                                
-                                Text(
-                                    viewModel.startDate
-                                        .formatted(
-                                            .dateTime
-                                                .locale(Locale(identifier: "ja_JP"))
-                                                .year()
-                                                .month()
-                                                .day()
-                                        )
-                                )
+                    }
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
+                }
+                
+                Section {
+                    Button {
+                        viewModel.editingCategory = viewModel.category
+                        viewModel.showCategorySheet = true
+                    } label: {
+                        HStack {
+                            Text("カテゴリ")
                                 .font(.system(size: 16)).foregroundStyle(.black)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                            }
-                            .padding(.horizontal, 12)
-                            .frame(height: 52)
-                        }
-                        Divider().padding(.horizontal, 12)
-                        
-                        Button {
-                            viewModel.showEndDateSheet = true
-                        } label: {
-                            HStack {
-                                Text("終了日")
-                                    .font(.system(size: 16)).foregroundStyle(.black)
-                                    .frame(width: 108, alignment: .leading)
-                                Spacer()
-                                Text(
-                                    viewModel.endDate?
-                                        .formatted(
-                                            .dateTime
-                                                .locale(Locale(identifier: "ja_JP"))
-                                                .year()
-                                                .month()
-                                                .day()
-                                        )
-                                    ?? "未選択"
-                                )
+                                .frame(width: 108, alignment: .leading)
+                            Spacer()
+                            Text(viewModel.category?.categoryName ?? "未選択")
                                 .font(.system(size: 16))
                                 .foregroundStyle(
-                                    viewModel.endDate == nil
+                                    viewModel.category == nil
                                     ? Color(uiColor: .placeholderText)
                                     : Color.primary
                                 )
                                 .lineLimit(1)
                                 .truncationMode(.tail)
-                            }
-                            .padding(.horizontal, 12)
-                            .frame(height: 52)
                         }
-                        Divider().padding(.horizontal, 12)
                         
-                        Button {
-                            viewModel.showHolidayTypeSheet = true
-                        } label: {
-                            HStack {
-                                Text("土日祝の場合")
-                                    .font(.system(size: 16)).foregroundStyle(.black)
-                                    .frame(width: 108, alignment: .leading)
-                                Spacer()
-                                
-                                Text(viewModel.cycleHolidayType.displayString)
-                                    .font(.system(size: 16)).foregroundStyle(.black)
-                                    .lineLimit(1)
-                                    .truncationMode(.tail)
-                            }
-                            .padding(.horizontal, 12)
-                            .frame(height: 52)
-                        }
                     }
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.container)
-                    )
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
+                    
+                    Button {
+                        viewModel.editingCycleOptionType = viewModel.cycleOptionType
+                        viewModel.showCycleTypeSheet = true
+                    } label: {
+                        HStack {
+                            Text("繰り返しのルール")
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .frame(width: 128, alignment: .leading)
+                            Spacer()
+                            
+                            Text(viewModel.cycleOptionType.displayString)
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                        
+                    }
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
+                    Button {
+                        viewModel.showStartDateSheet = true
+                    } label: {
+                        HStack {
+                            Text("開始日")
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .frame(width: 108, alignment: .leading)
+                            Spacer()
+                            
+                            Text(
+                                viewModel.startDate
+                                    .formatted(
+                                        .dateTime
+                                            .locale(Locale(identifier: "ja_JP"))
+                                            .year()
+                                            .month()
+                                            .day()
+                                    )
+                            )
+                            .font(.system(size: 16)).foregroundStyle(.black)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                        }
+                        
+                    }
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
+                    Button {
+                        viewModel.editingEndDate = viewModel.endDate ?? Calendar.current.startOfDay(for: Date())
+                        viewModel.showEndDateSheet = true
+                    } label: {
+                        HStack {
+                            Text("終了日")
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .frame(width: 108, alignment: .leading)
+                            Spacer()
+                            Text(
+                                viewModel.endDate?
+                                    .formatted(
+                                        .dateTime
+                                            .locale(Locale(identifier: "ja_JP"))
+                                            .year()
+                                            .month()
+                                            .day()
+                                    )
+                                ?? "未選択"
+                            )
+                            .font(.system(size: 16))
+                            .foregroundStyle(
+                                viewModel.endDate == nil
+                                ? Color(uiColor: .placeholderText)
+                                : Color.primary
+                            )
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                        }
+                        
+                    }
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
+                    Button {
+                        viewModel.editingCycleHoliday = viewModel.cycleHolidayType
+                        viewModel.showHolidayTypeSheet = true
+                    } label: {
+                        HStack {
+                            Text("土日祝の場合")
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .frame(width: 108, alignment: .leading)
+                            Spacer()
+                            
+                            Text(viewModel.cycleHolidayType.displayString)
+                                .font(.system(size: 16)).foregroundStyle(.black)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                        
+                    }
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
         }
+        .listStyle(.insetGrouped)
+        .listSectionSpacing(24)
+        .scrollIndicators(.visible)
+        .contentMargins(.top, 8, for: .scrollContent)
+        
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -296,16 +292,18 @@ struct EditFixedTransitionSheet: View {
                     "カテゴリ",
                     selection: Binding(
                         get: {
-                            viewModel.category?.categoryId
+                            viewModel.editingCategory?.categoryId
                         },
                         set: { newCategoryId in
-                            viewModel.editingCategory = viewModel.categories.first {
+                            viewModel.editingCategory = viewModel.typeCategories.first {
                                 $0.categoryId == newCategoryId
                             }
                         }
                     )
                 ) {
-                    ForEach(viewModel.categories,  id: \.categoryId) { category in
+                    Text("未設定")
+                        .tag(nil as UUID?)
+                    ForEach(viewModel.typeCategories,  id: \.categoryId) { category in
                         Text(category.categoryName)
                             .tag(Optional(category.categoryId))
                     }
@@ -325,7 +323,7 @@ struct EditFixedTransitionSheet: View {
                     
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            viewModel.category = viewModel.editingCategory!
+                            viewModel.category = viewModel.editingCategory
                             viewModel.showCategorySheet = false
                         } label: {
                             Image(systemName: "checkmark")
@@ -429,7 +427,7 @@ struct EditFixedTransitionSheet: View {
                         "終了日",
                         selection: Binding(
                             get: {
-                                viewModel.editingEndDate ??  viewModel.endDate ?? Calendar.current.startOfDay(for: Date())
+                                viewModel.editingEndDate ??  Calendar.current.startOfDay(for: Date())
                             },
                             set: {
                                 viewModel.editingEndDate = $0
@@ -441,31 +439,37 @@ struct EditFixedTransitionSheet: View {
                     .datePickerStyle(.wheel)
                     .labelsHidden()
                     .padding()
-                    .navigationTitle("終了日")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button {
-                                viewModel.showEndDateSheet = false
-                            } label: {
-                                Image(systemName: "xmark")
-                            }
+                    Button("終了日を設定しない") {
+                        viewModel.endDate = nil
+                        viewModel.editingEndDate = nil
+                        viewModel.showEndDateSheet = false
+                    }
+                    .foregroundStyle(.red)
+                    
+                    Spacer()
+                }
+                .navigationTitle("終了日")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            viewModel.showEndDateSheet = false
+                        } label: {
+                            Image(systemName: "xmark")
                         }
-                        
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                if let date = viewModel.editingEndDate {
-                                    viewModel.endDate = date
-                                }
-                                viewModel.showEndDateSheet = false
-                            } label: {
-                                Image(systemName: "checkmark")
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            if let date = viewModel.editingEndDate {
+                                viewModel.endDate = date
                             }
+                            viewModel.showEndDateSheet = false
+                        } label: {
+                            Image(systemName: "checkmark")
                         }
                     }
                 }
-                .navigationTitle("開始日")
-                .navigationBarTitleDisplayMode(.inline)
             }
             .presentationDetents([.medium])
         }
