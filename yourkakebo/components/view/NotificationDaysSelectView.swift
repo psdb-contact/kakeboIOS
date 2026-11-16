@@ -12,32 +12,32 @@ struct NotificationDaysSelectView: View {
     let onSelectionChanged: (Weekday, Bool) -> Void
     
     var body: some View {
-        ZStack{
-            Color.secondBackground.ignoresSafeArea()
-            ScrollView {
-                ForEach(Weekday.allCases, id: \.self) {day in
-                    Toggle(
-                        day.displayString,
-                        isOn: Binding(
-                            get: {
-                                selection.contains(day)
-                            },
-                            set: { isSelected in
-                                
-                                if isSelected {
-                                    selection.insert(day)
-                                } else {
-                                    selection.remove(day)
-                                }
-                                
-                                onSelectionChanged(day, isSelected)
+        List {
+            ForEach(Weekday.allCases, id: \.self) {day in
+                Toggle(
+                    day.displayString,
+                    isOn: Binding(
+                        get: {
+                            selection.contains(day)
+                        },
+                        set: { isSelected in
+                            
+                            if isSelected {
+                                selection.insert(day)
+                            } else {
+                                selection.remove(day)
                             }
-                        )
+                            
+                            onSelectionChanged(day, isSelected)
+                        }
                     )
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 16)
-                }
+                )
+                .ListRowComponentStyle()
+              .ListRowStyle()
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollIndicators(.visible)
+        .contentMargins(.top, 8, for: .scrollContent)
     }
 }

@@ -14,7 +14,10 @@ final class FixedTransitionCalendarViewModel {
     
     var data: [FixedTransitionCalendarData] = []
     
-    var selectedDate: Date = Calendar.current.startOfDay(for: Date())
+    var selectedMonth: Date = Calendar.current.startOfDay(for: Date())
+    
+    var showDetailsSheet = false
+    var selectedDate: Date?
     
     init (fixedTransitionService: FixedTransitionService) {
         self.fixedTransitionService = fixedTransitionService
@@ -26,7 +29,7 @@ final class FixedTransitionCalendarViewModel {
         let monthStart = calendar.date(
             from: calendar.dateComponents(
                 [.year, .month],
-                from: selectedDate
+                from: selectedMonth
             )
         )!
         
@@ -69,11 +72,11 @@ final class FixedTransitionCalendarViewModel {
     func moveMonth(by value: Int) {
         let calendar = Calendar.current
         
-        selectedDate = calendar.date(
+        selectedMonth = calendar.date(
             byAdding: .month,
             value: value,
-            to: selectedDate
-        ) ?? selectedDate
+            to: selectedMonth
+        ) ?? selectedMonth
     }
     
     func dailyData(targetDate: Date) -> [FixedTransitionCalendarData] {

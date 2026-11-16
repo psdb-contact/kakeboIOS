@@ -105,7 +105,8 @@ private struct HistoryContentView: View {
                                 date: date,
                                 income: data?.totalIncome ?? 0,
                                 expense: data?.totalExpense ?? 0,
-                                onDateSelected: {date in viewModel.showingSelectedDate = date
+                                onDateSelected: {date in 
+                                    viewModel.showingSelectedDate = date
                                     viewModel.showingDetailsSheet = true
                                 }
                             )

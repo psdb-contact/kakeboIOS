@@ -4,6 +4,9 @@ import Foundation
 @Observable
 final class SettingViewModel {
     var appSettings: AppSettings
+    
+    var showThemeTypeSheet = false
+    var editingThemeType:AppThemeType? = nil
  
     var showEditTransitionTypeSheet = false
     var editingEditTransitionType: EditTransitionType? = nil

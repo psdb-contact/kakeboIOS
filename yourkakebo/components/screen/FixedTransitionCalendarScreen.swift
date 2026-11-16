@@ -48,25 +48,16 @@ private struct FixedTransitionCalendarContentScreen: View {
         
         let calendar = Calendar.current
         
-        let year = calendar.component(
-            .year,
-            from: viewModel.selectedDate
-        )
         
-        let month = calendar.component(
-            .month,
-            from: viewModel.selectedDate
-        )
-        
-        VStack(spacing: 8) {
+        VStack(spacing: 0) {
             
             // MARK: - Month Navigation
             
-     
-                PeriodNavigationBar(
-                    formattedDate: "\(year) / \(month)", onPrevious:  {viewModel.moveMonth(by: -1)}, onNext: {viewModel.moveMonth(by: 1)}
-                )
-             
+            
+            PeriodNavigationBar(
+                formattedDate: formattedMonth(viewModel.selectedMonth), onPrevious:  {viewModel.moveMonth(by: -1)}, onNext: {viewModel.moveMonth(by: 1)}
+            )
+            
             // MARK: - Weekday
             
             HStack(spacing: 0) {
@@ -81,7 +72,10 @@ private struct FixedTransitionCalendarContentScreen: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.horizontal, 8)
+            .padding(.top, 16)
+            
+            Divider()
+                .padding(.top, 4)
             
             // MARK: - Calendar
             
@@ -89,13 +83,12 @@ private struct FixedTransitionCalendarContentScreen: View {
                 columns: Array(
                     repeating: GridItem(
                         .flexible(),
-                        spacing: 1
+                        spacing: 0
                     ),
                     count: 7
                 ),
-                spacing: 1
+                spacing: 0
             ) {
-                
                 ForEach(
                     Array(days.enumerated()),
                     id: \.offset
@@ -110,20 +103,35 @@ private struct FixedTransitionCalendarContentScreen: View {
                                     $0.date,
                                     inSameDayAs: date
                                 )
+                            },
+                            onDateSelected: {date in
+                                viewModel.selectedDate = date
+                                viewModel.showDetailsSheet = true
                             }
                         )
                         
                     } else {
-                        Color.clear
-                            .frame(height: 84)
+                        VStack{
+                            Spacer()
+                            Divider()
+                        }
                     }
                 }
             }
-            .padding(.horizontal, 8)
-            
             Spacer()
         }
-        .task(id: viewModel.selectedDate) {
+        .sheet(isPresented: $viewModel.showDetailsSheet) {
+            if(viewModel.selectedDate != nil) {
+                NavigationStack {
+                    FixedTransitionDetailsSheet(
+                        fixedTransitionService: fixedTransitionService,
+                        selectedDate: viewModel.selectedDate!
+                    )
+                    .presentationDragIndicator(.hidden)
+                }
+            }
+        }
+        .task(id: viewModel.selectedMonth) {
             do {
                 try viewModel.load()
             } catch {
@@ -148,7 +156,7 @@ private struct FixedTransitionCalendarContentScreen: View {
         guard let monthStart = calendar.date(
             from: calendar.dateComponents(
                 [.year, .month],
-                from: viewModel.selectedDate
+                from: viewModel.selectedMonth
             )
         ) else {
             return []
@@ -158,7 +166,7 @@ private struct FixedTransitionCalendarContentScreen: View {
             .weekday,
             from: monthStart
         )
-
+        
         let leadingEmptyDays = (calendarWeekday - appSettings.weeklyStartDay.rawValue + 7) % 7
         
         guard let range = calendar.range(
@@ -204,30 +212,40 @@ private struct FixedTransitionCalendarDayCell: View {
         FixedTransitionCalendarData
     ]
     
+    let onDateSelected: (Date) -> Void
+    
     var body: some View {
         
-        VStack(spacing: 2) {
-            
-            Text("\(Calendar.current.component(.day, from: date))")
-            
-
-            ForEach(calendarData.prefix(2)) { data in
-                Text("\(data.fixedTransition.amount)")
-                    .font(.system(size: 11))
+        Button {
+            onDateSelected(date)
+        }label: {
+            VStack(spacing: 8) {
+                
+                Text("\(Calendar.current.component(.day, from: date))")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.black)
+                
+                ForEach(calendarData.prefix(2)) { data in
+                    Text("\(data.fixedTransition.amount)")
+                        .font(.system(size: 11))
+                        .foregroundStyle(data.fixedTransition.transitionType == .expense ? Color.red : Color.blue)
+                }
+                
+                if calendarData.count > 2 {
+                    Text("+\(calendarData.count - 2)")
+                        .font(.system(size: 11))
+                }
+                
+                Spacer()
+                Divider()
             }
-
-            if calendarData.count > 2 {
-                Text("+\(calendarData.count - 2)")
-                    .font(.system(size: 11))
-            }
-            
-            Spacer(minLength: 0)
+            .padding(.top, 6)
+            .frame(
+                maxWidth: .infinity, minHeight: 80, alignment: .top
+            )
         }
-        .frame(
-            maxWidth: .infinity
-        )
-        .frame(height: 84)
     }
+    
 }
 
 

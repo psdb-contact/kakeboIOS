@@ -354,6 +354,32 @@ final class FixedTransitionModel {
             return "毎年 \(month)月\(day)日"
         }
     }
+    
+    func occurs(
+        on targetDate: Date,
+        calendar: Calendar = .current
+    ) -> Bool {
+        let date = calendar.startOfDay(for: targetDate)
+
+        guard isActive else {
+            return false
+        }
+
+        guard isOccurrence(
+            targetDate: date,
+            calendar: calendar
+        ) else {
+            return false
+        }
+
+        return calendar.isDate(
+            resolveHoliday(
+                targetDate: date,
+                calendar: calendar
+            ),
+            inSameDayAs: date
+        )
+    }
 }
 
 struct FixedTransitionBackup: Encodable, Decodable {

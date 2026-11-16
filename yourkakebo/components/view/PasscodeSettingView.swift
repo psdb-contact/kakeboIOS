@@ -41,7 +41,7 @@ private struct PasscodeSettingContentView: View {
         @Bindable var viewModel = viewModel
         
         List {
-            VStack(spacing: 12) {
+            Section {
                 Toggle("パスコードロック",
                        isOn: Binding(
                         get: {
@@ -56,6 +56,8 @@ private struct PasscodeSettingContentView: View {
                         }
                        )
                 )
+                .ListRowComponentStyle()
+                .ListRowStyle()
                 if(viewModel.isPasscodeSet && viewModel.isBiometrySupported) {
                     Toggle("生体認証",
                            isOn: Binding(
@@ -69,28 +71,30 @@ private struct PasscodeSettingContentView: View {
                             }
                            )
                     )
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
                 }
-            }
-            .navigationDestination(isPresented: $viewModel.showSetPasscode) {
-                PasscodeInputView(
-                    mode: .set,
-                    onComplete: {passcode in
-                        viewModel.setPasscode(passcode)
-                    }
-                )
-            }
-            .navigationDestination(isPresented: $viewModel.showRemovePasscode) {
-                PasscodeInputView(
-                    mode: .remove,
-                    onComplete: { passcode in
-                        viewModel.removePasscode(passcode)
-                    }
-                )
             }
         }
         .listStyle(.insetGrouped)
-       .scrollIndicators(.visible)
-       .contentMargins(.top, 8, for: .scrollContent)
+        .scrollIndicators(.visible)
+        .contentMargins(.top, 8, for: .scrollContent)
+        .navigationDestination(isPresented: $viewModel.showSetPasscode) {
+            PasscodeInputView(
+                mode: .set,
+                onComplete: {passcode in
+                    viewModel.setPasscode(passcode)
+                }
+            )
+        }
+        .navigationDestination(isPresented: $viewModel.showRemovePasscode) {
+            PasscodeInputView(
+                mode: .remove,
+                onComplete: { passcode in
+                    viewModel.removePasscode(passcode)
+                }
+            )
+        }
     }
 }
 

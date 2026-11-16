@@ -83,14 +83,13 @@ private struct SettingContentView: View {
                 .ListRowStyle()
             }
             
+
+            
             Section {
-                NavigationLink {
-                    SelectionView(
-                        title: "ダークモード",
-                        options: AppThemeType.allCases,
-                        selection: $viewModel.appSettings.themeType,
-                        displayString: \.displayString
-                    )
+                
+                Button {
+                    viewModel.editingThemeType = viewModel.appSettings.themeType
+                    viewModel.showThemeTypeSheet = true
                 } label: {
                     HStack {
                         Text("ダークモード")
@@ -99,11 +98,12 @@ private struct SettingContentView: View {
                         
                         Text(viewModel.appSettings.themeType.displayString).foregroundStyle(.secondary)
                     }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
                 .ListRowComponentStyle()
-                .ListRowStyle()            }
-
-            Section {
+                .ListRowStyle()
+                
                 NavigationLink {
                     BackupSettingView()
                         .background(Color(uiColor: .systemGroupedBackground))
@@ -114,9 +114,7 @@ private struct SettingContentView: View {
                 }
                 .ListRowComponentStyle()
                 .ListRowStyle()
-            }
-
-            Section {
+                
                 NavigationLink {
                     NotificationSettingView()
                         .background(Color(uiColor: .systemGroupedBackground))
@@ -127,24 +125,21 @@ private struct SettingContentView: View {
                 }
                 .ListRowComponentStyle()
                 .ListRowStyle()
-            }
-
-            Section {
+                
                 NavigationLink {
                     PasscodeSettingView()
                         .background(Color(uiColor: .systemGroupedBackground))
                 } label: {
                     HStack {
                         Text("パスコードロック")
-
                     }
                 }
                 .ListRowComponentStyle()
                 .ListRowStyle()
             }
-
             
             Section {
+                
                 Button {
                     viewModel.editingEditTransitionType = viewModel.appSettings.editTransitionType
                     viewModel.showEditTransitionTypeSheet = true
@@ -214,6 +209,47 @@ private struct SettingContentView: View {
         .listSectionSpacing(24)
         .scrollIndicators(.visible)
         .contentMargins(.top, 8, for: .scrollContent)
+        .sheet(isPresented: $viewModel.showThemeTypeSheet) {
+            NavigationStack {
+                Picker(
+                    "ダークモード",
+                    selection: Binding(
+                        get: { viewModel.editingThemeType ?? viewModel.appSettings.themeType },
+                        set: { viewModel.editingThemeType = $0 }
+                    )                ) {
+                        ForEach(AppThemeType.allCases, id: \.self) { type in
+                            Text(type.displayString)
+                                .tag(type)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .navigationTitle("ダークモード")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                viewModel.showThemeTypeSheet = false
+                                viewModel.editingThemeType = nil
+                            } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                        
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                if let value = viewModel.editingThemeType {
+                                    viewModel.appSettings.themeType = value
+                                }
+                                viewModel.showThemeTypeSheet = false
+                                viewModel.editingThemeType = nil
+                            } label: {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+            }
+            .presentationDetents([.medium])
+        }
         .sheet(isPresented: $viewModel.showEditTransitionTypeSheet) {
             NavigationStack {
                 Picker(

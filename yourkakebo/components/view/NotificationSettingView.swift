@@ -12,7 +12,7 @@ struct NotificationSettingView: View {
     private var appContainer
     
     var body: some View {
-            NotificationSettingContentView(appSettings: appContainer.appSettings, notificationService: appContainer.notificationService)
+        NotificationSettingContentView(appSettings: appContainer.appSettings, notificationService: appContainer.notificationService)
     }
 }
 
@@ -32,77 +32,78 @@ private struct NotificationSettingContentView: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         
-        ScrollView {
-            VStack(spacing: 12) {
-                VStack {
-                    Toggle("入れ忘れ通知", isOn: $viewModel.appSetting.isNotificationOn)
-                        .onChange(of: viewModel.appSetting.isNotificationOn) { _, isOn in
-                            Task {
-                                if isOn {
-                                    try? await viewModel.enableNotifications()
-                                } else {
-                                    viewModel.disableNotification()
-                                }
+        List {
+            Section {
+                Toggle("入れ忘れ通知", isOn: $viewModel.appSetting.isNotificationOn)
+                    .onChange(of: viewModel.appSetting.isNotificationOn) { _, isOn in
+                        Task {
+                            if isOn {
+                                try? await viewModel.enableNotifications()
+                            } else {
+                                viewModel.disableNotification()
                             }
                         }
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
-                    if(viewModel.appSetting.isNotificationOn) {
-                        NavigationLink{
-                            NotificationDaysSelectView(selection: $viewModel.appSetting.notificationDays) { day, isSelected in
-                                Task {
-                                    await viewModel.updateNotificationDay(
-                                        day,
-                                        isSelected: isSelected
-                                    )
-                                }
-                            }
-                        } label : {
-                            HStack {
-                                Text("曜日")
-                                Spacer()
-                                Text(viewModel.appSetting.notificationDays.displayText)
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
-                        Button {
-                            viewModel.isShowingTimePicker = true
-                        }
-                        label: {
-                            Text("通知時刻")
-                            Spacer()
-                            Text(  String(
-                                format: "%02d:%02d",
-                                appSettings.notificationTime / 60,
-                                appSettings.notificationTime % 60
-                            ))
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
                     }
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
+                if(viewModel.appSetting.isNotificationOn) {
+                    NavigationLink{
+                        NotificationDaysSelectView(selection: $viewModel.appSetting.notificationDays) { day, isSelected in
+                            Task {
+                                await viewModel.updateNotificationDay(
+                                    day,
+                                    isSelected: isSelected
+                                )
+                            }
+                        }
+                    } label : {
+                        HStack {
+                            Text("曜日")
+                            Spacer()
+                            Text(viewModel.appSetting.notificationDays.displayText)
+                                .font(.system(size: 16))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                    }
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
+                    
+                    Button {
+                        viewModel.editingNotificationTime = viewModel.appSetting.notificationTime
+                        viewModel.isShowingTimePicker = true                    }
+                    label: {
+                        Text("通知時刻")
+                        Spacer()
+                        Text(  String(
+                            format: "%02d:%02d",
+                            appSettings.notificationTime / 60,
+                            appSettings.notificationTime % 60
+                        ))
+                        .font(.system(size: 16))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    }
+                    .buttonStyle(.plain)
+                    .ListRowComponentStyle()
+                    .ListRowStyle()
                 }
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.container)
-                )
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
         }
+        .listStyle(.insetGrouped)
+        .listSectionSpacing(24)
+        .scrollIndicators(.visible)
+        .contentMargins(.top, 8, for: .scrollContent)
         .sheet(isPresented: $viewModel.isShowingTimePicker) {
             NavigationStack {
                 DatePicker(
                     "通知時刻",
                     selection: Binding(
                         get: {
-                            let minutes = viewModel.appSetting.notificationTime
+                            let minutes = viewModel.editingNotificationTime
+                            ?? viewModel.appSetting.notificationTime
                             
                             return Calendar.current.date(
                                 bySettingHour: minutes / 60,
@@ -117,15 +118,9 @@ private struct NotificationSettingContentView: View {
                                 from: date
                             )
                             
-                            viewModel.appSetting.notificationTime =
+                            viewModel.editingNotificationTime =
                             (components.hour ?? 0) * 60
                             + (components.minute ?? 0)
-                            
-                            if viewModel.appSetting.isNotificationOn {
-                                Task {
-                                    await viewModel.updateNotifications()
-                                }
-                            }
                         }
                     ),
                     displayedComponents: .hourAndMinute
@@ -135,15 +130,37 @@ private struct NotificationSettingContentView: View {
                 .navigationTitle("通知時刻")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("完了") {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
                             viewModel.isShowingTimePicker = false
+                            viewModel.editingNotificationTime = nil
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            if let minutes = viewModel.editingNotificationTime {
+                                viewModel.appSetting.notificationTime = minutes
+                                
+                                if viewModel.appSetting.isNotificationOn {
+                                    Task {
+                                        await viewModel.updateNotifications()
+                                    }
+                                }
+                            }
+                            
+                            viewModel.isShowingTimePicker = false
+                            viewModel.editingNotificationTime = nil
+                        } label: {
+                            Image(systemName: "checkmark")
                         }
                     }
                 }
-                .presentationDetents([.height(300)])
-                .presentationDragIndicator(.visible)
             }
+            .presentationDetents([.height(300)])
+            .presentationDragIndicator(.visible)
         }
     }
 }

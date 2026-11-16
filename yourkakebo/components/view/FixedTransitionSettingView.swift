@@ -14,7 +14,8 @@ struct FixedTransitionSettingView: View {
     
     var body: some View {
         ZStack {
-            Color.secondBackground.ignoresSafeArea()
+            Color(uiColor: .systemGroupedBackground)
+                       .ignoresSafeArea()
             FixedTransitionSettingContentView(
                 fixedTransitionService: appContainer.fixedTransitionService,
                 categoryService: appContainer.categoryService

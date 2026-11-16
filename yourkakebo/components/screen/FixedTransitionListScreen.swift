@@ -61,6 +61,8 @@ struct FixedTransitionListContentScreen: View {
         }
         .listStyle(.insetGrouped)
         .scrollIndicators(.visible)
+        .scrollContentBackground(.hidden)
+        .background(Color(uiColor: .systemGroupedBackground))
         .contentMargins(.top, 8, for: .scrollContent)
         .task {
             do{

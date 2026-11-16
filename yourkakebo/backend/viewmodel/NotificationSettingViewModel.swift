@@ -16,6 +16,7 @@ final class NotificationSettingViewModel {
     var toast: ToastData?
     
     var isShowingTimePicker: Bool = false
+    var editingNotificationTime: Int? = nil
     
     init(appSettings: AppSettings, notificationService: NotificationService) {
         self.appSetting = appSettings

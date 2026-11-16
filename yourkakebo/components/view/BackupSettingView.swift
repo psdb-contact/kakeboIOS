@@ -13,10 +13,10 @@ struct BackupSettingView: View {
     private var appContainer
     
     var body: some View {
-            BackupSettingContentView(
-                appSettings: appContainer.appSettings,
-                backupService: appContainer.backupService
-            )
+        BackupSettingContentView(
+            appSettings: appContainer.appSettings,
+            backupService: appContainer.backupService
+        )
     }
 }
 
@@ -37,73 +37,82 @@ private struct BackupSettingContentView: View {
         @Bindable var viewModel = viewModel
         
         List {
-            VStack(spacing: 12) {
-                VStack {
-                    Button {
-                        viewModel.exportExternalBackup()
-                    } label: {
-                        HStack {
-                            Text("外部バックアップ作成")
-                            
-                            Spacer()
-                            
-                        }
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                    }
-                    .buttonStyle(.plain)
-                    Button {
-                        viewModel.isShowingImporter = true
-                    } label: {
-                        HStack {
-                            Text("外部バックアップ復元")
-                            
-                            Spacer()
-                            
-                        }
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                    }
-                    .buttonStyle(.plain)
+            Section {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("家計簿のデータをCSVファイルとして保存できます。")
+                    Text("別の端末へのデータ移行や、データの保管に利用できます。")
                 }
+                Button {
+                    viewModel.exportExternalBackup()
+                } label: {
+                    HStack {
+                        Text("CSVファイルに書き出す")
+                                    
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                }
+                .ListRowComponentStyle()
+                 .ListRowStyle()
                 
-                VStack {
-                    Text(viewModel.appSettings.backupDate?.ISO8601Format() ?? "")
-                    Button {
-                        viewModel.exportInternalBackup()
-                    } label: {
-                        HStack {
-                            Text("内部バックアップ作成")
-                            
-                            Spacer()
-                            
-                            
-                        }
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
+                Button {
+                    viewModel.isShowingImporter = true
+                } label: {
+                    HStack {
+                        Text("CSVファイルから復元")
+                                                
                     }
-                    .buttonStyle(.plain)
-                    Button {
-                        viewModel.importInternalBackup()
-                    } label: {
-                        HStack {
-                            Text("内部バックアップ復元")
-                            
-                            Spacer()
-                            
-                            
-                        }
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                    }
-                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
+                .ListRowComponentStyle()
+                 .ListRowStyle()
+            } header: {
+                Text("外部バックアップ")
             }
+            
+            Section {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("家計簿のデータをアプリ内に保存できます。")
+                    Text("バックアップは最新の1件のみ保持され、作成するたびに上書きされます。")
+                }
+                Button {
+                    viewModel.exportInternalBackup()
+                } label: {
+                    HStack {
+                        Text("バックアップを作成")
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .ListRowComponentStyle()
+                     .ListRowStyle()
+                }
+                Button {
+                    viewModel.importInternalBackup()
+                } label: {
+                    HStack {
+                        Text("バックアップを復元")
+                        
+                        
+                        
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .ListRowComponentStyle()
+                     .ListRowStyle()
+                }
+            } header: {
+                Text("内部バックアップ")
+            }
+            footer: {
+                if let date = viewModel.appSettings.backupDate {
+                    Text("最終バックアップ：\(date.formatted(date: .numeric, time: .shortened))")
+                } else {
+                    Text("バックアップはまだ作成されていません。")
+                }
+            }            
         }
+        .listStyle(.insetGrouped)
+           .listSectionSpacing(24)
+           .scrollIndicators(.visible)
+           .contentMargins(.top, 8, for: .scrollContent)
+        
         .fileExporter(
             isPresented: $viewModel.isShowingExporter,
             document: viewModel.exportDocument,
