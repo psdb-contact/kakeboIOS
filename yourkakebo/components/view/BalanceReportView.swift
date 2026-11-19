@@ -11,6 +11,7 @@ struct BalanceReportView: View {
             transitionService: appContainer.transitionService,
             fixedTransitionService: appContainer.fixedTransitionService
         )
+        .background(Color(uiColor: .systemGroupedBackground))
     }
 }
 
@@ -66,34 +67,36 @@ private struct BalanceReportContentView: View {
                     Color(hex: $0.category?.colorHex ?? 0xFFBBBBBB)
                 }
                 
-                
-                VStack(spacing: 8) {
-                    BalanceReportRow(
-                        title: "収支",
-                        amount: data.totalBalance
-                    )
-                    Divider()
-                    HStack(spacing: 32) {
+                List {
+                    Section {
                         HStack {
-                            Text("支出")
+                            Text("収支")
+                            
                             Spacer()
-                            Text("\(data.totalExpense)")
+                            
+                            Text(formattedAmount(data.totalBalance))
                         }
-                        HStack {
-                            Text("収入")
-                            Spacer()
-                            Text("\(data.totalIncome)")
+                        HStack(spacing: 32) {
+                            HStack {
+                                Text("支出")
+                                Spacer()
+                                Text(formattedAmount(data.totalExpense))
+                            }
+                            HStack {
+                                Text("収入")
+                                Spacer()
+                                Text(formattedAmount(data.totalIncome))
+                            }
                         }
                     }
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-                
-                transitionTypeSegmentedButton(selection: $viewModel.trantitionType)
-                    .padding(.top, 16)
-                
-                ScrollView {
-                    VStack(spacing: 16) {
+                    Section {
+                        Picker("種類", selection: $viewModel.trantitionType) {
+                                 ForEach(TransitionType.allCases, id: \.self) { type in
+                                     Text(type.displayString)
+                                         .tag(type)
+                                 }
+                             }
+                             .pickerStyle(.segmented)
                         
                         Chart(chartList) { item in
                             SectorMark(
@@ -111,46 +114,24 @@ private struct BalanceReportContentView: View {
                         )
                         .frame(height: 200)
                         
-                        /*
-                         BalanceReportRow(
-                         title: "通常収入",
-                         amount: data.totalDailyIncome
-                         )
-                         
-                         BalanceReportRow(
-                         title: "固定収入",
-                         amount: data.totalFixedIncome
-                         )
-                         
-                         Divider()
-                         
-                         BalanceReportRow(
-                         title: "通常支出",
-                         amount: data.totalDailyExpense
-                         )
-                         
-                         BalanceReportRow(
-                         title: "固定支出",
-                         amount: data.totalFixedExpense
-                         )
-                         */
                         
+                        BalanceReportCategoryList(
+                            title: "日次",
+                            data: transitionList
+                        )
                         
-                        VStack(spacing: 32) {
-                            BalanceReportCategoryList(
-                                title: "日次",
-                                data: transitionList
-                            )
-                            
-                            BalanceReportCategoryList(
-                                title: "固定",
-                                data: fixedTransitionList
-                            )
-                        }
+                        BalanceReportCategoryList(
+                            title: "固定",
+                            data: fixedTransitionList
+                        )
+                        
                     }
-                    .padding(.horizontal, 24)
+                    .listRowSeparator(.hidden)
                 }
-                .padding(.top, 16)
+            .listStyle(.insetGrouped)
+            .listSectionSpacing(24)
+            .scrollIndicators(.visible)
+            .contentMargins(.top, 16, for: .scrollContent)
             }
         }
         .task(id: viewModel.period) {
@@ -184,67 +165,6 @@ private struct BalanceReportContentView: View {
         }
     }
     
-    private struct transitionTypeSegmentedButton: View {
-        @Binding var selection: TransitionType
-        
-        var body: some View {
-            VStack(spacing: 0) {
-                HStack(spacing: 0) {
-                    ForEach(TransitionType.allCases, id: \.self) { type in
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                selection = type
-                            }
-                        } label: {
-                            Text(type.displayString)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .foregroundStyle(
-                                    selection == type
-                                    ? .primary
-                                    : .secondary
-                                )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                
-                GeometryReader { geometry in
-                    Rectangle()
-                        .fill(.primary)
-                        .frame(
-                            width: geometry.size.width / CGFloat(TransitionType.allCases.count),
-                            height: 2
-                        )
-                        .offset(
-                            x: geometry.size.width
-                            / CGFloat(TransitionType.allCases.count)
-                            * CGFloat(
-                                TransitionType.allCases.firstIndex(of: selection) ?? 0
-                            )
-                        )
-                }
-                .frame(height: 2)
-            }
-        }
-    }
-    
-    private struct BalanceReportRow: View {
-        
-        let title: String
-        let amount: Int
-        
-        var body: some View {
-            HStack {
-                Text(title)
-                
-                Spacer()
-                
-                Text(amount.formatted(.number))
-            }
-        }
-    }
-    
     private struct BalanceReportCategoryList: View {
         
         let title: String
@@ -268,7 +188,7 @@ private struct BalanceReportContentView: View {
                                 ?? "未分類"
                             )
                             Spacer()
-                            Text(item.amount.formatted(.number))
+                            Text(formattedAmount(item.amount))
                         }
                     }
                 }

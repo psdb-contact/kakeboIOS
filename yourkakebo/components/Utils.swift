@@ -10,3 +10,14 @@ func formattedMonth(_ date: Date) -> String {
         from: date
     )
 }
+
+func formattedAmount(
+    _ amount: Int?,
+    nilText: String = "未設定"
+) -> String {
+    guard let amount else {
+        return nilText
+    }
+
+    return "\(amount.formatted())円"
+}
