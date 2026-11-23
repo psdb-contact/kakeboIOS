@@ -71,7 +71,8 @@ private struct BalanceReportContentView: View {
                     Section {
                         HStack {
                             Text("収支")
-                            
+                                .font(.system(size: 16))
+                                .fontWeight(.semibold)
                             Spacer()
                             
                             Text(formattedAmount(data.totalBalance))
@@ -79,11 +80,15 @@ private struct BalanceReportContentView: View {
                         HStack(spacing: 32) {
                             HStack {
                                 Text("支出")
+                                    .font(.system(size: 16))
+                                    .fontWeight(.semibold)
                                 Spacer()
                                 Text(formattedAmount(data.totalExpense))
                             }
                             HStack {
                                 Text("収入")
+                                    .font(.system(size: 16))
+                                    .fontWeight(.semibold)
                                 Spacer()
                                 Text(formattedAmount(data.totalIncome))
                             }
@@ -128,10 +133,7 @@ private struct BalanceReportContentView: View {
                     }
                     .listRowSeparator(.hidden)
                 }
-            .listStyle(.insetGrouped)
-            .listSectionSpacing(24)
-            .scrollIndicators(.visible)
-            .contentMargins(.top, 16, for: .scrollContent)
+                .ListStyle()
             }
         }
         .task(id: viewModel.period) {

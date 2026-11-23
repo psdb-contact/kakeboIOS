@@ -2,7 +2,7 @@
   {
     "categoryName": "食費",
     "transitionType": "expense",
-    "colorHex": 16753920,
+    "colorHex": 16739179,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 0
@@ -10,7 +10,7 @@
   {
     "categoryName": "日用品",
     "transitionType": "expense",
-    "colorHex": 6737151,
+    "colorHex": 16748115,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 1
@@ -18,7 +18,7 @@
   {
     "categoryName": "交通費",
     "transitionType": "expense",
-    "colorHex": 39423,
+    "colorHex": 16757575,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 2
@@ -26,7 +26,7 @@
   {
     "categoryName": "住居費",
     "transitionType": "expense",
-    "colorHex": 10027263,
+    "colorHex": 16767293,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 3
@@ -34,7 +34,7 @@
   {
     "categoryName": "光熱費",
     "transitionType": "expense",
-    "colorHex": 16776960,
+    "colorHex": 13034359,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 4
@@ -42,7 +42,7 @@
   {
     "categoryName": "通信費",
     "transitionType": "expense",
-    "colorHex": 6750207,
+    "colorHex": 8313175,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 5
@@ -50,7 +50,7 @@
   {
     "categoryName": "娯楽費",
     "transitionType": "expense",
-    "colorHex": 16711935,
+    "colorHex": 3724191,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 6
@@ -58,7 +58,7 @@
   {
     "categoryName": "医療費",
     "transitionType": "expense",
-    "colorHex": 16711680,
+    "colorHex": 3003583,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 7
@@ -66,7 +66,7 @@
   {
     "categoryName": "衣服・美容",
     "transitionType": "expense",
-    "colorHex": 13369548,
+    "colorHex": 3592137,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 8
@@ -74,7 +74,7 @@
   {
     "categoryName": "教育費",
     "transitionType": "expense",
-    "colorHex": 39168,
+    "colorHex": 5227511,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 9
@@ -82,7 +82,7 @@
   {
     "categoryName": "その他",
     "transitionType": "expense",
-    "colorHex": 8421504,
+    "colorHex": 5941759,
     "isSystem": true,
     "isTemplateUsed": false,
     "sortOrder": 10

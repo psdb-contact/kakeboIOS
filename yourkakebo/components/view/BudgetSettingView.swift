@@ -156,9 +156,7 @@ private struct BudgetSettingContentView: View {
                     }
                 }
             }
-            .listStyle(.insetGrouped)
-            .scrollIndicators(.visible)
-            .contentMargins(.top, 8, for: .scrollContent)
+            .ListStyle()
         }
         .navigationBarBackButtonHidden(viewModel.editingBudgetData != nil)
         .toolbar{

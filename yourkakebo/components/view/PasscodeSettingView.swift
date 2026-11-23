@@ -75,10 +75,8 @@ private struct PasscodeSettingContentView: View {
                     .ListRowStyle()
                 }
             }
-        }
-        .listStyle(.insetGrouped)
-        .scrollIndicators(.visible)
-        .contentMargins(.top, 8, for: .scrollContent)
+        }   
+        .ListStyle()
         .navigationDestination(isPresented: $viewModel.showSetPasscode) {
             PasscodeInputView(
                 mode: .set,

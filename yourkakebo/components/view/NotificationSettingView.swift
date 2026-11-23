@@ -92,10 +92,7 @@ private struct NotificationSettingContentView: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .listSectionSpacing(24)
-        .scrollIndicators(.visible)
-        .contentMargins(.top, 8, for: .scrollContent)
+        .ListStyle()
         .sheet(isPresented: $viewModel.isShowingTimePicker) {
             NavigationStack {
                 DatePicker(

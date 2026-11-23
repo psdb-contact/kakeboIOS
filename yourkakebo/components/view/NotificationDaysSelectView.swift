@@ -36,8 +36,6 @@ struct NotificationDaysSelectView: View {
               .ListRowStyle()
             }
         }
-        .listStyle(.insetGrouped)
-        .scrollIndicators(.visible)
-        .contentMargins(.top, 8, for: .scrollContent)
+        .ListStyle()
     }
 }

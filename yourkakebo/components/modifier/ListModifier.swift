@@ -7,6 +7,23 @@
 
 import SwiftUI
 
+struct ListModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .listStyle(.insetGrouped)
+            .scrollIndicators(.visible)
+            .scrollContentBackground(.hidden)
+            .contentMargins(.top, 16, for: .scrollContent)
+            .listSectionSpacing(16)
+    }
+}
+
+extension View {
+    func ListStyle() -> some View {
+        modifier(ListModifier())
+    }
+}
+
 struct ListRowModifier: ViewModifier {
     func body(content: Content) -> some View {
         content

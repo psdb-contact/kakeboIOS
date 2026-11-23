@@ -86,9 +86,7 @@ private struct TemplateSettingContentView: View {
                     perform: moveTemplate
                 )
             }
-            .listStyle(.insetGrouped)
-            .scrollIndicators(.visible)
-            .contentMargins(.top, 8, for: .scrollContent)
+            .ListStyle()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

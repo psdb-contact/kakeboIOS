@@ -92,9 +92,7 @@ private struct CategorySettingContentView: View {
                         perform: moveCategory
                     )
                 }
-                .listStyle(.insetGrouped)
-                .scrollIndicators(.visible)
-                .contentMargins(.top, 8, for: .scrollContent)
+                .ListStyle()
             }
         }
         .toolbar {

@@ -224,12 +224,7 @@ private struct EditTransitionContentView: View {
                     }
                 }
             }
-            .contentMargins(.all, 0, for: .scrollContent)
-            .scrollContentBackground(.hidden)
-            .clipShape(
-                RoundedRectangle(cornerRadius: 12)
-            )
-            .scrollIndicators(.visible)
+            .ListStyle()
         }
         .padding(.bottom, 8)
         .padding(.horizontal, 0)
@@ -385,16 +380,13 @@ private struct EditTransitionContentView: View {
             }
             label: {
                 HStack(spacing: 0) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: 16) {
                         Circle()
                             .fill(Color(hex: data.category.colorHex))
-                            .frame(width: 12, height: 12)
+                            .frame(width: 10, height: 10)
                         Text(data.category.categoryName)
                             .font(.system(size: 18))
-                            .frame(
-                                width: 92,
-                                alignment: .leading
-                            )
+                            .frame(width: 92, alignment: .leading)
                     }
                     Spacer()
                     Text("\(data.transition?.amount.formatted() ?? "0")円")

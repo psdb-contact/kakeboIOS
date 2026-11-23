@@ -205,10 +205,7 @@ private struct SettingContentView: View {
             }
             
         }
-        .listStyle(.insetGrouped)
-        .listSectionSpacing(24)
-        .scrollIndicators(.visible)
-        .contentMargins(.top, 8, for: .scrollContent)
+        .ListStyle()
         .sheet(isPresented: $viewModel.showThemeTypeSheet) {
             NavigationStack {
                 Picker(

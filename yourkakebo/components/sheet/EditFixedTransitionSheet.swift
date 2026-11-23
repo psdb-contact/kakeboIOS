@@ -239,11 +239,8 @@ struct EditFixedTransitionSheet: View {
                     .ListRowStyle()
                 }
             }
+            .ListStyle()
         }
-        .listStyle(.insetGrouped)
-        .listSectionSpacing(24)
-        .scrollIndicators(.visible)
-        .contentMargins(.top, 8, for: .scrollContent)
         
         .navigationBarBackButtonHidden(true)
         .toolbar {

@@ -108,10 +108,7 @@ private struct BackupSettingContentView: View {
                 }
             }            
         }
-        .listStyle(.insetGrouped)
-           .listSectionSpacing(24)
-           .scrollIndicators(.visible)
-           .contentMargins(.top, 8, for: .scrollContent)
+        .ListStyle()
         
         .fileExporter(
             isPresented: $viewModel.isShowingExporter,

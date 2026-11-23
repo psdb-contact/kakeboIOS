@@ -46,10 +46,7 @@ struct SelectionView<T>: View where T: CaseIterable & Hashable {
             }
 
         }
-        .listStyle(.insetGrouped)
-           .scrollIndicators(.visible)
-           .contentMargins(.top, 8, for: .scrollContent)
-        
+        .ListStyle()
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
     }

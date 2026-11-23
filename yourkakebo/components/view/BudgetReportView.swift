@@ -11,6 +11,7 @@ struct BudgetReportView: View {
             fixedTransitionService: appContainer.fixedTransitionService,
             budgetService: appContainer.budgetService
         )
+        .background(Color(uiColor: .systemGroupedBackground))
     }
 }
 
@@ -46,17 +47,14 @@ private struct BudgetReportContentView: View {
                 }
             )
             
-            ScrollView {
-                VStack(spacing: 16) {
-                    ForEach(viewModel.data) { item in
+            List {
+                ForEach(viewModel.data) { item in
+                    Section {
                         BudgetCard(data:item)
-                            .padding(.top, 8)
-                            .padding(.bottom, 8)
-                            .padding(.horizontal, 16)
                     }
                 }
             }
-            .padding(.top, 16)
+            .ListStyle()
         }
         .task(id: viewModel.period) {
             do {
@@ -117,44 +115,54 @@ struct BudgetCard: View {
     }
     
     var body: some View {
-        VStack {
-            VStack(spacing: 0) {
-                HStack {
+        VStack(spacing: 0) {
+            HStack {
+                HStack(spacing: 12) {
+                    if (data.category != nil) {
+                        Circle()
+                            .fill(Color(hex: data.category!.colorHex))
+                            .frame(width: 10, height: 10)
+                    }
                     Text(data.category != nil ? data.category!.categoryName : "全て")
+                        .font(.system(size: 16))
+                        .fontWeight(.medium)
                         .foregroundStyle(Color.primary)
-                    Spacer()
-                    HStack {
-                        Text(isOver ? "超過" : "残り")
-                            .foregroundStyle(Color.primary)
-                        
-                        Text("\(data.budgetAmount - data.balanceAmount)円")
-                            .font(.system(size: 16)).foregroundStyle(isOver ? Color.red : Color.primary)
-                    }
                 }
-                CustomProgressBar(
-                    progress: Double(data.balanceAmount) / Double(data.budgetAmount),
-                    color: Color(hex: data.category?.colorHex ?? 0xFFBBBBBB)
-                )
-                .padding(.top, 12)
-                .padding(.bottom, 6)
-                
-                HStack {
-                    HStack {
-                        Text("支出").font(AppTextStyle.caption).foregroundStyle(Color.secondary)
-                        Text("\(data.balanceAmount)円").font(AppTextStyle.caption).foregroundStyle(Color.secondary)
-                    }
-                    Spacer()
-                    HStack(spacing: 16) {
-                        HStack {
-                            Text("予算").font(AppTextStyle.caption).font(AppTextStyle.caption).foregroundStyle(Color.secondary)
-                            Text("\(data.budgetAmount)円").font(AppTextStyle.caption).foregroundStyle(Color.secondary)
-                        }
-                        Text("\(data.balanceAmount / data.budgetAmount * 100)%")
-                            .frame(width: 64, alignment: .trailing)
-                    }
+                Spacer()
+                HStack (spacing: 4) {
+                    Text(isOver ? "超過" : "残り")
+                        .font(.system(size: 15, weight: .regular))
+                    
+                    Text("\(data.budgetAmount - data.balanceAmount)円")
+                        .font(.system(size: 16, weight: .regular))
+                        .monospacedDigit()
+                        .foregroundStyle(isOver ? Color.red : Color.primary)
                 }
-                
             }
+            .padding(.horizontal,4)
+            CustomProgressBar(
+                progress: Double(data.balanceAmount) / Double(data.budgetAmount),
+                color: Color(hex: data.category?.colorHex ?? 0xFFBBBBBB)
+            )
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            
+            HStack {
+                HStack {
+                    Text("支出").font(AppTextStyle.caption).foregroundStyle(Color.secondary)
+                    Text("\(data.balanceAmount)円").font(AppTextStyle.caption).foregroundStyle(Color.secondary)
+                }
+                Spacer()
+                HStack(spacing: 16) {
+                    HStack {
+                        Text("予算").font(AppTextStyle.caption).font(AppTextStyle.caption).foregroundStyle(Color.secondary)
+                        Text("\(data.budgetAmount)円").font(AppTextStyle.caption).foregroundStyle(Color.secondary)
+                    }
+                    Text("\(data.balanceAmount / data.budgetAmount * 100)%")
+                        .frame(width: 64, alignment: .trailing)
+                }
+            }
+            .padding(.trailing,2)
         }
     }
 }
