@@ -145,7 +145,7 @@ private struct HistoryContentView: View {
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
-        .task() {
+        .task(id: viewModel.selectedMonth) {
             do {
                 try viewModel.load()
             } catch {

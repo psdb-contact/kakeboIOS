@@ -162,7 +162,7 @@ final class FixedTransitionModel {
             return weekDifference % cycleInterval == 0
             
         case .monthly:
-            
+
             guard
                 let cycleValue,
                 let cycleInterval,
@@ -170,50 +170,43 @@ final class FixedTransitionModel {
             else {
                 return false
             }
-            
+
+            let startYear = calendar.component(.year, from: startDate)
+            let startMonth = calendar.component(.month, from: startDate)
+
+            let targetYear = calendar.component(.year, from: targetDate)
+            let targetMonth = calendar.component(.month, from: targetDate)
+
+            let startMonthIndex = startYear * 12 + startMonth
+            let targetMonthIndex = targetYear * 12 + targetMonth
+
+            let monthDifference = targetMonthIndex - startMonthIndex
+
+            guard monthDifference >= 0 else {
+                return false
+            }
+
+            guard monthDifference % cycleInterval == 0 else {
+                return false
+            }
+
+            guard let range = calendar.range(
+                of: .day,
+                in: .month,
+                for: targetDate
+            ) else {
+                return false
+            }
+
+            let lastDay = range.count
+            let expectedDay = min(cycleValue, lastDay)
+
             let targetDay = calendar.component(
                 .day,
                 from: targetDate
             )
-            
-            guard targetDay == cycleValue else {
-                return false
-            }
-            
-            let startYear = calendar.component(
-                .year,
-                from: startDate
-            )
-            
-            let startMonth = calendar.component(
-                .month,
-                from: startDate
-            )
-            
-            let targetYear = calendar.component(
-                .year,
-                from: targetDate
-            )
-            
-            let targetMonth = calendar.component(
-                .month,
-                from: targetDate
-            )
-            
-            let startMonthIndex =
-            startYear * 12 + startMonth
-            
-            let targetMonthIndex =
-            targetYear * 12 + targetMonth
-            
-            let monthDifference =
-            targetMonthIndex - startMonthIndex
-            
-            guard monthDifference >= 0 else {
-                return false
-            }
-            
-            return monthDifference % cycleInterval == 0
+
+            return targetDay == expectedDay
             
         case .yearly:
             
