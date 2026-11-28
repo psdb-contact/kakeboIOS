@@ -105,7 +105,8 @@ private struct HistoryContentView: View {
                                 date: date,
                                 income: data?.totalIncome ?? 0,
                                 expense: data?.totalExpense ?? 0,
-                                onDateSelected: {date in 
+                                categories: data?.categories ?? [],
+                                onDateSelected: {date in
                                     viewModel.showingSelectedDate = date
                                     viewModel.showingDetailsSheet = true
                                 }
@@ -187,7 +188,7 @@ private struct HistoryContentView: View {
             .weekday,
             from: monthStart
         )
-
+        
         let leadingEmptyDays = (calendarWeekday - appSettings.weeklyStartDay.rawValue + 7) % 7
         
         guard let range = calendar.range(
@@ -227,6 +228,7 @@ private struct HistoryContentView: View {
         
         let income: Int
         let expense: Int
+        let categories: [CategoryModel]
         
         let onDateSelected: (Date) -> Void
         
@@ -234,7 +236,7 @@ private struct HistoryContentView: View {
             Button {
                 onDateSelected(date)
             } label: {
-                VStack(spacing: 8) {
+                VStack(spacing: 4) {
                     Text("\(Calendar.current.component(.day, from: date))")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.black)
@@ -249,12 +251,19 @@ private struct HistoryContentView: View {
                             .font(.system(size: 11))
                             .foregroundStyle(.red)
                     }
+                    HStack(spacing: 3) {
+                        ForEach(categories) { category in
+                            Circle()
+                                .fill(Color(hex: category.colorHex))
+                                .frame(width: 5, height: 5)
+                        }
+                    }
                     Spacer()
                     Divider()
                 }
                 .padding(.top, 6)
                 .frame(
-                    maxWidth: .infinity, minHeight: 80, alignment: .top
+                    maxWidth: .infinity, minHeight: 98, alignment: .top
                 )
             }
             
@@ -311,7 +320,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true

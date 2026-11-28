@@ -15,7 +15,6 @@ final class AppContainer {
     let categoryService: CategoryService
     let transitionService: TransitionService
     let budgetService: BudgetService
-    let templateService: TemplateService
     let fixedTransitionService: FixedTransitionService
     
     let backupService: BackupService
@@ -35,10 +34,6 @@ final class AppContainer {
         )
         
         let budgetRepository = BudgetRepository(
-            modelContext: modelContext
-        )
-        
-        let templateRepository = TemplateRepository(
             modelContext: modelContext
         )
         
@@ -63,11 +58,6 @@ final class AppContainer {
             budgetRepository: budgetRepository
         )
         
-        self.templateService = TemplateService(
-            modelContext: modelContext,
-            templateRepository: templateRepository
-        )
-        
         self.fixedTransitionService = FixedTransitionService(
             modelContext: modelContext,
             fixedTransitionRepository: fixedTransitionRepository
@@ -78,7 +68,6 @@ final class AppContainer {
             categoryRepository: categoryRepository,
             budgetRepository: budgetRepository,
             fixedTransitionRepository: fixedTransitionRepository,
-            templateRepisitory: templateRepository,
             transitionRepository: transitionRepository
         )
         

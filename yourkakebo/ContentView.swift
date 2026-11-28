@@ -49,7 +49,6 @@ struct ContentView: View {
             CategoryModel.self,
         TransitionModel.self,
         BudgetModel.self,
-        TemplateModel.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     

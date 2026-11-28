@@ -10,7 +10,7 @@ import Observation
 final class EditTransitionViewModel {
     let appSettings: AppSettings
     let transitionService: TransitionService
-    private let templateService: TemplateService
+    let categoryService: CategoryService
     
     
     // MARK: - State
@@ -42,11 +42,11 @@ final class EditTransitionViewModel {
     init(
         appSettings: AppSettings,
         transitionService: TransitionService,
-        templateService: TemplateService
+        categoryService: CategoryService
     ) {
         self.appSettings = appSettings
         self.transitionService = transitionService
-        self.templateService = templateService
+        self.categoryService = categoryService
         
         let calendar = Calendar.current
         self.transitionPeriod = TransitionPeriod(type: .expense, date: calendar.startOfDay(for: Date()))
@@ -90,204 +90,111 @@ final class EditTransitionViewModel {
     }
     
     func load(transitionPeriod: TransitionPeriod) throws {
-        
-        var expenseResults:[TransitionInputData] = []
+        var expenseResults: [TransitionInputData] = []
         var incomeResults: [TransitionInputData] = []
-        
-        let templates = try templateService.getAllTemplates()
-        
-        let expenseTeplates = templates.filter {
-            $0.category.transitionType == .expense
+
+        // MARK: - Categories
+
+        let categories = try categoryService.getAllCategories()
+
+        let expenseCategories = categories.filter {
+            $0.transitionType == .expense && $0.isDisplayed
         }
-        
-        let incomeTemplates = templates.filter {
-            $0.category.transitionType == .income
+
+        let incomeCategories = categories.filter {
+            $0.transitionType == .income && $0.isDisplayed
         }
-        
-        let dateTransitions = try transitionService.getAllTransitionsByDate(transitionPeriod.date)
-        
+
+        // MARK: - Transitions
+
+        let dateTransitions = try transitionService.getAllTransitionsByDate(
+            transitionPeriod.date
+        )
+
         let expenseTransitions = dateTransitions.filter {
             $0.transitionType == .expense
         }
-        
+
         let incomeTransitions = dateTransitions.filter {
             $0.transitionType == .income
         }
-        
-        let expenseTemplateMap: [UUID: TemplateModel] = Dictionary(
-            uniqueKeysWithValues: expenseTeplates.map {
-                (
-                    $0.category.categoryId,
-                    $0
-                )
-            }
-        )
-        
-        let incomeTemplateMap: [UUID: TemplateModel] = Dictionary(
-            uniqueKeysWithValues: incomeTemplates.map {
-                (
-                    $0.category.categoryId,
-                    $0
-                )
-            }
-        )
-        
+
+        // MARK: - Transition Maps
+
         let expenseTransitionMap: [UUID: TransitionModel] = Dictionary(
-            uniqueKeysWithValues: expenseTransitions.compactMap {
-                transition -> (UUID, TransitionModel)? in
-                
+            uniqueKeysWithValues: expenseTransitions.compactMap { transition in
                 guard let category = transition.category else {
                     return nil
                 }
-                
-                return (
-                    category.categoryId,
-                    transition
-                )
+
+                return (category.categoryId, transition)
             }
         )
-        
+
         let incomeTransitionMap: [UUID: TransitionModel] = Dictionary(
-            uniqueKeysWithValues: incomeTransitions.compactMap {
-                transition -> (UUID, TransitionModel)? in
-                
+            uniqueKeysWithValues: incomeTransitions.compactMap { transition in
                 guard let category = transition.category else {
                     return nil
                 }
-                
-                return (
-                    category.categoryId,
-                    transition
-                )
+
+                return (category.categoryId, transition)
             }
         )
-        
-        // MARK: Category IDs
-        
-        let allExpenseCategoryIds = Set(
-            expenseTransitionMap.keys
-        ).union(
-            expenseTemplateMap.keys
-        )
-        
-        let allIncomeCategoryIds = Set(
-            incomeTransitionMap.keys
-        ).union(
-            incomeTemplateMap.keys
-        )
-        
-        expenseIds = Array(allExpenseCategoryIds)
-        incomeIds = Array(allIncomeCategoryIds)
-        
-        // MARK: Create View Data
-        
-        for categoryId in allExpenseCategoryIds {
-            
-            let transition = expenseTransitionMap[categoryId]
-            let template = expenseTemplateMap[categoryId]
-            
-            // TransitionがあればTransition側のCategory、
-            // なければTemplate側のCategoryを使用する。
-            guard let category = (
-                transition?.category
-                ?? template?.category
-            ) else {
-                continue
-            }
-            
-            
+
+        // MARK: - Create View Data
+
+        for category in expenseCategories {
+            let transition = expenseTransitionMap[category.categoryId]
+
             expenseResults.append(
                 TransitionInputData(
                     category: category,
                     transition: transition,
-                    isTemplate: template != nil,
                 )
             )
         }
-        
-        for categoryId in allIncomeCategoryIds {
-            
-            let transition = incomeTransitionMap[categoryId]
-            let template = incomeTemplateMap[categoryId]
-            
-            // TransitionがあればTransition側のCategory、
-            // なければTemplate側のCategoryを使用する。
-            guard let category = (
-                transition?.category
-                ?? template?.category
-            ) else {
-                continue
-            }
-            
-            
+
+        for category in incomeCategories {
+            let transition = incomeTransitionMap[category.categoryId]
+
             incomeResults.append(
                 TransitionInputData(
                     category: category,
                     transition: transition,
-                    isTemplate: template != nil,
                 )
             )
         }
-        
-        // MARK: Sort
-        //
-        // TemplateのsortOrder順。
-        // Templateに存在しないCategoryは最後。
-        
-        expenseResults.sort { lhs, rhs in
-            let lhsSortOrder = expenseTemplateMap[
-                lhs.category.categoryId
-            ]?.sortOrder ?? 9999
-            
-            let rhsSortOrder = expenseTemplateMap[
-                rhs.category.categoryId
-            ]?.sortOrder ?? 9999
-            
-            return lhsSortOrder < rhsSortOrder
+
+        // MARK: - Sort
+
+        expenseResults.sort {
+            $0.category.sortOrder < $1.category.sortOrder
         }
+
+        incomeResults.sort {
+            $0.category.sortOrder < $1.category.sortOrder
+        }
+
         expenses = expenseResults
-        
-        incomeResults.sort { lhs, rhs in
-            let lhsSortOrder = incomeTemplateMap[
-                lhs.category.categoryId
-            ]?.sortOrder ?? 9999
-            
-            let rhsSortOrder = incomeTemplateMap[
-                rhs.category.categoryId
-            ]?.sortOrder ?? 9999
-            
-            return lhsSortOrder < rhsSortOrder
-        }
         incomes = incomeResults
-        
+
+        // MARK: - Uncategorized Transitions
+
         let uncategorizedExpenseTransitions = expenseTransitions.filter {
             $0.category == nil
         }
-        
+
         let uncategorizedIncomeTransitions = incomeTransitions.filter {
             $0.category == nil
         }
-        
-        var uncategorizedExpenseResults: [UncategoriezedTransitionInputData] = []
-        for transition in uncategorizedExpenseTransitions {
-            uncategorizedExpenseResults.append(
-                UncategoriezedTransitionInputData(
-                    transition: transition,
-                )
-            )
+
+        uncategorizedExpenses = uncategorizedExpenseTransitions.map {
+            UncategoriezedTransitionInputData(transition: $0)
         }
-        
-        var uncategorizedIncomeResults: [UncategoriezedTransitionInputData] = []
-        for transition in uncategorizedIncomeTransitions {
-            uncategorizedIncomeResults.append(
-                UncategoriezedTransitionInputData(
-                    transition: transition,
-                )
-            )
+
+        uncategorizedIncomes = uncategorizedIncomeTransitions.map {
+            UncategoriezedTransitionInputData(transition: $0)
         }
-        
-        uncategorizedExpenses = uncategorizedExpenseResults
-        uncategorizedIncomes = uncategorizedIncomeResults
     }
     
     func assignCategory(_ category: CategoryModel) throws {
@@ -451,7 +358,6 @@ final class EditTransitionViewModel {
                     TransitionInputData(
                         category: transition.category!,
                         transition: transition,
-                        isTemplate: false,
                     )
                 )
             }
@@ -467,7 +373,6 @@ final class EditTransitionViewModel {
                     TransitionInputData(
                         category: transition.category!,
                         transition: transition,
-                        isTemplate: false
                     )
                 )
             }
@@ -476,7 +381,7 @@ final class EditTransitionViewModel {
     }
     
     func addToData(_ transition: TransitionModel) {
-        let data = TransitionInputData(category: transition.category!, transition: transition, isTemplate: false)
+        let data = TransitionInputData(category: transition.category!, transition: transition)
 
         if(transition.transitionType == .expense) {
             expenses.append(data)
@@ -502,7 +407,6 @@ struct TransitionInputData: Identifiable {
     
     let category: CategoryModel
     var transition: TransitionModel?
-    let isTemplate: Bool
 }
 
 struct UncategoriezedTransitionInputData: Identifiable {

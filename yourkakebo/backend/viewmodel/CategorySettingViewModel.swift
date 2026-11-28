@@ -65,6 +65,11 @@ final class CategorySettingViewModel {
         categoryToDelete = nil
     }
     
+    func updateIsDisplayed(category: CategoryModel, isDisplayed: Bool) throws {
+        category.isDisplayed = isDisplayed
+        try categoryService.updateCategory(category)
+    }
+    
     func selectCategoryForEditing(
         _ category: CategoryModel
     ) {

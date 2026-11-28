@@ -14,7 +14,7 @@ struct EditTransitionView: View {
         EditTransitionContentView(
             appSettings: appContainer.appSettings,
             transitionService: appContainer.transitionService,
-            templateService: appContainer.templateService
+            categoryService: appContainer.categoryService
         )
     }
 }
@@ -28,13 +28,13 @@ private struct EditTransitionContentView: View {
     init(
         appSettings: AppSettings,
         transitionService: TransitionService,
-        templateService: TemplateService
+        categoryService: CategoryService
     ) {
         _viewModel = State(
             initialValue: EditTransitionViewModel(
                 appSettings: appSettings,
                 transitionService: transitionService,
-                templateService: templateService
+                categoryService: categoryService
             )
         )
     }
@@ -87,144 +87,155 @@ private struct EditTransitionContentView: View {
             
             
             List {
-                if(count > 0) {
-                    if isExpense  {
-                        ForEach($viewModel.expenses) { $item in
-                            if let editingData = viewModel.editingTransition,
-                               editingData.id == item.id {
-                                
-                                TransitionEditForm(
-                                    namespace: animation,
-                                    editingData: editingData,
-                                    amountInput: $viewModel.amountInput,
-                                    editType: $viewModel.editType,
-                                )
-                                .listRowInsets(EdgeInsets())
-                                .listRowSeparator(.hidden)
-                                
-                            } else {
-                                TransitionCard(
-                                    data: $item,
-                                    onEdit: {
-                                        viewModel.setEditingTransition(item)
+                Section {
+                    VStack(spacing: 0) {
+                        if(count > 0) {
+                            if isExpense  {
+                                ForEach($viewModel.expenses) { $item in
+                                    if let editingData = viewModel.editingTransition,
+                                       editingData.id == item.id {
+                                        Divider()
+
+                                        TransitionEditForm(
+                                            namespace: animation,
+                                            editingData: editingData,
+                                            amountInput: $viewModel.amountInput,
+                                            editType: $viewModel.editType,
+                                        )
+                                        .listRowInsets(EdgeInsets())
+                                        .listRowSeparator(.hidden)
+                                        
+                                    } else {
+                                        Divider()
+                                        TransitionCard(
+                                            data: $item,
+                                            onEdit: {
+                                                viewModel.setEditingTransition(item)
+                                            }
+                                        )
+                                        .listRowInsets(EdgeInsets())
+                                        .listRowSeparator(.hidden)
+                                        .swipeActions(edge: .trailing) {
+                                            Button {
+                                                viewModel.transitionDataToDelete = item
+                                            } label: {
+                                                Image(systemName: "trash")
+                                            }
+                                        }
                                     }
-                                )
-                                .listRowInsets(EdgeInsets())
-                                .listRowSeparator(.hidden)
-                                .swipeActions(edge: .trailing) {
-                                    Button {
-                                        viewModel.transitionDataToDelete = item
-                                    } label: {
-                                        Image(systemName: "trash")
+                                }
+                            }else  {
+                                ForEach($viewModel.incomes) { $item in
+                                    if let editingData = viewModel.editingTransition,
+                                       editingData.id == item.id {
+                                        Divider()
+
+                                        TransitionEditForm(
+                                            namespace: animation,
+                                            editingData: editingData,
+                                            amountInput: $viewModel.amountInput,
+                                            editType: $viewModel.editType,
+                                        )
+                                        .listRowInsets(EdgeInsets())
+                                        .listRowSeparator(.hidden)
+                                        
+                                    } else {
+                                        Divider()
+                                        TransitionCard(
+                                            data: $item,
+                                            onEdit: {
+                                                viewModel.setEditingTransition(item)
+                                            }
+                                        )
+                                        .listRowInsets(EdgeInsets())
+                                        .listRowSeparator(.hidden)
+                                        .swipeActions(edge: .trailing) {
+                                            Button {
+                                                viewModel.transitionDataToDelete = item
+                                            } label: {
+                                                Image(systemName: "trash")
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }else  {
-                        ForEach($viewModel.incomes) { $item in
-                            if let editingData = viewModel.editingTransition,
-                               editingData.id == item.id {
-                                
-                                TransitionEditForm(
-                                    namespace: animation,
-                                    editingData: editingData,
-                                    amountInput: $viewModel.amountInput,
-                                    editType: $viewModel.editType,
-                                )
-                                .listRowInsets(EdgeInsets())
-                                .listRowSeparator(.hidden)
-                                
-                            } else {
-                                TransitionCard(
-                                    data: $item,
-                                    onEdit: {
-                                        viewModel.setEditingTransition(item)
+                            
+                            if uncategoriezedCount > 0 {
+                                if isExpense {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text("カテゴリ未割り当て")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundStyle(.primary)
+                                            .padding(.leading, 8)
+                                        Divider()
                                     }
-                                )
-                                .listRowInsets(EdgeInsets())
-                                .listRowSeparator(.hidden)
-                                .swipeActions(edge: .trailing) {
-                                    Button {
-                                        viewModel.transitionDataToDelete = item
-                                    } label: {
-                                        Image(systemName: "trash")
+                                    .padding(.horizontal, 8)
+                                    .listRowInsets(EdgeInsets())
+                                    .listRowSeparator(.hidden)
+                                    ForEach($viewModel.uncategorizedExpenses) { $item in
+                                        UncategorizedTransitionCard(
+                                            data: $item,
+                                            onEdit: {
+                                                viewModel.assigningTransitionData = item
+                                                viewModel.showAssignTransition = true
+                                            }
+                                        )
+                                        .listRowInsets(EdgeInsets())
+                                        .listRowSeparator(.hidden)
+                                        .swipeActions(edge: .trailing) {
+                                            Button {
+                                                viewModel.uncategorizedTransitionDataToDelete = item
+                                            } label: {
+                                                Image(systemName: "trash")
+                                            }
+                                        }
+                                        if item.id != viewModel.uncategorizedExpenses.last?.id {
+                                            Divider()
+                                                .padding(.horizontal, 8)
+                                        }
                                     }
-                                }
-                            }
-                        }
-                    }
-                    
-                    if uncategoriezedCount > 0 {
-                        if isExpense {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("カテゴリ未割り当て")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(.primary)
-                                    .padding(.leading, 8)
-                                Divider()
-                            }
-                            .padding(.horizontal, 8)
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparator(.hidden)
-                            ForEach($viewModel.uncategorizedExpenses) { $item in
-                                UncategorizedTransitionCard(
-                                    data: $item,
-                                    onEdit: {
-                                        viewModel.assigningTransitionData = item
-                                        viewModel.showAssignTransition = true
+                                } else {
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        Text("カテゴリ未割り当て")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundStyle(.primary)
+                                            .padding(.leading, 8)
+                                        Divider()
                                     }
-                                )
-                                .listRowInsets(EdgeInsets())
-                                .listRowSeparator(.hidden)
-                                .swipeActions(edge: .trailing) {
-                                    Button {
-                                        viewModel.uncategorizedTransitionDataToDelete = item
-                                    } label: {
-                                        Image(systemName: "trash")
+                                    .listRowInsets(EdgeInsets())
+                                    .listRowSeparator(.hidden)
+                                    ForEach($viewModel.uncategorizedIncomes) { $item in
+                                        UncategorizedTransitionCard(
+                                            data: $item,
+                                            onEdit: {
+                                                viewModel.assigningTransitionData = item
+                                                viewModel.showAssignTransition = true
+                                            }
+                                        )
+                                        .listRowInsets(EdgeInsets())
+                                        .listRowSeparator(.hidden)
+                                        .swipeActions(edge: .trailing) {
+                                            Button {
+                                                viewModel.uncategorizedTransitionDataToDelete = item
+                                            } label: {
+                                                Image(systemName: "trash")
+                                            }
+                                        }
+                                        if item.id != viewModel.uncategorizedIncomes.last?.id {
+                                            Divider()
+                                                .padding(.horizontal, 8)
+                                        }
                                     }
-                                }
-                                if item.id != viewModel.uncategorizedExpenses.last?.id {
-                                    Divider()
-                                        .padding(.horizontal, 8)
-                                }
-                            }
-                        } else {
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("カテゴリ未割り当て")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(.primary)
-                                    .padding(.leading, 8)
-                                Divider()
-                            }
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparator(.hidden)
-                            ForEach($viewModel.uncategorizedIncomes) { $item in
-                                UncategorizedTransitionCard(
-                                    data: $item,
-                                    onEdit: {
-                                        viewModel.assigningTransitionData = item
-                                        viewModel.showAssignTransition = true
-                                    }
-                                )
-                                .listRowInsets(EdgeInsets())
-                                .listRowSeparator(.hidden)
-                                .swipeActions(edge: .trailing) {
-                                    Button {
-                                        viewModel.uncategorizedTransitionDataToDelete = item
-                                    } label: {
-                                        Image(systemName: "trash")
-                                    }
-                                }
-                                if item.id != viewModel.uncategorizedIncomes.last?.id {
-                                    Divider()
-                                        .padding(.horizontal, 8)
                                 }
                             }
                         }
                     }
                 }
             }
-            .ListStyle()
+            .listStyle(.plain)
+            .scrollIndicators(.visible)
+            .scrollContentBackground(.hidden)
+            .contentMargins(.top, 16, for: .scrollContent)
         }
         .padding(.bottom, 8)
         .padding(.horizontal, 0)
@@ -380,22 +391,22 @@ private struct EditTransitionContentView: View {
             }
             label: {
                 HStack(spacing: 0) {
-                    HStack(spacing: 16) {
+                    HStack(spacing: 12) {
                         Circle()
                             .fill(Color(hex: data.category.colorHex))
                             .frame(width: 10, height: 10)
                         Text(data.category.categoryName)
                             .font(.system(size: 18))
+                            .fontWeight(.medium)
                             .frame(width: 92, alignment: .leading)
                     }
                     Spacer()
                     Text("\(data.transition?.amount.formatted() ?? "0")円")
+                        .font(.system(size: 18))
                         .foregroundStyle(.secondary)
                 }
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-                .padding(.leading, 20)
-                .padding(.trailing, 20)
+                .padding(.vertical, 24)
+                .padding(.horizontal, 4)
                 .frame(maxWidth: .infinity)
                 .clipShape(
                     RoundedRectangle(cornerRadius: 8)
@@ -403,7 +414,6 @@ private struct EditTransitionContentView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .zIndex(0)
         }
     }
     
@@ -419,12 +429,12 @@ private struct EditTransitionContentView: View {
         var body: some View {
             
             //let placeholder = editingData.transition != nil && editType == .add ? "加算額" : "金額"
-            VStack(spacing: 6) {
+            VStack(spacing: 4) {
                 HStack(spacing: 0) {
                     HStack(spacing: 12) {
                         Circle()
                             .fill(Color(hex: editingData.category.colorHex))
-                            .frame(width: 12, height: 12)
+                            .frame(width: 10, height: 10)
                         Text(editingData.category.categoryName)
                             .font(.system(size: 18, weight: .semibold))
                             .frame(
@@ -494,30 +504,9 @@ private struct EditTransitionContentView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 4)
             .padding(.top, 16)
             .padding(.bottom, 8)
-            .background {
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(.container)
-                    .matchedGeometryEffect(
-                        id: editingData.id,
-                        in: namespace
-                    )
-            }
-            .shadow(
-                color: Color.black.opacity(0.10),
-                radius: 8,
-                x: 0,
-                y: 4
-            )
-            .transition(
-                .opacity.combined(
-                    with: .scale(scale: 0.97, anchor: .top)
-                )
-            )
-            .zIndex(1)
-            .padding(.horizontal, 8)
             .task {
                 isFocused = true
             }
@@ -590,7 +579,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true

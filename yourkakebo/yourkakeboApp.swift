@@ -23,7 +23,6 @@ struct YourKakeboApp: App {
                     CategoryModel.self,
                     TransitionModel.self,
                     BudgetModel.self,
-                    TemplateModel.self
             )
             
             self.modelContainer = container
@@ -48,10 +47,7 @@ struct YourKakeboApp: App {
                         appSettings: appContainer.appSettings,
                         context: context
                     )
-                    InitialTemplateSeeder.seedIfNeeded(
-                        appSettings: appContainer.appSettings,
-                        context: context
-                    )
+
                     appContainer.appSettings.isFirstLaunch = false
                 }
                 .preferredColorScheme(appContainer.appSettings.themeType.swiftUIThemeMode)

@@ -14,7 +14,6 @@ final class BackupService {
     private let categoryRepository: CategoryRepository
     private let budgetRepository: BudgetRepository
     private let fixedTransitionRepository: FixedTransitionRepository
-    private let templateRepository: TemplateRepository
     private let transitionRepository: TransitionRepository
     
     
@@ -36,14 +35,12 @@ final class BackupService {
         categoryRepository: CategoryRepository,
         budgetRepository: BudgetRepository,
         fixedTransitionRepository: FixedTransitionRepository,
-        templateRepisitory: TemplateRepository,
         transitionRepository: TransitionRepository
     ) {
         self.modelContext = modelContext
         self.categoryRepository = categoryRepository
         self.budgetRepository = budgetRepository
         self.fixedTransitionRepository = fixedTransitionRepository
-        self.templateRepository = templateRepisitory
         self.transitionRepository = transitionRepository
     }
     
@@ -59,7 +56,6 @@ final class BackupService {
             try restoreTransitions(backup.transitions)
             try restoreFixedTransitions(backup.fixedTransitions)
             try restoreBudgets(backup.budgets)
-            try restoreTemplates(backup.templates)
             
             try modelContext.save()
         }
@@ -72,7 +68,6 @@ final class BackupService {
         csv += try makeTransitionSection()
         csv += try makeFixedTransitionSection()
         csv += try makeBudgetSection()
-        csv += try makeTemplateSection()
         
         var data = Data([0xEF, 0xBB, 0xBF])
         data.append(contentsOf: csv.utf8)
@@ -108,7 +103,6 @@ final class BackupService {
             try restoreTransitions(backup.transitions)
             try restoreFixedTransitions(backup.fixedTransitions)
             try restoreBudgets(backup.budgets)
-            try restoreTemplates(backup.templates)
             
             try modelContext.save()
         }
@@ -120,7 +114,6 @@ final class BackupService {
         let transitions = try transitionRepository.getAllTransitions()
         let fixedTransitions = try fixedTransitionRepository.getAllFixedTransitions()
         let budgets = try budgetRepository.getAllBudgets()
-        let templates = try templateRepository.getAllTemplates()
         
         let backup = BackupData(
             version: 1,
@@ -129,7 +122,6 @@ final class BackupService {
             transitions: transitions.map(TransitionBackup.init),
             fixedTransitions: fixedTransitions.map(FixedTransitionBackup.init),
             budgets: budgets.map(BudgetBackup.init),
-            templates: templates.map(TemplateBackup.init)
         )
         
         let encoder = JSONEncoder()
@@ -144,7 +136,6 @@ final class BackupService {
         try transitionRepository.deleteAllTransitions()
         try fixedTransitionRepository.deleteAllFixedTransitions()
         try budgetRepository.deleteAllBudgets()
-        try templateRepository.deleteAllTemplates()
         try categoryRepository.deleteAllCategories()
     }
     
@@ -279,22 +270,6 @@ final class BackupService {
         }
     }
     
-    private func restoreTemplates(_ backups: [TemplateBackup]) throws {
-        let categories = try categoryRepository.getAllCategories()
-        
-        let categoryMap = Dictionary(
-            uniqueKeysWithValues: categories.map {
-                ($0.categoryId, $0)
-            }
-        )
-        
-        for item in backups {
-            let template = TemplateModel(templateId: item.templateId, category: categoryMap[item.categoryId]!, sortOrder: item.sortOrder)
-            
-            try templateRepository.insertTemplate(template)
-        }
-    }
-    
     private func makeCategorySection() throws -> String {
         let categories = try self.categoryRepository.getAllCategories()
         
@@ -380,29 +355,6 @@ final class BackupService {
                 .joined(separator: ",")
             )
             
-        }
-        
-        rows.append("")
-        return rows.joined(separator: "\n")
-    }
-    
-    private func makeTemplateSection() throws -> String {
-        let templates = try self.templateRepository.getAllTemplates()
-        
-        var rows: [String] = []
-        
-        rows.append("# TemplateModel")
-        rows.append("templateId,categoryId,sortOrder")
-        
-        for template in templates {
-            rows.append([
-                template.templateId.uuidString,
-                template.category.categoryId.uuidString,
-                String(template.sortOrder)
-            ]
-                .map(escapeCSV)
-                .joined(separator: ",")
-            )
         }
         
         rows.append("")
@@ -560,12 +512,6 @@ final class BackupService {
             throw BackupError.invalidFormat
         }
         
-        guard let templateSection = sections.first(
-            where: { $0.name == "TemplateModel" }
-        ) else {
-            throw BackupError.invalidFormat
-        }
-        
         return BackupData(
             version: 1,
             createdAt: Date(),
@@ -575,7 +521,6 @@ final class BackupService {
                 fixedTransitionSection
             ),
             budgets: try parseBudgets(budgetSection),
-            templates: try parseTemplates(templateSection)
         )
     }
     
@@ -617,7 +562,6 @@ final class BackupService {
         let transitions: [TransitionBackup]
         let fixedTransitions: [FixedTransitionBackup]
         let budgets: [BudgetBackup]
-        let templates: [TemplateBackup]
     }
 }
 

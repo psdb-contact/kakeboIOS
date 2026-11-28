@@ -33,6 +33,7 @@ final class HistoryViewModel {
         data = []
         fixedTransitionPerDate = [:]
         transitionPerDate = [:]
+        var categoriesPerDate: [Date: [CategoryModel]] = [:]
         
         let calendar = Calendar.current
         
@@ -70,24 +71,42 @@ final class HistoryViewModel {
             guard item.isActive else {
                 continue
             }
-            
+
             let occurrenceDates = item.occurrenceDates(
                 searchStart: searchStart,
                 searchEnd: searchEnd,
                 calendar: calendar
             )
-            
+
             for date in occurrenceDates {
                 guard date >= monthStart && date < monthEnd else {
                     continue
                 }
-                fixedTransitionPerDate[date, default: []].append(item)
+
+                let dateKey = calendar.startOfDay(for: date)
+
+                fixedTransitionPerDate[dateKey, default: []].append(item)
+
+                if let category = item.category,
+                   !(categoriesPerDate[dateKey] ?? []).contains(where: {
+                       $0.categoryId == category.categoryId
+                   }) {
+                    categoriesPerDate[dateKey, default: []].append(category)
+                }
             }
         }
-        
+
         for item in transitionsList {
             let date = calendar.startOfDay(for: item.transitionDate)
+
             transitionPerDate[date, default: []].append(item)
+
+            if let category = item.category,
+               !(categoriesPerDate[date] ?? []).contains(where: {
+                   $0.categoryId == category.categoryId
+               }) {
+                categoriesPerDate[date, default: []].append(category)
+            }
         }
         
         let calcStart = calendar.date(
@@ -132,6 +151,7 @@ final class HistoryViewModel {
                 HistoryCalendarData(
                     totalIncome: totalIncome,
                     totalExpense: totalExpense,
+                    categories: categoriesPerDate[calcDate] ?? [],
                     date: calcDate
                 )
             )
@@ -161,6 +181,8 @@ struct HistoryCalendarData: Identifiable {
     
     let totalIncome: Int
     let totalExpense: Int
+    
+    let categories: [CategoryModel]
     
     let date: Date
 }

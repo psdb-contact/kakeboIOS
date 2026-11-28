@@ -38,16 +38,6 @@ private struct SettingContentView: View {
         
         List {
             Section {
-                NavigationLink {
-                    TemplateSettingView()
-                } label: {
-                    HStack {
-                        Text("テンプレート設定").font(.system(size: 16)).foregroundStyle(.black)
-                        Spacer()
-                    }
-                }
-                .ListRowComponentStyle()
-                .ListRowStyle()
                 
                 NavigationLink {
                     CategorySettingView()
@@ -391,7 +381,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true

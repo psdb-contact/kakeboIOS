@@ -14,6 +14,7 @@ final class EditCategoryViewModel {
     
     var categoryName: String = ""
     var transitionType: TransitionType = .expense
+    var isDisplayed: Bool = true
     var colorHex: Int? = nil
     
     let category: CategoryModel?
@@ -67,7 +68,8 @@ final class EditCategoryViewModel {
                 CategoryModel(
                     categoryName: categoryName,
                     transitionType: transitionType,
-                    colorHex: colorHex!
+                    colorHex: colorHex!,
+                    isDisplayed: isDisplayed
                 )
             )
         }

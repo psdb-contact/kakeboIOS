@@ -59,66 +59,70 @@ private struct FixedTransitionCalendarContentScreen: View {
             )
             
             // MARK: - Weekday
-            
-            HStack(spacing: 0) {
-                ForEach(weekdays, id: \.self) { weekday in
-                    Text(weekday.displayShortName)
-                        .font(
-                            .system(
-                                size: 12,
-                                weight: .bold
-                            )
-                        )
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .padding(.top, 16)
-            
-            Divider()
-                .padding(.top, 4)
-            
-            // MARK: - Calendar
-            
-            LazyVGrid(
-                columns: Array(
-                    repeating: GridItem(
-                        .flexible(),
-                        spacing: 0
-                    ),
-                    count: 7
-                ),
-                spacing: 0
-            ) {
-                ForEach(
-                    Array(days.enumerated()),
-                    id: \.offset
-                ) { _, date in
-                    
-                    if let date {
-                        
-                        FixedTransitionCalendarDayCell(
-                            date: date,
-                            calendarData: viewModel.data.filter {
-                                calendar.isDate(
-                                    $0.date,
-                                    inSameDayAs: date
-                                )
-                            },
-                            onDateSelected: {date in
-                                viewModel.selectedDate = date
-                                viewModel.showDetailsSheet = true
+            List {
+                Section {
+                    VStack(spacing: 6) {
+                        HStack(spacing: 0) {
+                            ForEach(weekdays, id: \.self) { weekday in
+                                Text(weekday.displayShortName)
+                                    .font(
+                                        .system(
+                                            size: 12,
+                                            weight: .bold
+                                        )
+                                    )
+                                    .frame(maxWidth: .infinity)
                             }
-                        )
-                        
-                    } else {
-                        VStack{
-                            Spacer()
-                            Divider()
                         }
+                        .ListRowStyle()
+                        // MARK: - Calendar
+                        
+                        
+                        Grid(horizontalSpacing: 0, verticalSpacing: 0) {
+                            ForEach(0..<((days.count + 6) / 7), id: \.self) { row in
+                                Divider()
+                                    .padding(.vertical, 0)
+                                
+                                GridRow{
+                                    ForEach(0..<7, id: \.self) { column in
+                                        let index = row * 7 + column
+                                        
+                                        if index < days.count, let date = days[index] {
+                                            
+                                            FixedTransitionCalendarDayCell(
+                                                date: date,
+                                                calendarData: viewModel.data.filter {
+                                                    calendar.isDate(
+                                                        $0.date,
+                                                        inSameDayAs: date
+                                                    )
+                                                },
+                                                onDateSelected: {date in
+                                                    viewModel.selectedDate = date
+                                                    viewModel.showDetailsSheet = true
+                                                }
+                                            )
+                                        } else  {
+                                            VStack{
+                                                Spacer()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .ListRowStyle()
                     }
                 }
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(
+                    top: 16,
+                    leading: 8,
+                    bottom: 16,
+                    trailing: 8
+                ))
             }
-            Spacer()
+            .ListStyle()
         }
         .sheet(isPresented: $viewModel.showDetailsSheet) {
             if(viewModel.selectedDate != nil) {
@@ -225,25 +229,34 @@ private struct FixedTransitionCalendarDayCell: View {
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.black)
                 
-                ForEach(calendarData.prefix(2)) { data in
-                    Text("\(data.fixedTransition.amount)")
-                        .font(.system(size: 11))
-                        .foregroundStyle(data.fixedTransition.transitionType == .expense ? Color.red : Color.blue)
+                VStack (spacing: 4) {
+                    ForEach(calendarData.prefix(2)) { data in
+                        Text("\(data.fixedTransition.fixedTransitionName)")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .lineLimit(1)
+                            .background(Color(hex: data.fixedTransition.category?.colorHex ?? 0xFF888888), in: Capsule())
+                    }
                 }
                 
                 if calendarData.count > 2 {
                     Text("+\(calendarData.count - 2)")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12))
+                        .foregroundStyle(.blue)
                 }
                 
                 Spacer()
-                Divider()
             }
-            .padding(.top, 6)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 1)
             .frame(
-                maxWidth: .infinity, minHeight: 80, alignment: .top
+                maxWidth: .infinity, minHeight: 98, alignment: .top
             )
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
     
 }
@@ -267,7 +280,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true
@@ -289,6 +301,7 @@ private struct PreviewContent: View {
     var body: some View {
         NavigationStack{
             FixedTransitionCalendarScreen()
+                .background(Color(uiColor:.systemGroupedBackground))
         }
         .modelContainer(container)
         .environment(appContainer)

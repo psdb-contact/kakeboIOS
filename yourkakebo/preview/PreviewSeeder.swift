@@ -32,10 +32,6 @@ enum PreviewSeeder {
                 context.insert(budget)
             }
 
-            for template in PreviewTemplateData.make() {
-                context.insert(template)
-            }
-
             try context.save()
 
         } catch {

@@ -136,7 +136,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true
@@ -157,9 +156,10 @@ private struct PreviewContent: View {
     
     var body: some View {
         NavigationStack {
-            SelectTemplateCategorySheet(
-                transitionType: .expense,
-                usedCategories: []
+            SelectNextCategorySheet(
+                current: CategoryModel(categoryName: "", transitionType: .expense, colorHex: 0xFF888888),
+                categories: [],
+                onSelect: {category in}
             )
         }
         .modelContainer(container)

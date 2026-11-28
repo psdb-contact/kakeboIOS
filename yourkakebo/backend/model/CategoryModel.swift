@@ -15,6 +15,7 @@ final class CategoryModel: Hashable  {
     var transitionType: TransitionType
     var colorHex: Int
     var isSystem: Bool
+    var isDisplayed: Bool
     var sortOrder: Int
 
     @Relationship(deleteRule: .cascade, inverse: \BudgetModel.category)
@@ -31,9 +32,7 @@ final class CategoryModel: Hashable  {
         inverse: \FixedTransitionModel.category
     )
     var fixedTransitions: [FixedTransitionModel] = []
-    
-    @Relationship(inverse: \TemplateModel.category)
-    var templates: [TemplateModel] = []
+
 
     init(
         categoryId: UUID = UUID(),
@@ -41,7 +40,7 @@ final class CategoryModel: Hashable  {
         transitionType: TransitionType,
         colorHex: Int,
         isSystem: Bool = false,
-        isTemplateUsed: Bool = false,
+        isDisplayed: Bool = false,
         sortOrder: Int = 0
     ) {
         self.categoryId = categoryId
@@ -49,6 +48,7 @@ final class CategoryModel: Hashable  {
         self.transitionType = transitionType
         self.colorHex = colorHex
         self.isSystem = isSystem
+        self.isDisplayed = isDisplayed
         self.sortOrder = sortOrder
     }
 
@@ -87,6 +87,7 @@ struct CategoryBackup: Encodable, Decodable {
     let transitionType: TransitionType
     let colorHex: Int
     let isSystem: Bool
+    let isDisplayed: Bool
     let sortOrder: Int
 }
 
@@ -98,6 +99,7 @@ extension CategoryBackup {
             transitionType: model.transitionType,
             colorHex: model.colorHex,
             isSystem: model.isSystem,
+            isDisplayed: model.isDisplayed,
             sortOrder: model.sortOrder
         )
     }
@@ -105,7 +107,7 @@ extension CategoryBackup {
 
 func parseCategories(_ section: CSVSection) throws -> [CategoryBackup] {
     let index = try makeHeaderIndex(section.header, expected: [
-        "categoryId", "categoryName", "transitionType", "colorHex", "isSystem", "sortOrder"
+        "categoryId", "categoryName", "transitionType", "colorHex", "isSystem", "isDisplayed", "sortOrder"
     ])
     
     return try section.rows.map { row in
@@ -115,6 +117,7 @@ func parseCategories(_ section: CSVSection) throws -> [CategoryBackup] {
                 transitionType: try parseEnum(row[index["transitionType"]!], as: TransitionType.self),
                 colorHex: try parseInt(row[index["colorHex"]!]),
                 isSystem: try parseBool(row[index["isSystem"]!]),
+                isDisplayed: try parseBool(row[index["isDisplayed"]!]),
                 sortOrder: try parseInt(row[index["sortOrder"]!])
             )
     }

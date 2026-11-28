@@ -152,7 +152,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true
@@ -181,7 +180,7 @@ private struct PreviewContent: View {
                     transitionType: TransitionType.expense,
                     colorHex: 16753920,
                     isSystem: false,
-                    isTemplateUsed: false,
+                    isDisplayed: false,
                     sortOrder: 0
                 ),
                 transitionPeriod: TransitionPeriod(type: .expense, date: Calendar.current.startOfDay(for: Date())),

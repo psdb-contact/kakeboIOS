@@ -48,7 +48,7 @@ enum InitialCategorySeeder {
                 transitionType: $0.transitionType,
                 colorHex: $0.colorHex,
                 isSystem: $0.isSystem,
-                isTemplateUsed: $0.isTemplateUsed,
+                isDisplayed: $0.isDisplayed,
                 sortOrder: $0.sortOrder
             )
         }
@@ -59,7 +59,7 @@ enum InitialCategorySeeder {
         let transitionType: TransitionType
         let colorHex: Int
         let isSystem: Bool
-        let isTemplateUsed: Bool
+        let isDisplayed: Bool
         let sortOrder: Int
     }
 

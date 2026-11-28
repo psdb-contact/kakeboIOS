@@ -4,7 +4,7 @@
     "transitionType": "expense",
     "colorHex": 16739179,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 0
   },
   {
@@ -12,7 +12,7 @@
     "transitionType": "expense",
     "colorHex": 16748115,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 1
   },
   {
@@ -20,7 +20,7 @@
     "transitionType": "expense",
     "colorHex": 16757575,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 2
   },
   {
@@ -28,7 +28,7 @@
     "transitionType": "expense",
     "colorHex": 16767293,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 3
   },
   {
@@ -36,7 +36,7 @@
     "transitionType": "expense",
     "colorHex": 13034359,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 4
   },
   {
@@ -44,7 +44,7 @@
     "transitionType": "expense",
     "colorHex": 8313175,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 5
   },
   {
@@ -52,7 +52,7 @@
     "transitionType": "expense",
     "colorHex": 3724191,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 6
   },
   {
@@ -60,7 +60,7 @@
     "transitionType": "expense",
     "colorHex": 3003583,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 7
   },
   {
@@ -68,7 +68,7 @@
     "transitionType": "expense",
     "colorHex": 3592137,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 8
   },
   {
@@ -76,7 +76,7 @@
     "transitionType": "expense",
     "colorHex": 5227511,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 9
   },
   {
@@ -84,7 +84,7 @@
     "transitionType": "expense",
     "colorHex": 5941759,
     "isSystem": true,
-    "isTemplateUsed": false,
+    "isDisplayed": true,
     "sortOrder": 10
   }
 ]

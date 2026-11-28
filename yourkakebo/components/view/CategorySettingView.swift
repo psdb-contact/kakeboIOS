@@ -97,8 +97,8 @@ private struct CategorySettingContentView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                 EditButton()
-             }
+                EditButton()
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     viewModel.showingAddCategory = true
@@ -183,26 +183,45 @@ private struct CategorySettingContentView: View {
     private func categoryCard(
         _ category: CategoryModel
     ) -> some View {
-        Button {
-            viewModel.selectCategoryForEditing(category)
-        } label: {
-            HStack(spacing: 0) {
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(Color(hex: category.colorHex))
-                        .frame(width: 12, height: 12)
-                    Text(category.categoryName)
-                        .font(.system(size: 18, weight: .regular))
-                        .lineLimit(1)
+        HStack {
+            Button {
+                viewModel.selectCategoryForEditing(category)
+            } label: {
+                HStack(spacing: 0) {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(Color(hex: category.colorHex))
+                            .frame(width: 12, height: 12)
+                        Text(category.categoryName)
+                            .font(.system(size: 18, weight: .regular))
+                            .lineLimit(1)
+                    }
+                    
+                    Spacer()
                 }
-                
-                Spacer()
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 20)
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            
+            Toggle(
+                "",
+                isOn: Binding(
+                    get: {
+                        category.isDisplayed
+                    },
+                    set: {
+                        do {
+                            try viewModel.updateIsDisplayed(category: category, isDisplayed: $0)
+                        } catch {
+                            print("カテゴリの表示設定の更新に失敗しました: \(error)")
+                        }
+                    }
+                )
+            )
+            .labelsHidden()
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity)
     }
     
     private func moveCategory(
@@ -264,7 +283,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true

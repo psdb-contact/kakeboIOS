@@ -57,10 +57,8 @@ struct FixedTransitionDetailsSheet: View {
                                     Circle()
                                         .fill(Color(hex: item.category != nil ? item.category!.colorHex : 0xFFBBBBBB))
                                         .frame(width: 12, height: 12)
-                                    Text(
-                                        item.category?.categoryName
-                                        ?? "未分類"
-                                    )
+                                    Text(                                        item.fixedTransitionName)
+                                    
                                     
                                     Spacer()
                                     
@@ -88,10 +86,7 @@ struct FixedTransitionDetailsSheet: View {
                                     Circle()
                                         .fill(Color(hex: item.category != nil ? item.category!.colorHex : 0xFFBBBBBB))
                                         .frame(width: 12, height: 12)
-                                    Text(
-                                        item.category?.categoryName
-                                        ?? "未分類"
-                                    )
+                                    Text(                                        item.fixedTransitionName)
                                     
                                     Spacer()
                                     
@@ -110,7 +105,7 @@ struct FixedTransitionDetailsSheet: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-               CancelButton(action:  {dismiss() }, tint: .secondaryCancelColor)
+                CancelButton(action:  {dismiss() }, tint: .secondaryCancelColor)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -145,7 +140,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true

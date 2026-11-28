@@ -35,7 +35,6 @@ struct EditCategorySheet: View {
         
         VStack(spacing: 0) {
             
-            // MARK: - Form
             ScrollView {
                 VStack(spacing: 24) {
                     
@@ -54,32 +53,50 @@ struct EditCategorySheet: View {
                         .pickerStyle(.segmented)
                     }
                     
-                    VStack {
+                    VStack(spacing: 0) {
                         HStack {
                             TextField(
                                 "カテゴリ名",
                                 text: $viewModel.categoryName
                             )
                             .focused($isNameFocused)
-                            .padding(.horizontal, 12)
                             .textFieldStyle(.plain)
-                            .frame(height: 52)
+                            .frame(height: 56)
                             if(isNameFocused && viewModel.categoryName != "") {
                                 Button {
-                                   viewModel.categoryName = ""
+                                    viewModel.categoryName = ""
                                 }  label: {
-                                   Image(systemName: "xmark.circle.fill")
-                                       .foregroundStyle(.secondary)
-                               }
-                               .padding(.trailing, 16)
-                               .buttonStyle(.plain)
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(.trailing, 16)
+                                .buttonStyle(.plain)
                             }
                         }
-                        .padding(.leading, 12)
+                        .padding(.horizontal, 16)
+                        
+                        Divider()
+                            .padding(.vertical, 0)
+                            .padding(.horizontal, 8)
+                        
+                        Toggle("入力画面に表示",
+                               isOn: Binding(
+                                get: {
+                                    viewModel.isDisplayed
+                                },
+                                set: { isOn in
+                                    viewModel.isDisplayed = isOn
+                                }
+                               )
+                        )
+                        .padding(.vertical, 14)
+                        .padding(.horizontal, 16)
+
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 12).fill(Color.container)
                     )
+                    
                     
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(CategoryColors.all, id: \.self) { hex in
@@ -200,7 +217,6 @@ private struct PreviewContent: View {
                 CategoryModel.self,
             TransitionModel.self,
             BudgetModel.self,
-            TemplateModel.self,
             FixedTransitionModel.self,
             configurations: ModelConfiguration(
                 isStoredInMemoryOnly: true

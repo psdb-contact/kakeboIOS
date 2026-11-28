@@ -9,36 +9,42 @@ enum PreviewCategoryData {
                 categoryName: "食費",
                 transitionType: .expense,
                 colorHex: 0xFFFF6B6B,
+                isDisplayed: true,
                 sortOrder: 0
             ),
             CategoryModel(
                 categoryName: "日用品",
                 transitionType: .expense,
                 colorHex: 0xFFFF8E53,
+                isDisplayed: true,
                 sortOrder: 1
             ),
             CategoryModel(
                 categoryName: "交通費",
                 transitionType: .expense,
                 colorHex: 0xFFFFB347,
+                isDisplayed: true,
                 sortOrder: 2
             ),
             CategoryModel(
                 categoryName: "娯楽",
                 transitionType: .expense,
                 colorHex: 0xFFFFD93D,
+                isDisplayed: false,
                 sortOrder: 3
             ),
             CategoryModel(
                 categoryName: "光熱費",
                 transitionType: .expense,
                 colorHex: 0xFFC6E377,
+                isDisplayed: false,
                 sortOrder: 4
             ),
             CategoryModel(
                 categoryName: "通信費",
                 transitionType: .expense,
                 colorHex: 0xFF7ED957,
+                isDisplayed: false,
                 sortOrder: 5
             ),
             CategoryModel(
@@ -57,6 +63,7 @@ enum PreviewCategoryData {
                 categoryName: "その他",
                 transitionType: .expense,
                 colorHex: 0xFF36CFC9,
+                isDisplayed: true,
                 sortOrder: 8
             ),
             CategoryModel(
